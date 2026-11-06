@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<!--
+  Vigie, direction artistique v1. This file is the visual spec: the :root blocks become tokens.css,
+  the component rules (from "Components" on) become base.css with the same class names.
+-->
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vigie DA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300..700&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens (→ tokens.css) ---------- */
+:root{
+  --page:#DCE0E1; --bg:#EEF1F1; --surface:#FFFFFF; --surface-2:#E3E7E8; --line:#CED5D7;
+  --text:#0B0F10; --muted:#56606A; --accent:#A6E33F; --accent-ink:#3B6A00; --on-accent:#0B0F10;
+  --ok:#1F6FD1; --watch:#8A6A00; --plan:#B4530A; --over:#C62828; --unknown:#6B757B;
+  --bezel:#1A1D1F;
+  --font:"Geologica",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#050607; --bg:#0A0C0E; --surface:#111417; --surface-2:#1A1E22; --line:#252A2F;
+    --text:#E6ECE9; --muted:#8A949A; --accent:#B8F25C; --accent-ink:#B8F25C; --on-accent:#0A0C0E;
+    --ok:#5AB0FF; --watch:#E3C04D; --plan:#F29B4B; --over:#FF5D5D; --unknown:#6E777D;
+    --bezel:#24282C; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#050607; --bg:#0A0C0E; --surface:#111417; --surface-2:#1A1E22; --line:#252A2F;
+  --text:#E6ECE9; --muted:#8A949A; --accent:#B8F25C; --accent-ink:#B8F25C; --on-accent:#0A0C0E;
+  --ok:#5AB0FF; --watch:#E3C04D; --plan:#F29B4B; --over:#FF5D5D; --unknown:#6E777D;
+  --bezel:#24282C; color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+/* Solar icons carry their own stroke/fill (currentColor): size them, never restyle them */
+.i{width:24px;height:24px;flex:none;display:block}
+.i.s{width:20px;height:20px}.i.xs{width:16px;height:16px}
+
+/* ---------- DA page ---------- */
+.wrap{max-width:1280px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:21px;letter-spacing:-.025em;line-height:1}
+.logo svg{flex:none}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(32px,6vw,88px);align-items:center;padding:clamp(40px,7vw,88px) 0}
+.hero h1{font-size:clamp(76px,13vw,168px);line-height:.86;font-weight:500;margin:0 0 32px;letter-spacing:-.05em}
+.lede{font-size:clamp(18px,1.7vw,21px);line-height:1.45;max-width:30em;margin:0 0 40px}
+.principles{display:grid;gap:24px;max-width:34em}
+.principle{border-left:1px solid var(--line);padding-left:16px}
+.principle h3{font-size:16px;font-weight:500;margin:0 0 4px}
+.principle p{margin:0;color:var(--muted);font-size:15px}
+@media (max-width:960px){.hero{grid-template-columns:minmax(0,1fr)}.hero .phone{justify-self:center}}
+.section{padding:clamp(48px,6vw,80px) 0;border-top:1px solid var(--line)}
+.section h2{font-size:clamp(32px,4.2vw,48px);font-weight:500;letter-spacing:-.03em;margin:0 0 12px;line-height:1}
+.section .intro{color:var(--muted);max-width:44em;margin:0 0 40px;font-size:16px}
+.phones{display:flex;flex-wrap:wrap;gap:48px 40px}
+figure{margin:0}
+figcaption{font-size:14px;color:var(--muted);margin-top:16px;max-width:360px}
+figcaption strong{color:var(--text);font-weight:500}
+@media (max-width:420px){.phone{zoom:.86}figcaption{max-width:310px}}
+
+/* ---------- Phone frame (DA only) ---------- */
+.phone{width:360px;height:760px;flex:none;border-radius:50px;border:10px solid var(--bezel);background:var(--bg);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{position:relative;display:flex;justify-content:space-between;align-items:center;padding:14px 26px 8px;font-size:14px;font-weight:600;flex:none;font-family:system-ui,-apple-system,sans-serif}
+.status .isl{position:absolute;left:50%;top:9px;width:100px;height:28px;background:#000;border-radius:20px;transform:translateX(-50%)}
+.scr{flex:1;overflow:hidden;padding:4px 18px 0;display:flex;flex-direction:column;gap:14px;min-height:0}
+.scr>*{flex-shrink:0}
+.homebar{flex:none;height:5px;width:128px;border-radius:3px;background:var(--text);opacity:.8;margin:10px auto 9px}
+
+/* =================== Components (→ base.css) =================== */
+/* Navigation: phone */
+.tabbar{flex:none;display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px 24px;border-top:1px solid var(--line);background:var(--surface)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:400;color:var(--muted);padding-top:4px}
+.tab[aria-current="page"]{color:var(--text);font-weight:500}
+.start{width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin-top:-24px;box-shadow:0 0 0 5px var(--surface)}
+.start .i{width:28px;height:28px}
+.badge-n{min-width:18px;height:18px;padding:0 6px;border-radius:9px;background:var(--text);color:var(--bg);font-size:11px;font-weight:500;display:inline-grid;place-items:center;line-height:1}
+
+/* Screen header */
+.scr-h{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.scr-h h3{font-size:30px;font-weight:500;letter-spacing:-.02em;margin:0;line-height:1.05}
+.scr-h .sub{margin-top:4px}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--surface-2);color:var(--text);cursor:pointer;flex:none}
+.icon-btns{display:flex;gap:8px}
+
+/* Filters */
+.chips{display:flex;gap:6px;overflow:hidden}
+.chip{height:32px;padding:0 12px;border-radius:999px;border:0;background:var(--surface-2);color:var(--muted);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--text);color:var(--bg)}
+.chip b{font-weight:500}
+
+/* Panels, numbers */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0}
+.panel h5{margin:0 0 6px;font-size:13px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:8px}
+.kpi{font-size:30px;font-weight:500;letter-spacing:-.02em;line-height:1.1}
+.kpi small{font-size:13px;color:var(--muted);font-weight:500;margin-left:4px;letter-spacing:0}
+.sub{font-size:12.5px;color:var(--muted);font-weight:400}
+.conf{font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 6px;line-height:18px;white-space:nowrap;display:inline-block}
+.delta{font-size:12.5px;font-weight:500}
+.kpis .kpi{font-size:26px}
+
+/* The scope: weekly goals as a radar screen */
+.scope{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
+.scope ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.scope li{font-size:12px;color:var(--muted);display:grid}
+.scope li b{font-size:17px;color:var(--text);font-weight:500;display:flex;align-items:baseline;gap:4px}
+.scope li b small{font-size:12px;color:var(--muted);font-weight:400;letter-spacing:0}
+.scope .ring{fill:none;stroke:var(--text);stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;animation:sweep 900ms var(--ease) both}
+.scope .grid{fill:none;stroke:var(--line);stroke-width:1}
+@keyframes sweep{from{stroke-dasharray:0 400}}
+
+/* Echo: the accent's small mark (fills use --accent, small marks use --accent-ink) */
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent-ink);display:inline-block;flex:none}
+
+/* Items: list (phone) */
+.list{display:grid}
+.it{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.it .th{width:64px;height:48px;border-radius:9px;overflow:hidden;position:relative;background:var(--surface-2)}
+.it .tt{font-size:14.5px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;margin-top:3px;white-space:nowrap;overflow:hidden}
+.meta .i{width:14px;height:14px}
+.th svg.og{width:100%;height:100%;display:block}
+.th .dur{position:absolute;right:4px;bottom:4px;font-size:11px;font-weight:500;padding:0 4px;border-radius:4px;background:rgba(0,0,0,.72);color:#fff;line-height:16px}
+.mono{display:grid;place-items:center;width:100%;height:100%;font-weight:500;color:var(--muted);background:var(--surface-2);font-size:18px}
+/* What has been seen goes dark */
+.is-seen .tt{color:var(--muted)}
+.is-seen .th svg.og{filter:grayscale(1);opacity:.45}
+.is-unknown .th{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.is-unknown .mono{background:transparent}
+
+/* Items: card (desktop grid) */
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0}
+.card .th{aspect-ratio:1.91/1;position:relative;background:var(--surface-2)}
+.card .th svg.og{width:100%;height:100%;display:block}
+.card .cb{padding:10px 12px 12px}
+.card .tt{font-size:14px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+
+/* Received */
+.recv{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.recv .dot{margin-top:7px}
+.recv q{color:var(--muted)}
+.av{width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--text);display:grid;place-items:center;font-weight:500;font-size:12.5px;flex:none}
+
+/* Sheets */
+.sheet-h{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sheet-h h3{margin:0;font-size:24px;font-weight:500;letter-spacing:-.01em}
+.field{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:grid;gap:2px}
+.field.focus{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink)}
+.field label{font-size:12.5px;color:var(--muted);font-weight:500}
+.field .v{font-size:16px;font-weight:400;display:flex;align-items:center;gap:8px;min-width:0}
+.field .v span:not(.caret){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.field .ph{color:var(--muted)}
+.field .help{font-size:12px;color:var(--muted)}
+.caret{width:2px;height:20px;background:var(--accent-ink);display:inline-block;flex:none}
+.preview{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px}
+.preview .th{width:96px;height:52px;border-radius:8px;overflow:hidden}
+.preview .tt{font-size:14px;font-weight:500;line-height:1.3}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{height:28px;padding:0 10px;border-radius:8px;background:var(--surface-2);font-size:13px;display:inline-flex;align-items:center;gap:2px}
+.tag.add{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+.note-s{font-size:12.5px;color:var(--muted);display:flex;gap:8px;align-items:flex-start}
+.note-s .i{width:16px;height:16px;margin-top:1px}
+
+/* Buttons */
+.btn{height:40px;padding:0 16px;border-radius:10px;border:0;font-size:14px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;white-space:nowrap;transition:background-color 150ms var(--ease)}
+.btn .i{width:18px;height:18px}
+.btn-accent{background:var(--accent);color:var(--on-accent)}
+.btn-2{background:var(--surface-2);color:var(--text)}
+.btn-ghost{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+.btn-danger{background:transparent;color:var(--over);box-shadow:inset 0 0 0 1px var(--line)}
+.btn-sm{height:32px;padding:0 12px;font-size:13px;border-radius:8px}
+.cta{margin-top:auto;height:52px;border-radius:14px;background:var(--accent);color:var(--on-accent);font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;border:0;flex:none;margin-bottom:6px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:500;padding:6px 12px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 0 0 1px var(--line)}
+.seg.full{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+.switch{width:46px;height:28px;border-radius:14px;background:var(--surface-2);position:relative;flex:none;display:inline-block;box-shadow:inset 0 0 0 1px var(--line)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:left 150ms var(--ease)}
+.switch.on{background:var(--text);box-shadow:none}.switch.on::after{left:21px;background:var(--bg)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px}
+.row .t{font-weight:500}.row .d{font-size:12.5px;color:var(--muted)}
+
+/* States */
+.s-ok{--s:var(--ok)}.s-watch{--s:var(--watch)}.s-plan{--s:var(--plan)}.s-over{--s:var(--over)}.s-unk{--s:var(--unknown)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--s,var(--unknown)) 15%,transparent);color:var(--s,var(--unknown));white-space:nowrap}
+
+/* Toast and empty state */
+.toast{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--text);color:var(--bg);border-radius:12px;padding:10px 12px 10px 14px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.toast button{border:0;background:none;color:inherit;font-weight:500;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.empty{display:grid;gap:10px;justify-items:start;padding:20px;border:1px dashed var(--line);border-radius:16px}
+.empty .ghost{font-size:48px;font-weight:500;letter-spacing:-.04em;color:var(--line);line-height:1}
+.empty p{margin:0;color:var(--muted);max-width:26em}
+
+/* Charts */
+.hist{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* Queue */
+.q{display:grid;grid-template-columns:20px 64px minmax(0,1fr);gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.q .h{color:var(--muted)}
+.q .h .i{width:20px;height:20px}
+.next{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.next .th{aspect-ratio:16/9;position:relative}
+.next .th svg.og{width:100%;height:100%;display:block}
+.next .nb{padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.next .tt{font-size:15px;font-weight:500;line-height:1.3}
+.play{width:44px;height:44px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center;border:0}
+
+/* ---------- Desktop shell ---------- */
+.desk-wrap{overflow-x:auto;padding-bottom:12px}
+.desk{width:1180px;height:760px;display:grid;grid-template-columns:232px minmax(0,1fr);border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--bg)}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:22px}
+.side .logo{padding:0 8px;font-size:19px}
+.nav{display:grid;gap:2px}
+.nav a{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;color:var(--muted);font-size:14px;font-weight:500;text-decoration:none}
+.nav a .n{margin-left:auto;font-size:12.5px;display:flex;align-items:center;gap:6px}
+.nav a[aria-current="page"]{background:var(--surface-2);color:var(--text)}
+.nav-sep{height:1px;background:var(--line);margin:6px 4px}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;font-size:13px;padding:0 6px}
+.me div{display:grid;line-height:1.3}.me span{color:var(--muted);font-size:12px}
+.main{padding:28px 28px;display:flex;flex-direction:column;gap:18px;min-width:0;overflow:hidden}
+.main-h{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.main-h h4{margin:0;font-size:34px;line-height:1;font-weight:500;letter-spacing:-.02em}
+.main-h p{margin:8px 0 0;color:var(--muted);font-size:14px}
+.capture{display:flex;gap:8px;align-items:center}
+.capture .in{width:320px;height:40px;border-radius:10px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--muted);font-size:14px}
+.capture kbd{margin-left:auto;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+
+/* ---------- Foundations ---------- */
+.f-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sw{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.sw .c{height:72px;border-bottom:1px solid var(--line)}
+.sw .m{padding:8px 12px 12px}.sw .m b{display:block;font-size:14px;font-weight:500}.sw .m span{display:block;font-size:12.5px;color:var(--muted)}
+.f-h{font-size:20px;font-weight:500;margin:48px 0 14px}
+.states{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.state{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;align-content:start}
+.state p{margin:0;font-size:13px;color:var(--muted)}
+.type-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,300px);gap:24px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--line)}
+.type-r .spec{font-size:13px;color:var(--muted)}
+@media (max-width:640px){.type-r{grid-template-columns:minmax(0,1fr);gap:4px}}
+.t-xl{font-size:clamp(44px,7vw,64px);font-weight:500;letter-spacing:-.03em;line-height:1}
+.t-h{font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1}
+.t-l{font-size:15px;font-weight:500}.t-b{font-size:15px}.t-c{font-size:12.5px;color:var(--muted)}
+.comps{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.demo{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-top:18px}
+.demo>div{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.demo h4{margin:0 0 4px;font-size:13px;font-weight:500;color:var(--muted)}
+.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.icons div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 8px 10px;display:grid;justify-items:center;gap:8px;font-size:11.5px;color:var(--muted);text-align:center}
+.foot{padding:40px 0 64px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);display:grid;gap:6px}
+.foot p{margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="s-layers-minimalistic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M4.97883 9.68508C2.99294 8.89073 2 8.49355 2 8C2 7.50645 2.99294 7.10927 4.97883 6.31492L7.7873 5.19153C9.77318 4.39718 10.7661 4 12 4C13.2339 4 14.2268 4.39718 16.2127 5.19153L19.0212 6.31492C21.0071 7.10927 22 7.50645 22 8C22 8.49355 21.0071 8.89073 19.0212 9.68508L16.2127 10.8085C14.2268 11.6028 13.2339 12 12 12C10.7661 12 9.77318 11.6028 7.7873 10.8085L4.97883 9.68508Z"/><path d="M22 12C22 12 21.0071 12.8907 19.0212 13.6851L16.2127 14.8085C14.2268 15.6028 13.2339 16 12 16C10.7661 16 9.77318 15.6028 7.7873 14.8085L4.97883 13.6851C2.99294 12.8907 2 12 2 12"/><path d="M22 16C22 16 21.0071 16.8907 19.0212 17.6851L16.2127 18.8085C14.2268 19.6028 13.2339 20 12 20C10.7661 20 9.77318 19.6028 7.7873 18.8085L4.97883 17.6851C2.99294 16.8907 2 16 2 16"/></g></symbol>
+  <symbol id="s-layers-minimalistic-b" viewBox="0 0 24 24"><g fill="currentColor"><path d="M7.62442 4.4489C9.50121 3.69796 10.6208 3.25 12 3.25C13.3792 3.25 14.4988 3.69796 16.3756 4.4489L19.3451 5.6367C20.2996 6.01851 21.0728 6.32776 21.6035 6.60601C21.8721 6.74683 22.1323 6.90648 22.333 7.09894C22.5392 7.29668 22.75 7.59658 22.75 8C22.75 8.40342 22.5392 8.70332 22.333 8.90106C22.1323 9.09352 21.8721 9.25317 21.6035 9.39399C21.0728 9.67223 20.2996 9.98148 19.3451 10.3633L16.3756 11.5511C14.4988 12.302 13.3792 12.75 12 12.75C10.6208 12.75 9.50121 12.302 7.62443 11.5511L4.65495 10.3633C3.70037 9.98149 2.9272 9.67223 2.39647 9.39399C2.12786 9.25317 1.86765 9.09352 1.66701 8.90106C1.46085 8.70332 1.25 8.40342 1.25 8C1.25 7.59658 1.46085 7.29668 1.66701 7.09894C1.86765 6.90648 2.12786 6.74683 2.39647 6.60601C2.92721 6.32776 3.70037 6.01851 4.65496 5.63669L7.62442 4.4489Z"/><path fill-rule="evenodd" d="M2.50053 11.4415C2.50053 11.4415 2.50053 11.4415 2.50053 11.4415L2.49913 11.4402L2.50261 11.4432C2.50702 11.4471 2.51522 11.4541 2.52722 11.4641C2.55123 11.4842 2.59042 11.5161 2.64479 11.5581C2.75354 11.6422 2.92289 11.7663 3.1528 11.9154C3.61265 12.2136 4.31419 12.6115 5.25737 12.9887L8.06584 14.1121C10.0907 14.922 10.9396 15.25 12 15.25C13.0604 15.25 13.9093 14.922 15.9342 14.1121L18.7426 12.9887C19.6858 12.6115 20.3874 12.2136 20.8472 11.9154C21.0771 11.7663 21.2465 11.6422 21.3552 11.5581C21.4096 11.5161 21.4488 11.4842 21.4728 11.4641C21.4848 11.4541 21.493 11.4471 21.4974 11.4432L21.4995 11.4415C21.5 11.441 21.5006 11.4405 21.5011 11.44C21.8095 11.1652 22.2823 11.1915 22.5583 11.4992C22.8349 11.8075 22.8092 12.2817 22.5008 12.5583L22 12C22.5008 12.5583 22.501 12.5581 22.5008 12.5583L22.4994 12.5595L22.4977 12.5611L22.493 12.5652L22.4793 12.5772C22.4682 12.5868 22.4532 12.5997 22.4341 12.6155C22.3961 12.6473 22.3422 12.6911 22.2724 12.745C22.1329 12.8528 21.9299 13.001 21.6634 13.1739C21.1303 13.5196 20.3424 13.9644 19.2997 14.3814L16.4912 15.5048C16.4524 15.5204 16.4138 15.5358 16.3756 15.5511C14.4988 16.302 13.3792 16.75 12 16.75C10.6208 16.75 9.50121 16.302 7.62442 15.5511C7.58619 15.5358 7.54763 15.5204 7.50875 15.5048L4.70029 14.3814C3.65759 13.9644 2.86971 13.5196 2.33662 13.1739C2.07005 13.001 1.86705 12.8528 1.72757 12.745C1.65782 12.6911 1.60392 12.6473 1.56587 12.6155C1.54684 12.5997 1.53177 12.5868 1.52066 12.5772L1.50696 12.5652L1.50233 12.5611L1.50057 12.5595L1.4995 12.5586C1.49934 12.5584 1.49919 12.5583 2 12L1.4995 12.5586C1.19116 12.282 1.16512 11.8075 1.44171 11.4992C1.71775 11.1915 2.19075 11.1654 2.49913 11.4402M2.50053 11.4415C2.50053 11.4415 2.50053 11.4415 2.50053 11.4415V11.4415ZM2.49896 15.4401C2.19058 15.1652 1.71775 15.1915 1.44171 15.4992L2.49896 15.4401ZM2.49896 15.4401L2.50261 15.4432C2.50702 15.4471 2.51522 15.4541 2.52722 15.4641C2.55123 15.4842 2.59042 15.5161 2.64479 15.5581C2.75354 15.6422 2.92289 15.7663 3.1528 15.9154C3.61265 16.2136 4.31419 16.6114 5.25737 16.9887L8.06584 18.1121C10.0907 18.922 10.9396 19.25 12 19.25C13.0604 19.25 13.9093 18.922 15.9342 18.1121L18.7426 16.9887C19.6858 16.6114 20.3874 16.2136 20.8472 15.9154C21.0771 15.7663 21.2465 15.6422 21.3552 15.5581C21.4096 15.5161 21.4488 15.4842 21.4728 15.4641C21.4848 15.4541 21.493 15.4471 21.4974 15.4432L21.4995 15.4415C21.5 15.441 21.5006 15.4405 21.5011 15.44C21.8095 15.1652 22.2823 15.1915 22.5583 15.4992C22.8349 15.8075 22.8092 16.2817 22.5008 16.5583L22.0166 16.0185C22.5008 16.5583 22.501 16.5581 22.5008 16.5583L22.4994 16.5595L22.4977 16.5611L22.493 16.5652L22.4793 16.5772C22.4682 16.5868 22.4532 16.5997 22.4341 16.6155C22.3961 16.6473 22.3422 16.6911 22.2724 16.745C22.1329 16.8528 21.9299 17.001 21.6634 17.1739C21.1303 17.5196 20.3424 17.9644 19.2997 18.3814L16.4912 19.5048C16.4524 19.5204 16.4138 19.5358 16.3756 19.5511C14.4988 20.302 13.3792 20.75 12 20.75C10.6208 20.75 9.50121 20.302 7.62443 19.5511C7.58619 19.5358 7.54763 19.5204 7.50875 19.5048L4.70029 18.3814C3.65759 17.9644 2.86971 17.5196 2.33662 17.1739C2.07005 17.001 1.86705 16.8528 1.72757 16.745C1.65782 16.6911 1.60392 16.6473 1.56587 16.6155C1.54684 16.5997 1.53177 16.5868 1.52066 16.5772L1.50696 16.5652L1.50233 16.5611L1.50057 16.5595L1.4995 16.5586C1.49934 16.5584 1.49919 16.5583 2 16L1.4995 16.5586C1.19116 16.282 1.16512 15.8075 1.44171 15.4992" clip-rule="evenodd"/></g></symbol>
+  <symbol id="s-playlist-minimalistic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M20 6L3 6"/><path d="M10 16H3"/><path d="M10 11H3"/><path d="M19.125 10.6852C20.767 11.6332 21.588 12.1072 21.8478 12.7344C22.0507 13.2245 22.0507 13.7751 21.8478 14.2651C21.588 14.8924 20.767 15.3664 19.125 16.3144C17.483 17.2623 16.662 17.7363 15.9889 17.6477C15.4631 17.5785 14.9862 17.3032 14.6633 16.8824C14.25 16.3437 14.25 15.3958 14.25 13.4998C14.25 11.6038 14.25 10.6558 14.6633 10.1172C14.9862 9.69637 15.4631 9.42106 15.9889 9.35182C16.662 9.26321 17.483 9.7372 19.125 10.6852Z"/></g></symbol>
+  <symbol id="s-playlist-minimalistic-b" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M2.25 6C2.25 5.58579 2.58579 5.25 3 5.25H20C20.4142 5.25 20.75 5.58579 20.75 6C20.75 6.41421 20.4142 6.75 20 6.75H3C2.58579 6.75 2.25 6.41421 2.25 6ZM2.25 11C2.25 10.5858 2.58579 10.25 3 10.25H10C10.4142 10.25 10.75 10.5858 10.75 11C10.75 11.4142 10.4142 11.75 10 11.75H3C2.58579 11.75 2.25 11.4142 2.25 11ZM2.25 16C2.25 15.5858 2.58579 15.25 3 15.25H10C10.4142 15.25 10.75 15.5858 10.75 16C10.75 16.4142 10.4142 16.75 10 16.75H3C2.58579 16.75 2.25 16.4142 2.25 16Z" clip-rule="evenodd"/><path d="M19.125 10.6854C20.767 11.6334 21.588 12.1074 21.8478 12.7346C22.0507 13.2247 22.0507 13.7753 21.8478 14.2654C21.588 14.8926 20.767 15.3666 19.125 16.3146C17.483 17.2626 16.662 17.7366 15.9889 17.648C15.4631 17.5787 14.9862 17.3034 14.6633 16.8826C14.25 16.344 14.25 15.396 14.25 13.5C14.25 11.604 14.25 10.656 14.6633 10.1174C14.9862 9.69659 15.4631 9.42128 15.9889 9.35205C16.662 9.26343 17.483 9.73743 19.125 10.6854Z"/></g></symbol>
+  <symbol id="s-plain" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-width="1.5" d="m18.636 15.67l1.716-5.15c1.5-4.498 2.25-6.747 1.062-7.934s-3.436-.438-7.935 1.062L8.33 5.364C4.7 6.574 2.885 7.18 2.37 8.067a2.72 2.72 0 0 0 0 2.73c.515.888 2.33 1.493 5.96 2.704c.584.194.875.291 1.119.454c.236.158.439.361.597.597c.163.244.26.535.454 1.118c1.21 3.63 1.816 5.446 2.703 5.962a2.72 2.72 0 0 0 2.731 0c.887-.516 1.492-2.331 2.703-5.962Z"/><path fill="currentColor" d="M16.212 8.848a.75.75 0 0 0-1.055-1.066zm-5.55 5.488l5.55-5.488l-1.055-1.066l-5.55 5.488z"/></g></symbol>
+  <symbol id="s-plain-b" viewBox="0 0 24 24"><path fill="currentColor" d="M18.6357 15.6701L20.3521 10.5208C21.8516 6.02242 22.6013 3.77322 21.414 2.58595C20.2268 1.39869 17.9776 2.14842 13.4792 3.64788L8.32987 5.36432C4.69923 6.57453 2.88392 7.17964 2.36806 8.06698C1.87731 8.91112 1.87731 9.95369 2.36806 10.7978C2.88392 11.6852 4.69923 12.2903 8.32987 13.5005C8.77981 13.6505 9.28601 13.5434 9.62294 13.2096L15.1286 7.75495C15.4383 7.44808 15.9382 7.45041 16.245 7.76015C16.5519 8.06989 16.5496 8.56975 16.2398 8.87662L10.8231 14.2432C10.4518 14.6111 10.3342 15.1742 10.4995 15.6701C11.7097 19.3007 12.3148 21.1161 13.2022 21.6319C14.0463 22.1227 15.0889 22.1227 15.933 21.6319C16.8204 21.1161 17.4255 19.3008 18.6357 15.6701Z"/></symbol>
+  <symbol id="s-radar-2" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M12 11.9996L5.00197 6.33546C4.57285 5.98813 3.93869 6.05182 3.63599 6.5135C3.06678 7.38163 2.62413 8.35389 2.34078 9.41136C0.911364 14.746 4.07719 20.2294 9.41185 21.6588C14.7465 23.0882 20.2299 19.9224 21.6593 14.5877C23.0887 9.25308 19.9229 3.76971 14.5882 2.34029C11.9556 1.63489 9.28684 2.04857 7.0869 3.28972M7.36918 8.18416C6.51383 9.22115 6.00004 10.5503 6.00004 11.9996C6.00004 15.3133 8.68633 17.9996 12 17.9996C15.3137 17.9996 18 15.3133 18 11.9996C18 8.68584 15.3137 5.99955 12 5.99955C11.337 5.99955 10.6991 6.10709 10.1029 6.30568"/></symbol>
+  <symbol id="s-radar-2-b" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM13.3584 6.93033C12.604 6.72817 11.8458 6.70116 11.1255 6.82338C10.7171 6.89267 10.3299 6.61779 10.2606 6.20941C10.1913 5.80103 10.4662 5.41381 10.8745 5.34452C11.8033 5.18693 12.7796 5.22232 13.7466 5.48144C17.3467 6.44608 19.4832 10.1465 18.5186 13.7466C17.5539 17.3467 13.8535 19.4832 10.2534 18.5186C6.65325 17.5539 4.51679 13.8535 5.48144 10.2534C5.67232 9.54098 5.97096 8.8846 6.35561 8.29795C6.80849 7.60723 7.71251 7.56491 8.27405 8.01941L12.4718 11.417C12.7938 11.6776 12.8436 12.1499 12.583 12.4718C12.3224 12.7938 11.8501 12.8436 11.5282 12.583L9.39091 10.8531C9.2365 11.2038 9.15089 11.5916 9.15089 12C9.15089 13.5735 10.4265 14.8491 12 14.8491C13.5735 14.8491 14.8491 13.5735 14.8491 12C14.8491 10.4265 13.5735 9.15089 12 9.15089C11.5858 9.15089 11.25 8.81511 11.25 8.40089C11.25 7.98668 11.5858 7.65089 12 7.65089C14.4019 7.65089 16.3491 9.59805 16.3491 12C16.3491 14.4019 14.4019 16.3491 12 16.3491C9.59805 16.3491 7.65089 14.4019 7.65089 12C7.65089 11.2339 7.8495 10.5131 8.19774 9.8874L7.48915 9.31389C7.2486 9.7184 7.0586 10.1629 6.93033 10.6416C6.1801 13.4415 7.84168 16.3194 10.6416 17.0697C13.4415 17.8199 16.3194 16.1583 17.0697 13.3584C17.8199 10.5585 16.1583 7.68056 13.3584 6.93033Z" clip-rule="evenodd"/></symbol>
+  <symbol id="s-add" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M4 12L20 12"/><path d="M12.0204 4L12.0205 20.0003"/></g></symbol>
+  <symbol id="s-magnifier" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="11.5" cy="11.5" r="9.5"/><path d="M18.2173 18.2178L21.9999 22.0004"/></g></symbol>
+  <symbol id="s-settings" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M13.7654 2.15224C13.3978 2 12.9319 2 12 2C11.0681 2 10.6022 2 10.2346 2.15224C9.74457 2.35523 9.35522 2.74458 9.15223 3.23463C9.05957 3.45834 9.0233 3.7185 9.00911 4.09799C8.98826 4.65568 8.70226 5.17189 8.21894 5.45093C7.73564 5.72996 7.14559 5.71954 6.65219 5.45876C6.31645 5.2813 6.07301 5.18262 5.83294 5.15102C5.30704 5.08178 4.77518 5.22429 4.35436 5.5472C4.03874 5.78938 3.80577 6.1929 3.33983 6.99993C2.87389 7.80697 2.64092 8.21048 2.58899 8.60491C2.51976 9.1308 2.66227 9.66266 2.98518 10.0835C3.13256 10.2756 3.3397 10.437 3.66119 10.639C4.1338 10.936 4.43789 11.4419 4.43786 12C4.43783 12.5581 4.13375 13.0639 3.66118 13.3608C3.33965 13.5629 3.13248 13.7244 2.98508 13.9165C2.66217 14.3373 2.51966 14.8691 2.5889 15.395C2.64082 15.7894 2.87379 16.193 3.33973 17C3.80568 17.807 4.03865 18.2106 4.35426 18.4527C4.77508 18.7756 5.30694 18.9181 5.83284 18.8489C6.07289 18.8173 6.31632 18.7186 6.65204 18.5412C7.14547 18.2804 7.73556 18.27 8.2189 18.549C8.70224 18.8281 8.98826 19.3443 9.00911 19.9021C9.02331 20.2815 9.05957 20.5417 9.15223 20.7654C9.35522 21.2554 9.74457 21.6448 10.2346 21.8478C10.6022 22 11.0681 22 12 22C12.9319 22 13.3978 22 13.7654 21.8478C14.2554 21.6448 14.6448 21.2554 14.8477 20.7654C14.9404 20.5417 14.9767 20.2815 14.9909 19.902C15.0117 19.3443 15.2977 18.8281 15.781 18.549C16.2643 18.2699 16.8544 18.2804 17.3479 18.5412C17.6836 18.7186 17.927 18.8172 18.167 18.8488C18.6929 18.9181 19.2248 18.7756 19.6456 18.4527C19.9612 18.2105 20.1942 17.807 20.6601 16.9999C21.1261 16.1929 21.3591 15.7894 21.411 15.395C21.4802 14.8691 21.3377 14.3372 21.0148 13.9164C20.8674 13.7243 20.6602 13.5628 20.3387 13.3608C19.8662 13.0639 19.5621 12.558 19.5621 11.9999C19.5621 11.4418 19.8662 10.9361 20.3387 10.6392C20.6603 10.4371 20.8675 10.2757 21.0149 10.0835C21.3378 9.66273 21.4803 9.13087 21.4111 8.60497C21.3592 8.21055 21.1262 7.80703 20.6602 7C20.1943 6.19297 19.9613 5.78945 19.6457 5.54727C19.2249 5.22436 18.693 5.08185 18.1671 5.15109C17.9271 5.18269 17.6837 5.28136 17.3479 5.4588C16.8545 5.71959 16.2644 5.73002 15.7811 5.45096C15.2977 5.17191 15.0117 4.65566 14.9909 4.09794C14.9767 3.71848 14.9404 3.45833 14.8477 3.23463C14.6448 2.74458 14.2554 2.35523 13.7654 2.15224Z"/></g></symbol>
+  <symbol id="s-play" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M20.4086 9.35258C22.5305 10.5065 22.5305 13.4935 20.4086 14.6474L7.59662 21.6145C5.53435 22.736 3 21.2763 3 18.9671L3 5.0329C3 2.72368 5.53435 1.26402 7.59661 2.38548L20.4086 9.35258Z"/></symbol>
+  <symbol id="s-clock-circle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M12 8V12L14.5 14.5"/></g></symbol>
+  <symbol id="s-link-minimalistic-2" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M14.1625 18.4876L13.4417 19.2084C11.053 21.5971 7.18019 21.5971 4.79151 19.2084C2.40283 16.8198 2.40283 12.9469 4.79151 10.5583L5.51236 9.8374"/><path d="M9.8374 14.1625L14.1625 9.8374"/><path d="M9.8374 5.51236L10.5583 4.79151C12.9469 2.40283 16.8198 2.40283 19.2084 4.79151C21.5971 7.18019 21.5971 11.053 19.2084 13.4417L18.4876 14.1625"/></g></symbol>
+  <symbol id="s-close-circle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M14.5 9.50002L9.5 14.5M9.49998 9.5L14.5 14.5"/></g></symbol>
+  <symbol id="s-check-circle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M8.5 12.5L10.5 14.5L15.5 9.5"/></g></symbol>
+  <symbol id="s-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M3.27489 15.2957C2.42496 14.1915 2 13.6394 2 12C2 10.3606 2.42496 9.80853 3.27489 8.70433C4.97196 6.49956 7.81811 4 12 4C16.1819 4 19.028 6.49956 20.7251 8.70433C21.575 9.80853 22 10.3606 22 12C22 13.6394 21.575 14.1915 20.7251 15.2957C19.028 17.5004 16.1819 20 12 20C7.81811 20 4.97196 17.5004 3.27489 15.2957Z"/><path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"/></g></symbol>
+  <symbol id="s-hashtag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M10 3L5 21"/><path d="M19 3L14 21"/><path d="M22 9H4"/><path d="M20 16H2"/></g></symbol>
+  <symbol id="s-notes" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M20.3116 12.6473L20.8293 10.7154C21.4335 8.46034 21.7356 7.3328 21.5081 6.35703C21.3285 5.58657 20.9244 4.88668 20.347 4.34587C19.6157 3.66095 18.4881 3.35883 16.2331 2.75458C13.978 2.15033 12.8504 1.84821 11.8747 2.07573C11.1042 2.25537 10.4043 2.65945 9.86351 3.23687C9.27709 3.86298 8.97128 4.77957 8.51621 6.44561C8.43979 6.7254 8.35915 7.02633 8.27227 7.35057L8.27222 7.35077L7.75458 9.28263C7.15033 11.5377 6.84821 12.6652 7.07573 13.641C7.25537 14.4115 7.65945 15.1114 8.23687 15.6522C8.96815 16.3371 10.0957 16.6392 12.3508 17.2435L12.3508 17.2435C14.3834 17.7881 15.4999 18.0873 16.415 17.9744C16.5152 17.9621 16.6129 17.9448 16.7092 17.9223C17.4796 17.7427 18.1795 17.3386 18.7203 16.7612C19.4052 16.0299 19.7074 14.9024 20.3116 12.6473Z"/><path d="M16.415 17.9741C16.2065 18.6126 15.8399 19.1902 15.347 19.6519C14.6157 20.3368 13.4881 20.6389 11.2331 21.2432C8.97798 21.8474 7.85044 22.1495 6.87466 21.922C6.10421 21.7424 5.40432 21.3383 4.86351 20.7609C4.17859 20.0296 3.87647 18.9021 3.27222 16.647L2.75458 14.7151C2.15033 12.46 1.84821 11.3325 2.07573 10.3567C2.25537 9.58627 2.65945 8.88638 3.23687 8.34557C3.96815 7.66065 5.09569 7.35853 7.35077 6.75428C7.77741 6.63996 8.16368 6.53646 8.51621 6.44531"/><path d="M11.7769 10L16.6065 11.2941"/><path d="M11 12.8975L13.8978 13.6739"/></g></symbol>
+  <symbol id="s-reorder" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M19 10L5 10"/><path d="M19 14L5 14"/><path d="M19 6L5 6"/><path d="M19 18L5 18"/></g></symbol>
+  <symbol id="s-menu-dots" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></g></symbol>
+  <symbol id="s-clipboard" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M16 4.00195C18.175 4.01406 19.3529 4.11051 20.1213 4.87889C21 5.75757 21 7.17179 21 10.0002V16.0002C21 18.8286 21 20.2429 20.1213 21.1215C19.2426 22.0002 17.8284 22.0002 15 22.0002H9C6.17157 22.0002 4.75736 22.0002 3.87868 21.1215C3 20.2429 3 18.8286 3 16.0002V10.0002C3 7.17179 3 5.75757 3.87868 4.87889C4.64706 4.11051 5.82497 4.01406 8 4.00195"/><path d="M8 14H16"/><path d="M7 10.5H17"/><path d="M9 17.5H15"/><path d="M8 3.5C8 2.67157 8.67157 2 9.5 2H14.5C15.3284 2 16 2.67157 16 3.5V4.5C16 5.32843 15.3284 6 14.5 6H9.5C8.67157 6 8 5.32843 8 4.5V3.5Z"/></g></symbol>
+  <symbol id="s-user-plus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="6" r="4"/><path stroke-linejoin="round" d="M18 14.6667V17.3333"/><path stroke-linejoin="round" d="M16.6665 16L19.3332 16"/><path d="M22 16C22 18.2091 20.2091 20 18 20C15.7909 20 14 18.2091 14 16C14 13.7909 15.7909 12 18 12C20.2091 12 22 13.7909 22 16Z"/><path d="M15.02 13.3317C14.0882 13.1178 13.0685 13 12 13C7.58172 13 4 15.0147 4 17.5C4 19.9853 4 22 12 22C17.5794 22 19.2676 21.02 19.7784 19.5839"/></g></symbol>
+  <symbol id="s-sun-2" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><path d="M12 2V4"/><path d="M12 20V22"/><path d="M4 12L2 12"/><path d="M22 12L20 12"/><path d="M19.7778 4.22266L17.5558 6.25424"/><path d="M4.22217 4.22266L6.44418 6.25424"/><path d="M6.44434 17.5557L4.22211 19.7779"/><path d="M19.7778 19.7773L17.5558 17.5551"/></g></symbol>
+  <symbol id="s-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 22C17.5228 22 22 17.5228 22 12C22 11.5373 21.3065 11.4608 21.0672 11.8568C19.9289 13.7406 17.8615 15 15.5 15C11.9101 15 9 12.0899 9 8.5C9 6.13845 10.2594 4.07105 12.1432 2.93276C12.5392 2.69347 12.4627 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"/></symbol>
+  <symbol id="s-monitor" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 10C2 6.22876 2 4.34315 3.17157 3.17157C4.34315 2 6.22876 2 10 2H14C17.7712 2 19.6569 2 20.8284 3.17157C22 4.34315 22 6.22876 22 10V11C22 13.8284 22 15.2426 21.1213 16.1213C20.2426 17 18.8284 17 16 17H8C5.17157 17 3.75736 17 2.87868 16.1213C2 15.2426 2 13.8284 2 11V10Z"/><path d="M16 22H8"/><path d="M12 17L12 22"/><path d="M22 13H2"/></g></symbol>
+  <symbol id="s-danger-triangle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M5.31171 10.7615C8.23007 5.58716 9.68925 3 12 3C14.3107 3 15.7699 5.58716 18.6883 10.7615L19.0519 11.4063C21.4771 15.7061 22.6897 17.856 21.5937 19.428C20.4978 21 17.7864 21 12.3637 21H11.6363C6.21356 21 3.50217 21 2.40626 19.428C1.31034 17.856 2.52291 15.7061 4.94805 11.4063L5.31171 10.7615Z"/><path d="M12 8V13"/><path stroke-linejoin="round" d="M12 16H12.0001"/></g></symbol>
+  <symbol id="s-restart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 8.04928L17.6569 7.34217C14.5327 4.21798 9.46734 4.21798 6.34315 7.34217C3.21895 10.4664 3.21895 15.5317 6.34315 18.6559C9.46734 21.7801 14.5327 21.7801 17.6569 18.6559C19.4737 16.8391 20.234 14.3658 19.9377 11.9995M18.364 3.80664V8.04928H14.1213"/></symbol>
+  <symbol id="s-trash-bin-minimalistic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M9.1709 4C9.58273 2.83481 10.694 2 12.0002 2C13.3064 2 14.4177 2.83481 14.8295 4"/><path d="M20.5001 6H3.5"/><path d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"/><path d="M9.5 11L10 16"/><path d="M14.5 11L14 16"/></g></symbol>
+  <symbol id="s-export" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12"/><path stroke-linejoin="round" d="M12 14L12 4M9 7L12 4L15 7"/></g></symbol>
+  <symbol id="s-import" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12"/><path stroke-linejoin="round" d="M12 4L12 14M9 11L12 14L15 11"/></g></symbol>
+  <symbol id="s-key" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M15.6807 14.5869C19.1708 14.5869 22 11.7692 22 8.29344C22 4.81767 19.1708 2 15.6807 2C12.1907 2 9.3615 4.81767 9.3615 8.29344C9.3615 9.90338 10.0963 11.0743 10.0963 11.0743L2.45441 18.6849C2.1115 19.0264 1.63143 19.9143 2.45441 20.7339L3.33616 21.6121C3.67905 21.9048 4.54119 22.3146 5.2466 21.6121L6.27531 20.5876C7.30403 21.6121 8.4797 21.0267 8.92058 20.4412C9.65538 19.4167 8.77362 18.3922 8.77362 18.3922L9.06754 18.0995C10.4783 19.5045 11.7128 18.6849 12.1537 18.0995C12.8885 17.075 12.1537 16.0505 12.1537 16.0505C11.8598 15.465 11.272 15.465 12.0067 14.7333L12.8885 13.8551C13.5939 14.4405 15.0439 14.5869 15.6807 14.5869Z"/><path d="M17.8853 8.29353C17.8853 9.50601 16.8984 10.4889 15.681 10.4889C14.4635 10.4889 13.4766 9.50601 13.4766 8.29353C13.4766 7.08105 14.4635 6.09814 15.681 6.09814C16.8984 6.09814 17.8853 7.08105 17.8853 8.29353Z"/></g></symbol>
+  <symbol id="s-logout-2" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M9.00195 7C9.01406 4.82497 9.11051 3.64706 9.87889 2.87868C10.7576 2 12.1718 2 15.0002 2L16.0002 2C18.8286 2 20.2429 2 21.1215 2.87868C22.0002 3.75736 22.0002 5.17157 22.0002 8L22.0002 16C22.0002 18.8284 22.0002 20.2426 21.1215 21.1213C20.2429 22 18.8286 22 16.0002 22H15.0002C12.1718 22 10.7576 22 9.87889 21.1213C9.11051 20.3529 9.01406 19.175 9.00195 17"/><path stroke-linejoin="round" d="M15 12L2 12M5.5 15L2 12L5.5 9"/></g></symbol>
+  <symbol id="s-letter" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z"/><path d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908L18 8"/></g></symbol>
+  <symbol id="s-users-group-rounded" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="9" cy="6" r="4"/><path d="M15 9C16.6569 9 18 7.65685 18 6C18 4.34315 16.6569 3 15 3"/><ellipse cx="9" cy="17" rx="7" ry="4"/><path d="M18 14C19.7542 14.3847 21 15.3589 21 16.5C21 17.5293 19.9863 18.4229 18.5 18.8704"/></g></symbol>
+  <symbol id="s-alt-arrow-left" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5L9 12L15 19"/></symbol>
+  <symbol id="s-alt-arrow-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5L15 12L9 19"/></symbol>
+  <symbol id="s-history" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M12 8V12L14.5 14.5"/><path d="M4.33776 6.87052L5.60414 5.60414C9.10115 2.10713 14.7996 2.13576 18.3319 5.6681C21.8642 9.20044 21.8929 14.8988 18.3959 18.3959C14.8988 21.8929 9.20044 21.8642 5.6681 18.3319C3.57589 16.2397 2.71285 13.3876 3.08355 10.6831M4.32497 4.32497L4.33776 6.87052L6.88331 6.88331"/></g></symbol>
+  <symbol id="s-videocamera" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 11.5C2 8.21252 2 6.56878 2.90796 5.46243C3.07418 5.25989 3.25989 5.07418 3.46243 4.90796C4.56878 4 6.21252 4 9.5 4C12.7875 4 14.4312 4 15.5376 4.90796C15.7401 5.07418 15.9258 5.25989 16.092 5.46243C17 6.56878 17 8.21252 17 11.5V12.5C17 15.7875 17 17.4312 16.092 18.5376C15.9258 18.7401 15.7401 18.9258 15.5376 19.092C14.4312 20 12.7875 20 9.5 20C6.21252 20 4.56878 20 3.46243 19.092C3.25989 18.9258 3.07418 18.7401 2.90796 18.5376C2 17.4312 2 15.7875 2 12.5V11.5Z"/><path d="M17 9.50019L17.6584 9.17101C19.6042 8.19807 20.5772 7.7116 21.2886 8.15127C22 8.59094 22 9.67872 22 11.8543V12.1461C22 14.3217 22 15.4094 21.2886 15.8491C20.5772 16.2888 19.6042 15.8023 17.6584 14.8294L17 14.5002V9.50019Z"/></g></symbol>
+  <symbol id="s-document-text" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M3 10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H13C16.7712 2 18.6569 2 19.8284 3.17157C21 4.34315 21 6.22876 21 10V14C21 17.7712 21 19.6569 19.8284 20.8284C18.6569 22 16.7712 22 13 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3 19.6569 3 17.7712 3 14V10Z"/><path d="M8 12H16"/><path d="M8 8H16"/><path d="M8 16H13"/></g></symbol>
+  <!-- Not in Solar: drawn in its grammar (24 grid, stroke 1.5, round caps) -->
+  <symbol id="s-x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <!-- Content stand-ins for real og:images (publishers' own colours, not tokens) -->
+  <symbol id="og-pg" viewBox="0 0 192 100"><rect width="192" height="100" fill="#F2EFE6"/><rect x="14" y="16" width="70" height="8" rx="2" fill="#1C1C1C"/><rect x="14" y="30" width="52" height="5" rx="2" fill="#8B8676"/><g fill="none" stroke="#1C1C1C" stroke-width="2"><rect x="108" y="18" width="30" height="20" rx="3"/><rect x="150" y="18" width="30" height="20" rx="3"/><rect x="129" y="62" width="30" height="20" rx="3"/><path d="M123 38v12h21v12M165 38v12h-21"/></g><rect x="14" y="62" width="80" height="4" rx="2" fill="#C9C3B3"/><rect x="14" y="72" width="64" height="4" rx="2" fill="#C9C3B3"/></symbol>
+  <symbol id="og-sqlite" viewBox="0 0 192 100"><rect width="192" height="100" fill="#14212E"/><circle cx="150" cy="58" r="22" fill="#2B3C4F"/><path d="M128 100c2-16 12-24 22-24s20 8 22 24z" fill="#2B3C4F"/><text x="14" y="38" font-family="Geologica,sans-serif" font-size="17" font-weight="700" fill="#F4F1E8">SQLite</text><text x="14" y="58" font-family="Geologica,sans-serif" font-size="17" font-weight="700" fill="#F4F1E8">at scale</text><rect x="14" y="70" width="34" height="4" rx="2" fill="#5FB3E8"/></symbol>
+  <symbol id="og-inp" viewBox="0 0 192 100"><rect width="192" height="100" fill="#0F5E58"/><g fill="#E7F4F1"><rect x="96" y="58" width="12" height="26" rx="2"/><rect x="114" y="44" width="12" height="40" rx="2"/><rect x="132" y="50" width="12" height="34" rx="2"/><rect x="150" y="30" width="12" height="54" rx="2"/><rect x="168" y="38" width="12" height="46" rx="2"/></g><text x="14" y="40" font-family="Geologica,sans-serif" font-size="22" font-weight="700" fill="#E7F4F1">INP</text><rect x="14" y="52" width="56" height="4" rx="2" fill="#7FC6BC"/></symbol>
+  <symbol id="og-flags" viewBox="0 0 192 100"><rect width="192" height="100" fill="#D9541E"/><g fill="none" stroke="#FFF3EA" stroke-width="3"><rect x="40" y="22" width="44" height="22" rx="11"/><rect x="40" y="56" width="44" height="22" rx="11"/><rect x="108" y="22" width="44" height="22" rx="11"/><rect x="108" y="56" width="44" height="22" rx="11"/></g><g fill="#FFF3EA"><circle cx="73" cy="33" r="7"/><circle cx="51" cy="67" r="7"/><circle cx="141" cy="33" r="7"/><circle cx="141" cy="67" r="7"/></g></symbol>
+  <symbol id="og-kafka" viewBox="0 0 192 100"><rect width="192" height="100" fill="#1F2328"/><g stroke="#8C959F" stroke-width="1.5"><path d="M48 50L96 26M48 50l48 24M96 26l48 24M96 74l48-24M96 26v48"/></g><g fill="#F6F8FA"><circle cx="48" cy="50" r="7"/><circle cx="96" cy="26" r="7"/><circle cx="96" cy="74" r="7"/><circle cx="144" cy="50" r="7"/></g></symbol>
+  <symbol id="og-key" viewBox="0 0 192 100"><rect width="192" height="100" fill="#3D4A3A"/><g fill="none" stroke="#E9E4D3" stroke-width="3" stroke-linecap="round"><circle cx="78" cy="50" r="16"/><path d="M94 50h44M126 50v12M138 50v8"/></g></symbol>
+  <symbol id="og-rust" viewBox="0 0 192 100"><rect width="192" height="100" fill="#2A1E1A"/><circle cx="58" cy="50" r="24" fill="none" stroke="#E7A77C" stroke-width="3" stroke-dasharray="6 5"/><circle cx="58" cy="50" r="9" fill="#E7A77C"/><text x="100" y="46" font-family="Geologica,sans-serif" font-size="14" font-weight="700" fill="#F5E9DF">Rust ×</text><text x="100" y="64" font-family="Geologica,sans-serif" font-size="14" font-weight="700" fill="#F5E9DF">Linux</text></symbol>
+  <symbol id="og-uring" viewBox="0 0 192 100"><rect width="192" height="100" fill="#ECEFF2"/><g fill="none" stroke="#22303C" stroke-width="2.5"><circle cx="96" cy="50" r="30"/><circle cx="96" cy="50" r="16"/></g><g fill="#22303C"><circle cx="96" cy="20" r="4"/><circle cx="126" cy="50" r="4"/><circle cx="96" cy="80" r="4"/><circle cx="66" cy="50" r="4"/></g></symbol>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4.5 18.5a12 12 0 0 1 17 0M8.5 14.5a6.4 6.4 0 0 1 9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="19.5" r="2.4" fill="currentColor"/></svg>
+      Vigie
+    </div>
+    <div class="seg" role="group" aria-label="Thème">
+      <button data-set-theme="dark" aria-pressed="true">Sombre</button>
+      <button data-set-theme="light" aria-pressed="false">Clair</button>
+      <button data-set-theme="system" aria-pressed="false">Système</button>
+    </div>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero">
+    <div>
+      <h1>Vigie</h1>
+      <p class="lede">Un instrument de veille, pas un fil d'actualité. Comme sur une passerelle la nuit, l'écran reste sombre et calme : ce qui arrive est un écho, ce que tu as vu s'éteint, et tes objectifs se lisent comme un écran radar.</p>
+      <div class="principles">
+        <div class="principle"><div><h3>L'écho se mérite</h3><p>Le vert phosphore marque trois choses, pas une de plus : l'action principale de l'écran (Ajouter, Envoyer, Créer), ce qui est nouveau (partage pas encore ouvert, ajout du jour), le point « maintenant » des graphes.</p></div></div>
+        <div class="principle"><div><h3>Ce qui est vu s'éteint</h3><p>À voir : titre plein, image en couleur. Vu : titre secondaire, image en niveaux de gris atténuée. On voit d'un coup d'œil ce qui reste, sans badge.</p></div></div>
+        <div class="principle"><div><h3>Une seule voix, Geologica</h3><p>Deux graisses : 500 pour les titres et les chiffres, 400 pour le texte. Le resserrement est réservé aux grandes tailles. Chiffres tabulaires partout, unités plus petites et en secondaire.</p></div></div>
+      </div>
+    </div>
+
+    <div class="phone" aria-label="Maquette mobile, Bibliothèque">
+      <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
+      <div class="scr">
+        <div class="scr-h"><h3>Bibliothèque</h3><div class="icon-btns"><span class="icon-btn" aria-label="Rechercher"><svg class="i s"><use href="#s-magnifier"/></svg></span><span class="icon-btn" aria-label="Réglages"><svg class="i s"><use href="#s-settings"/></svg></span></div></div>
+        <div class="chips"><span class="chip" aria-pressed="true">À voir <b>87</b></span><span class="chip">Vu</span><span class="chip">Vidéos</span><span class="chip">#postgres</span></div>
+        <div class="panel scope">
+          <svg width="112" height="112" viewBox="0 0 120 120" role="img" aria-label="Semaine : 14 vus sur 20, 3&nbsp;h&nbsp;12 de visionnage sur 5&nbsp;h, série de 9 jours sur un record de 14">
+            <g class="grid"><circle cx="60" cy="60" r="54"/><circle cx="60" cy="60" r="40"/><circle cx="60" cy="60" r="26"/><path d="M60 2v116M2 60h116"/></g>
+            <circle class="ring" cx="60" cy="60" r="54" stroke-width="4" stroke-dasharray="237.5 400"/>
+            <circle class="ring" cx="60" cy="60" r="40" stroke-width="4" stroke-dasharray="160.8 400" style="opacity:.7"/>
+            <circle class="ring" cx="60" cy="60" r="26" stroke-width="4" stroke-dasharray="105 400" style="opacity:.45"/>
+            <circle cx="60" cy="60" r="3.5" fill="var(--accent-ink)"/>
+          </svg>
+          <ul>
+            <li>Vus cette semaine<b>14<small>/ 20</small></b></li>
+            <li><span>Visionnage <span class="conf">partiel</span></span><b>3&nbsp;h&nbsp;12<small>/ 5&nbsp;h</small></b></li>
+            <li>Série<b>9 jours<small>record 14</small></b></li>
+          </ul>
+        </div>
+        <div class="recv"><span class="dot" aria-hidden="true"></span><span><b>Camille Roux</b> t'a envoyé une vidéo <q>À regarder avant jeudi</q></span></div>
+        <div class="list">
+          <div class="it"><div class="th"><svg class="og"><use href="#og-pg"/></svg></div><div><div class="tt">Postgres 18 : les entrées-sorties asynchrones, expliquées</div><div class="meta">lwn.net · 12 min</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-sqlite"/></svg><span class="dur">24:18</span></div><div><div class="tt">How SQLite scales read-heavy workloads</div><div class="meta"><span class="dot" aria-label="Nouveau"></span>youtube.com · Camille Roux</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div><div class="tt">Interaction to Next Paint, un an après</div><div class="meta">web.dev · 9 min</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-flags"/></svg></div><div><div class="tt">The hidden cost of feature flags</div><div class="meta">arstechnica.com · 7 min</div></div></div>
+        </div>
+      </div>
+      <nav class="tabbar" aria-label="Navigation">
+        <span class="tab" aria-current="page"><svg class="i"><use href="#s-layers-minimalistic-b"/></svg>Bibliothèque</span>
+        <span class="tab"><svg class="i"><use href="#s-playlist-minimalistic"/></svg>File</span>
+        <span class="tab"><span class="start" aria-label="Ajouter un lien"><svg class="i"><use href="#s-add"/></svg></span></span>
+        <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Partagés</span>
+        <span class="tab"><svg class="i"><use href="#s-radar-2"/></svg>Stats</span>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ===================== MOBILE ===================== -->
+  <section class="section">
+    <h2>Mobile</h2>
+    <p class="intro">La barre d'onglets en bas porte les quatre écrans du quotidien et, au centre, l'action Ajouter, le seul gros bouton en écho. Toute saisie s'ouvre en plein écran, l'action principale collée en bas, au pouce.</p>
+    <div class="phones">
+
+      <figure>
+        <div class="phone" aria-label="Maquette mobile, ajouter un lien">
+          <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
+          <div class="scr">
+            <div class="sheet-h"><h3>Ajouter un lien</h3><span class="icon-btn" aria-label="Fermer"><svg class="i s"><use href="#s-x"/></svg></span></div>
+            <div class="field focus"><label>Lien</label><div class="v"><span>https://lwn.net/Articles/998412/</span><span class="caret"></span></div></div>
+            <button class="btn btn-2 btn-sm" style="justify-self:start;align-self:flex-start"><svg class="i"><use href="#s-clipboard"/></svg>Coller</button>
+            <div class="preview"><div class="th"><svg class="og" style="width:100%;height:100%"><use href="#og-pg"/></svg></div><div><div class="tt">Postgres 18 : les entrées-sorties asynchrones, expliquées</div><div class="meta">lwn.net · 12 min · article</div></div></div>
+            <div class="seg full" role="group" aria-label="Type"><button aria-pressed="true"><svg class="i xs"><use href="#s-document-text"/></svg>Article</button><button aria-pressed="false"><svg class="i xs"><use href="#s-videocamera"/></svg>Vidéo</button></div>
+            <div class="tags"><span class="tag">#postgres</span><span class="tag">#perf</span><span class="tag add">+ Tag</span></div>
+            <div class="field"><label>Note (optionnel)</label><div class="v"><span class="ph">Pourquoi tu le gardes…</span></div></div>
+            <button class="cta"><svg class="i s"><use href="#s-add"/></svg>Ajouter à Vigie</button>
+          </div>
+          <div class="homebar"></div>
+        </div>
+        <figcaption><strong>Capture en 3 secondes.</strong> Un seul champ obligatoire. Le presse-papiers n'est lu que sur « Coller », jamais à l'ouverture. Titre, image, durée et type se déduisent ; l'aperçu se remplit pendant que tu tapes.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" aria-label="Maquette mobile, envoyer un lien">
+          <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
+          <div class="scr">
+            <div class="sheet-h"><h3>Envoyer à…</h3><span class="icon-btn" aria-label="Fermer"><svg class="i s"><use href="#s-x"/></svg></span></div>
+            <div class="preview"><div class="th"><svg class="og" style="width:100%;height:100%"><use href="#og-uring"/></svg></div><div><div class="tt">io_uring and the end of epoll</div><div class="meta">lwn.net · 18 min</div></div></div>
+            <div class="field focus"><label>Contact ou adresse e-mail</label><div class="v"><span>cam</span><span class="caret"></span></div></div>
+            <div class="list">
+              <div class="it" style="grid-template-columns:30px minmax(0,1fr) auto"><span class="av">CR</span><div><div class="tt" style="font-size:14px">Camille Roux</div><div class="meta">Contact depuis le 12 oct.</div></div><svg class="i s" style="color:var(--accent-ink)"><use href="#s-check-circle"/></svg></div>
+              <div class="it" style="grid-template-columns:30px minmax(0,1fr) auto"><span class="av">CL</span><div><div class="tt" style="font-size:14px">Camélia Laurent</div><div class="meta">Contact depuis le 3 sept.</div></div><span></span></div>
+            </div>
+            <div class="field"><label>Un mot (optionnel)</label><div class="v"><span>Le passage sur SQPOLL vaut le détour</span></div><div class="help">38 / 280</div></div>
+            <div class="note-s"><svg class="i"><use href="#s-eye"/></svg><span>Camille verra ton nom et ton mot, jamais tes notes ni tes tags.</span></div>
+            <button class="cta"><svg class="i s"><use href="#s-plain"/></svg>Envoyer à Camille</button>
+          </div>
+          <div class="homebar"></div>
+        </div>
+        <figcaption><strong>Partager à une personne.</strong> Les contacts sont proposés par leur nom. Vers une adresse inconnue, la réponse reste « Envoyé si cette adresse a un compte et accepte tes partages » : Vigie ne révèle jamais qui est inscrit.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" aria-label="Maquette mobile, file vidéo">
+          <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
+          <div class="scr">
+            <div class="scr-h"><div><h3>File</h3><div class="sub">6 vidéos · ≈&nbsp;2&nbsp;h&nbsp;40 <span class="conf">partiel</span></div></div><span class="icon-btn" aria-label="Plus d'options"><svg class="i s"><use href="#s-menu-dots"/></svg></span></div>
+            <div class="next">
+              <div class="th"><svg class="og"><use href="#og-sqlite"/></svg><span class="dur" style="font-size:12px;right:8px;bottom:8px">24:18</span></div>
+              <div class="nb"><div><div class="sub">Ensuite · envoyée par Camille Roux</div><div class="tt">How SQLite scales read-heavy workloads</div></div><span class="play" aria-label="Regarder"><svg class="i s"><use href="#s-play"/></svg></span></div>
+            </div>
+            <div>
+              <div class="q"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;position:relative"><svg class="og" style="width:100%;height:100%"><use href="#og-rust"/></svg></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Rust in the Linux kernel, 2026 status</div><div class="meta">youtube.com · 41:02</div></div></div>
+              <div class="q"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;position:relative"><svg class="og" style="width:100%;height:100%"><use href="#og-kafka"/></svg></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Kafka sans ZooKeeper, en pratique</div><div class="meta">youtube.com · 32:45</div></div></div>
+              <div class="q is-unknown"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--line)"><span class="mono" style="font-size:14px;background:transparent">V</span></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Conférence : la veille sans burn-out</div><div class="meta">vimeo.com · durée inconnue</div></div></div>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="Navigation">
+            <span class="tab"><svg class="i"><use href="#s-layers-minimalistic"/></svg>Bibliothèque</span>
+            <span class="tab" aria-current="page"><svg class="i"><use href="#s-playlist-minimalistic-b"/></svg>File</span>
+            <span class="tab"><span class="start" aria-label="Ajouter un lien"><svg class="i"><use href="#s-add"/></svg></span></span>
+            <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Partagés</span>
+            <span class="tab"><svg class="i"><use href="#s-radar-2"/></svg>Stats</span>
+          </nav>
+        </div>
+        <figcaption><strong>File.</strong> La prochaine vidéo en grand, le reste se réordonne à la poignée (doigt ou clavier). Une durée inconnue reste inconnue : le total le dit (« partiel ») au lieu d'inventer.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" aria-label="Maquette mobile, statistiques">
+          <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
+          <div class="scr">
+            <div class="scr-h"><h3>Stats</h3><div class="icon-btns"><span class="icon-btn" aria-label="Semaine précédente"><svg class="i s"><use href="#s-alt-arrow-left"/></svg></span><span class="icon-btn" aria-label="Semaine suivante"><svg class="i s"><use href="#s-alt-arrow-right"/></svg></span></div></div>
+            <div class="seg full" role="group" aria-label="Période"><button aria-pressed="true">Semaine</button><button aria-pressed="false">Mois</button><button aria-pressed="false">Année</button></div>
+            <div class="sub" style="margin-top:-6px">Du lundi 2 au dimanche 8 novembre · fuseau Europe/Paris</div>
+            <div class="panel">
+              <h5>Vus par jour <span class="delta" style="margin-left:auto;color:var(--text)">14 · +4 vs sem. dernière</span></h5>
+              <svg class="hist" viewBox="0 0 300 120" role="img" aria-label="Vus par jour cette semaine : lundi 3, mardi 1, mercredi 4, jeudi 6 en cours ; semaine précédente en contour">
+                <g fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3 3">
+                  <rect x="12" y="62" width="26" height="38" rx="3"/><rect x="54" y="74" width="26" height="26" rx="3"/><rect x="96" y="50" width="26" height="50" rx="3"/><rect x="138" y="80" width="26" height="20" rx="3"/><rect x="180" y="68" width="26" height="32" rx="3"/><rect x="222" y="86" width="26" height="14" rx="3"/><rect x="264" y="74" width="26" height="26" rx="3"/>
+                </g>
+                <g fill="var(--text)"><rect x="12" y="70" width="26" height="30" rx="3"/><rect x="54" y="90" width="26" height="10" rx="3"/><rect x="96" y="60" width="26" height="40" rx="3"/><rect x="138" y="40" width="26" height="60" rx="3"/></g>
+                <g fill="var(--muted)" opacity=".55"><rect x="12" y="86" width="26" height="14" rx="0"/><rect x="96" y="84" width="26" height="16"/><rect x="138" y="76" width="26" height="24"/></g>
+                <circle cx="151" cy="32" r="4" fill="var(--accent-ink)"/>
+                <g fill="var(--muted)" font-size="11" font-family="Geologica,sans-serif" text-anchor="middle"><text x="25" y="114">L</text><text x="67" y="114">M</text><text x="109" y="114">M</text><text x="151" y="114" fill="var(--text)" font-weight="500">J</text><text x="193" y="114">V</text><text x="235" y="114">S</text><text x="277" y="114">D</text></g>
+              </svg>
+              <div class="legend"><span><i style="background:var(--text)"></i>Articles</span><span><i style="background:var(--muted);opacity:.55"></i>Vidéos</span><span><i style="border:1.5px dashed var(--line)"></i>Semaine dernière</span></div>
+            </div>
+            <div class="panel kpis" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px">
+              <div><h5>Visionnage <span class="conf">partiel</span></h5><div class="kpi">3&nbsp;h&nbsp;12</div><div class="sub">1 vidéo sans durée</div></div>
+              <div><h5>Lecture <span class="conf">estimé</span></h5><div class="kpi">≈&nbsp;1&nbsp;h&nbsp;48</div><div class="sub">230 mots/min</div></div>
+              <div><h5>Pile</h5><div class="kpi">87</div><span class="badge s-ok">−6 en 28 j · tu rattrapes</span></div>
+              <div><h5>Série</h5><div class="kpi">9<small>jours</small></div><div class="sub">Record 14</div></div>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="Navigation">
+            <span class="tab"><svg class="i"><use href="#s-layers-minimalistic"/></svg>Bibliothèque</span>
+            <span class="tab"><svg class="i"><use href="#s-playlist-minimalistic"/></svg>File</span>
+            <span class="tab"><span class="start" aria-label="Ajouter un lien"><svg class="i"><use href="#s-add"/></svg></span></span>
+            <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Partagés</span>
+            <span class="tab" aria-current="page"><svg class="i"><use href="#s-radar-2-b"/></svg>Stats</span>
+          </nav>
+        </div>
+        <figcaption><strong>Chaque chiffre dit d'où il vient.</strong> La période précédente en contour pointillé, le jour en cours marqué d'un écho. Les puces « partiel » et « estimé » accompagnent toujours la valeur, jamais une note de bas de page.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" aria-label="Maquette mobile, création de compte">
+          <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
+          <div class="scr" style="padding-top:28px">
+            <div class="logo" style="font-size:19px"><svg width="24" height="24" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4.5 18.5a12 12 0 0 1 17 0M8.5 14.5a6.4 6.4 0 0 1 9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="19.5" r="2.4" fill="currentColor"/></svg>Vigie</div>
+            <div><h3 style="margin:16px 0 8px;font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Crée ton compte</h3><div class="sub" style="font-size:14px">Tu as été invité·e sur vigie.theosementa.fr.</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="field focus"><label>Prénom</label><div class="v"><span>Camille</span><span class="caret"></span></div></div>
+              <div class="field"><label>Nom</label><div class="v"><span class="ph">Roux</span></div></div>
+            </div>
+            <div class="note-s"><svg class="i"><use href="#s-eye"/></svg><span>Ton nom s'affiche quand tu envoies un lien à quelqu'un, pour qu'il sache de qui il vient. Il n'est visible par personne d'autre.</span></div>
+            <div class="field"><label>Adresse e-mail</label><div class="v"><span>camille.roux@exemple.fr</span></div></div>
+            <div class="field"><label>Mot de passe</label><div class="v"><span>••••••••••••</span></div><div class="help">8 caractères minimum</div></div>
+            <button class="cta">Créer mon compte</button>
+          </div>
+          <div class="homebar"></div>
+        </div>
+        <figcaption><strong>On demande le nom, et on dit pourquoi.</strong> L'explication est sous les champs, pas dans une infobulle. En mode invitation, seules les adresses ajoutées par l'admin passent.</figcaption>
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- ===================== DESKTOP ===================== -->
+  <section class="section">
+    <h2>Desktop et tablette</h2>
+    <p class="intro">La barre latérale liste les modules actifs avec leurs compteurs, puis Réglages et le compte. La capture vit dans l'en-tête de la Bibliothèque (raccourci <b>N</b>). En tablette portrait, la barre devient un rail d'icônes de 72 px sans libellé ; à partir de 1 280 px, un clic sur une carte ouvre l'inspecteur à droite au lieu d'une modale.</p>
+    <div class="desk-wrap">
+      <div class="desk" aria-label="Maquette desktop, Bibliothèque">
+        <aside class="side">
+          <div class="logo"><svg width="24" height="24" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4.5 18.5a12 12 0 0 1 17 0M8.5 14.5a6.4 6.4 0 0 1 9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="19.5" r="2.4" fill="currentColor"/></svg>Vigie</div>
+          <nav class="nav" aria-label="Navigation">
+            <a aria-current="page"><svg class="i s"><use href="#s-layers-minimalistic-b"/></svg>Bibliothèque<span class="n">87</span></a>
+            <a><svg class="i s"><use href="#s-playlist-minimalistic"/></svg>File<span class="n">6</span></a>
+            <a><svg class="i s"><use href="#s-plain"/></svg>Partagés<span class="n"><span class="dot" aria-hidden="true"></span>2</span></a>
+            <a><svg class="i s"><use href="#s-radar-2"/></svg>Statistiques</a>
+            <div class="nav-sep"></div>
+            <a><svg class="i s"><use href="#s-settings"/></svg>Réglages</a>
+            <a><svg class="i s"><use href="#s-users-group-rounded"/></svg>Administration</a>
+          </nav>
+          <div class="me"><span class="av">TS</span><div>Théo Sementa<span>Admin</span></div></div>
+        </aside>
+        <main class="main">
+          <div class="main-h">
+            <div><h4>Bibliothèque</h4><p>87 à voir · jeudi 5 novembre</p></div>
+            <div class="capture"><span class="in"><svg class="i xs"><use href="#s-link-minimalistic-2"/></svg>Colle un lien…<kbd>N</kbd></span><button class="btn btn-accent"><svg class="i"><use href="#s-add"/></svg>Ajouter</button></div>
+          </div>
+          <div class="chips"><span class="chip" aria-pressed="true">À voir <b>87</b></span><span class="chip">Vu</span><span class="chip">Articles</span><span class="chip">Vidéos</span><span class="chip">Partagé avec moi</span><span class="chip">#postgres</span><span class="chip">#web</span></div>
+          <div class="strip">
+            <div class="panel"><h5>Vus cette semaine</h5><div class="kpi">14<small>/ 20</small></div><div class="sub">+4 vs semaine dernière</div></div>
+            <div class="panel"><h5>Visionnage <span class="conf">partiel</span></h5><div class="kpi">3&nbsp;h&nbsp;12</div><div class="sub">1 vidéo sans durée</div></div>
+            <div class="panel"><h5>Série</h5><div class="kpi">9<small>jours</small></div><div class="sub">Record 14</div></div>
+            <div class="panel"><h5>Pile sur 28 jours</h5><div class="kpi">−6</div><span class="badge s-ok">tu rattrapes</span></div>
+          </div>
+          <div class="cards">
+            <div class="card"><div class="th"><svg class="og"><use href="#og-pg"/></svg></div><div class="cb"><div class="tt">Postgres 18 : les entrées-sorties asynchrones, expliquées</div><div class="meta">lwn.net · 12 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-sqlite"/></svg><span class="dur" style="position:absolute;right:6px;bottom:6px;font-size:11px;font-weight:600;padding:0 5px;border-radius:4px;background:rgba(0,0,0,.72);color:#fff">24:18</span></div><div class="cb"><div class="tt">How SQLite scales read-heavy workloads</div><div class="meta"><span class="dot"></span>Camille Roux · youtube.com</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div class="cb"><div class="tt">Interaction to Next Paint, un an après</div><div class="meta">web.dev · 9 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-flags"/></svg></div><div class="cb"><div class="tt">The hidden cost of feature flags</div><div class="meta">arstechnica.com · 7 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-kafka"/></svg></div><div class="cb"><div class="tt">Comment GitHub a migré ses files vers Kafka</div><div class="meta">github.blog · 15 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-key"/></svg></div><div class="cb"><div class="tt">Pourquoi les passkeys tardent à remplacer les mots de passe</div><div class="meta">lemonde.fr · 6 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-rust"/></svg></div><div class="cb"><div class="tt">Rust in the Linux kernel, 2026 status</div><div class="meta">youtube.com · 41:02</div></div></div>
+            <div class="card"><div class="th"><span class="mono" style="font-size:28px">S</span></div><div class="cb"><div class="tt">Notes on structured concurrency</div><div class="meta">smallcultfollowing.com · 14 min</div></div></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOUNDATIONS ===================== -->
+  <section class="section">
+    <h2>Fondations</h2>
+    <p class="intro">Thème de référence sombre : c'est l'écran de passerelle la nuit, et le soir sur le canapé on vide sa pile dans le noir. Le clair reprend les mêmes rôles. Bascule le thème en haut de page : les valeurs se mettent à jour.</p>
+    <div class="f-grid">
+      <div class="sw" data-var="--bg"><div class="c" style="background:var(--bg)"></div><div class="m"><b>Fond</b><span class="hex"></span><span>Fond de l'app</span></div></div>
+      <div class="sw" data-var="--surface"><div class="c" style="background:var(--surface)"></div><div class="m"><b>Panneau</b><span class="hex"></span><span>Cartes, navigation</span></div></div>
+      <div class="sw" data-var="--surface-2"><div class="c" style="background:var(--surface-2)"></div><div class="m"><b>Champ</b><span class="hex"></span><span>Filtres, contrôles, vignettes</span></div></div>
+      <div class="sw" data-var="--line"><div class="c" style="background:var(--line)"></div><div class="m"><b>Ligne</b><span class="hex"></span><span>Séparateurs, grille du radar</span></div></div>
+      <div class="sw" data-var="--muted"><div class="c" style="background:var(--muted)"></div><div class="m"><b>Secondaire</b><span class="hex"></span><span>Légendes, unités, « vu »</span></div></div>
+      <div class="sw" data-var="--text"><div class="c" style="background:var(--text)"></div><div class="m"><b>Texte</b><span class="hex"></span><span>Texte, trait de donnée</span></div></div>
+      <div class="sw" data-var="--accent"><div class="c" style="background:var(--accent)"></div><div class="m"><b>Écho</b><span class="hex"></span><span>Aplat de l'action principale</span></div></div>
+      <div class="sw" data-var="--accent-ink"><div class="c" style="background:var(--accent-ink)"></div><div class="m"><b>Écho, trait</b><span class="hex"></span><span>Points, focus, « maintenant »</span></div></div>
+    </div>
+
+    <h3 class="f-h">États</h3>
+    <div class="states">
+      <div class="state s-ok"><span class="badge" style="justify-self:start">Tu rattrapes</span><p>La pile baisse sur 28 jours, ou un objectif est atteint.</p></div>
+      <div class="state s-watch"><span class="badge" style="justify-self:start">Stable</span><p>Pente de la pile entre −0,1 et +0,1 item par jour.</p></div>
+      <div class="state s-plan"><span class="badge" style="justify-self:start">En retard</span><p>Objectif de la semaine hors d'atteinte au rythme actuel.</p></div>
+      <div class="state s-over"><span class="badge" style="justify-self:start">Ça s'accumule</span><p>La pile monte trois semaines de suite. Seul état en rouge, avec les suppressions.</p></div>
+      <div class="state s-unk"><span class="badge" style="justify-self:start">Inconnu</span><p>Métadonnées ou durée indisponibles : vignette en pointillés, « Réessayer ».</p></div>
+    </div>
+
+    <h3 class="f-h">Confiance</h3>
+    <div class="comps">
+      <span class="conf">mesuré</span><span class="sub">vient de la plateforme</span>
+      <span class="conf">estimé</span><span class="sub">calculé (230 mots/min)</span>
+      <span class="conf">partiel</span><span class="sub">une partie des données manque</span>
+      <span class="conf">inconnu</span><span class="sub">aucune donnée, rien n'est inventé</span>
+    </div>
+
+    <h3 class="f-h">Typographie · Geologica</h3>
+    <div style="border-top:1px solid var(--line)">
+      <div class="type-r"><div class="t-xl">87 à voir</div><div class="spec">Valeur clé · 500 · −0,03 em · 44 à 64&nbsp;px · tabulaires</div></div>
+      <div class="type-r"><div class="t-h">Bibliothèque</div><div class="spec">Titre d'écran · 500 · −0,02 em · 30&nbsp;px mobile, 34&nbsp;px desktop</div></div>
+      <div class="type-r"><div style="font-size:14.5px;font-weight:500">How SQLite scales read-heavy workloads</div><div class="spec">Titre de carte · 500 · 14,5&nbsp;px · 2 lignes max</div></div>
+      <div class="type-r"><div class="t-l">Visionnage</div><div class="spec">Libellé · 500 · 15&nbsp;px</div></div>
+      <div class="type-r"><div class="t-b">Camille verra ton nom et ton mot, jamais tes notes ni tes tags.</div><div class="spec">Texte · 400 · 15&nbsp;px</div></div>
+      <div class="type-r"><div class="t-c">Du lundi 2 au dimanche 8 novembre</div><div class="spec">Légende · 400 · 12,5&nbsp;px · Secondaire</div></div>
+    </div>
+
+    <h3 class="f-h">Composants</h3>
+    <div class="comps">
+      <button class="btn btn-accent"><svg class="i"><use href="#s-add"/></svg>Ajouter</button>
+      <button class="btn btn-2"><svg class="i"><use href="#s-restart"/></svg>Réessayer</button>
+      <button class="btn btn-ghost"><svg class="i"><use href="#s-export"/></svg>Exporter</button>
+      <button class="btn btn-danger"><svg class="i"><use href="#s-trash-bin-minimalistic"/></svg>Supprimer</button>
+      <div class="seg" role="group" aria-label="Exemple"><button aria-pressed="true">Semaine</button><button aria-pressed="false">Mois</button><button aria-pressed="false">Année</button></div>
+      <span class="switch on" aria-hidden="true"></span><span class="switch" aria-hidden="true"></span>
+      <span class="chip" aria-pressed="true">À voir <b>87</b></span><span class="chip">#postgres</span>
+      <span class="tag">#perf</span>
+    </div>
+
+    <div class="demo">
+      <div><h4>À voir · Vu · nouveau · inconnu</h4>
+        <div class="list">
+          <div class="it"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div><div class="tt">Interaction to Next Paint, un an après</div><div class="meta">web.dev · 9 min</div></div></div>
+          <div class="it is-seen"><div class="th"><svg class="og"><use href="#og-flags"/></svg></div><div><div class="tt">The hidden cost of feature flags</div><div class="meta"><svg class="i"><use href="#s-check-circle"/></svg>Vu hier</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-uring"/></svg></div><div><div class="tt">io_uring and the end of epoll</div><div class="meta"><span class="dot"></span>Léo Martin · non ouvert</div></div></div>
+          <div class="it is-unknown"><div class="th"><span class="mono">N</span></div><div><div class="tt">news.example.org/2026/11/edge-…</div><div class="meta">Métadonnées indisponibles · <u>Réessayer</u></div></div></div>
+        </div>
+      </div>
+      <div><h4>Réglage d'un module</h4>
+        <div style="display:grid;gap:8px">
+          <div class="row"><div><div class="t">File</div><div class="d">Vidéos à regarder ensuite</div></div><span class="switch on"></span></div>
+          <div class="row"><div><div class="t">Partage</div><div class="d">Envoyer un lien à quelqu'un</div></div><span class="switch on"></span></div>
+          <div class="row"><div><div class="t">Statistiques</div><div class="d">Rythme, séries, pile</div></div><span class="switch"></span></div>
+        </div>
+        <div class="sub" style="margin-top:10px">S'applique au basculement. Désactiver masque, ne supprime rien.</div>
+      </div>
+      <div><h4>État vide et retour</h4>
+        <div class="empty"><div class="ghost">— à voir</div><p>Tes liens apparaîtront ici. Ajoute le premier, ou reprends tes favoris, Pocket ou Instapaper.</p><div class="comps"><button class="btn btn-accent btn-sm"><svg class="i"><use href="#s-add"/></svg>Ajouter un lien</button><button class="btn btn-ghost btn-sm"><svg class="i"><use href="#s-import"/></svg>Importer</button></div></div>
+        <div class="toast" style="margin-top:12px"><span>Ajouté à ta bibliothèque</span><button>Annuler</button></div>
+      </div>
+    </div>
+
+    <h3 class="f-h">Icônes · Solar</h3>
+    <p class="intro" style="margin-bottom:16px">Style linear partout, bold seulement pour l'onglet ou l'entrée active. Embarquées dans l'app, jamais chargées depuis un service.</p>
+    <div class="icons">
+      <div><svg class="i"><use href="#s-layers-minimalistic"/></svg>Bibliothèque</div>
+      <div><svg class="i"><use href="#s-layers-minimalistic-b"/></svg>… active</div>
+      <div><svg class="i"><use href="#s-playlist-minimalistic"/></svg>File</div>
+      <div><svg class="i"><use href="#s-plain"/></svg>Partagés</div>
+      <div><svg class="i"><use href="#s-radar-2"/></svg>Stats</div>
+      <div><svg class="i"><use href="#s-add"/></svg>Ajouter</div>
+      <div><svg class="i"><use href="#s-magnifier"/></svg>Rechercher</div>
+      <div><svg class="i"><use href="#s-link-minimalistic-2"/></svg>Lien</div>
+      <div><svg class="i"><use href="#s-clipboard"/></svg>Coller</div>
+      <div><svg class="i"><use href="#s-hashtag"/></svg>Tag</div>
+      <div><svg class="i"><use href="#s-notes"/></svg>Note</div>
+      <div><svg class="i"><use href="#s-check-circle"/></svg>Vu</div>
+      <div><svg class="i"><use href="#s-play"/></svg>Regarder</div>
+      <div><svg class="i"><use href="#s-reorder"/></svg>Réordonner</div>
+      <div><svg class="i"><use href="#s-restart"/></svg>Réessayer</div>
+      <div><svg class="i"><use href="#s-user-plus"/></svg>Contact</div>
+      <div><svg class="i"><use href="#s-key"/></svg>Jetons</div>
+      <div><svg class="i"><use href="#s-import"/></svg>Importer</div>
+      <div><svg class="i"><use href="#s-settings"/></svg>Réglages</div>
+      <div><svg class="i"><use href="#s-x"/></svg>Fermer*</div>
+    </div>
+    <p class="sub" style="margin-top:10px">* Absente de Solar, dessinée dans sa grammaire (grille 24, trait 1,5, extrémités rondes).</p>
+  </section>
+
+  <footer class="foot">
+    <p>Vigie · direction artistique v1 · novembre 2026</p>
+    <p>Inspirations : écrans de navigation marine de nuit, sonars, combinés d'instruments, sans reprise de logo ni d'élément de marque. Les vignettes des maquettes imitent des images de publications, elles ne viennent d'aucun site réel.</p>
+    <p>Icônes Solar par 480 Design (CC BY 4.0). Typographie Geologica (SIL Open Font License).</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const root=document.documentElement,btns=document.querySelectorAll('[data-set-theme]');
+  const refresh=()=>{const cs=getComputedStyle(root);document.querySelectorAll('[data-var]').forEach(el=>{el.querySelector('.hex').textContent=cs.getPropertyValue(el.dataset.var).trim().toUpperCase()})};
+  const apply=t=>{
+    if(t==='system')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);
+    btns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.setTheme===t)));
+    try{localStorage.setItem('vigie-da-theme',t)}catch(e){}
+    refresh();
+  };
+  let t='dark';try{t=localStorage.getItem('vigie-da-theme')||'dark'}catch(e){}
+  btns.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.setTheme)));
+  apply(t);
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',refresh)}catch(e){}
+})();
+</script>
+</body>
+</html>
