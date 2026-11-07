@@ -3,7 +3,10 @@ import { Icon } from '@/components/Icon'
 import { useT } from '@/lib/i18n'
 import { useTags } from '@/features/items/queries'
 
-/** Tag editor of the DA: `.tag` chips and a « + Tag » field. Enter or comma adds, Backspace on empty removes the last. */
+/**
+ * Tag editor of the DA: `.tag` chips and a « + Tag » field. Enter or comma adds, Backspace on empty removes the last.
+ * Suggestions are chips in the flow under the field (no overlay, so a scrolling sheet can never clip them).
+ */
 export function TagInput({
   value,
   onChange,
@@ -16,7 +19,6 @@ export function TagInput({
   const t = useT()
   const [text, setText] = useState('')
   const { data: allTags = [] } = useTags()
-  const [focused, setFocused] = useState(false)
 
   const has = (name: string) => value.some((v) => v.toLowerCase() === name.toLowerCase())
 
@@ -43,56 +45,56 @@ export function TagInput({
   const needle = text.trim().replace(/^#/, '').toLowerCase()
   const suggestions = allTags
     .filter((tag) => !has(tag.name) && tag.name.toLowerCase().includes(needle))
-    .slice(0, 6)
+    .slice(0, 8)
 
   return (
-    <div className="tags tag-in">
-      {value.map((name) => (
-        <span key={name} className="tag">
-          #{name}
-          <button type="button" aria-label={t('tags.remove', { name })} onClick={() => onChange(value.filter((v) => v !== name))}>
-            <Icon name="close" className="xs" />
-          </button>
-        </span>
-      ))}
-      <input
-        id={id}
-        className="tag add"
-        value={text}
-        onChange={(e) => {
-          const v = e.target.value
-          if (v.includes(',')) commit(v)
-          else setText(v)
-        }}
-        onKeyDown={onKeyDown}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setFocused(false)
-          if (text.trim()) commit(text)
-        }}
-        placeholder={t('tags.add')}
-        aria-label={t('item.tags')}
-        autoCapitalize="none"
-        autoComplete="off"
-      />
-      {focused && suggestions.length > 0 && (
-        <ul role="listbox" aria-label={t('tags.suggestions')} className="suggest">
+    <div className="tag-field">
+      <div className="tags tag-in">
+        {value.map((name) => (
+          <span key={name} className="tag">
+            #{name}
+            <button type="button" aria-label={t('tags.remove', { name })} onClick={() => onChange(value.filter((v) => v !== name))}>
+              <Icon name="close" className="xs" />
+            </button>
+          </span>
+        ))}
+        <input
+          id={id}
+          className="tag add"
+          value={text}
+          onChange={(e) => {
+            const v = e.target.value
+            if (v.includes(',')) commit(v)
+            else setText(v)
+          }}
+          onKeyDown={onKeyDown}
+          onBlur={() => {
+            if (text.trim()) commit(text)
+          }}
+          placeholder={t('tags.add')}
+          aria-label={t('item.tags')}
+          autoCapitalize="none"
+          autoComplete="off"
+        />
+      </div>
+      {suggestions.length > 0 && (
+        <div className="sugg-chips" role="group" aria-label={t('tags.suggestions')}>
           {suggestions.map((tag) => (
-            <li key={tag.id} role="option" aria-selected={false}>
-              <button
-                type="button"
-                // mousedown (not click) so the input keeps focus and blur does not commit first
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                  commit(tag.name)
-                }}
-              >
-                #{tag.name}
-                <span className="sub">{tag.item_count}</span>
-              </button>
-            </li>
+            <button
+              key={tag.id}
+              type="button"
+              className="tag sg"
+              // mousedown (not click) so the input keeps focus and blur does not commit first
+              onMouseDown={(e) => {
+                e.preventDefault()
+                commit(tag.name)
+              }}
+            >
+              #{tag.name}
+              <span className="n">{tag.item_count}</span>
+            </button>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )
