@@ -119,6 +119,22 @@ export const en = {
   'auth.reset.done': 'Password changed. You can sign in.',
   'auth.reset.back': 'Back to sign in',
 
+  // Onboarding (first visit)
+  'onboarding.label': 'Welcome to Vigie',
+  'onboarding.skip': 'Skip',
+  'onboarding.next': 'Next',
+  'onboarding.back': 'Back',
+  'onboarding.step': 'Step {current} of {total}',
+  'onboarding.go_to_step': 'Go to step {n}',
+  'onboarding.intro.title': 'A watch screen, not a feed',
+  'onboarding.intro.body': 'Vigie keeps the articles and videos you chose to read later. What comes in is picked by you, and what goes out has been seen.',
+  'onboarding.capture.title': 'Drop a link, get a card',
+  'onboarding.capture.body': 'Paste a link, or share it from your phone. Vigie fetches the title and the picture and puts it in To watch, in under three seconds.',
+  'onboarding.pile.title': 'Empty your pile at your own pace',
+  'onboarding.pile.body': 'Mark what you’ve seen, add tags and notes, send a link to someone. Vigie shows you honestly whether you’re catching up.',
+  'onboarding.final.title': 'Ready to keep watch?',
+  'onboarding.final.body': 'Create your account in a minute. No profile, no feed, no tracking: your library stays yours.',
+
   // Commun (écrans)
   'common.close': 'Close',
   'common.delete': 'Delete',

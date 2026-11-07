@@ -121,6 +121,22 @@ export const fr: Record<keyof typeof en, string> = {
   'auth.reset.done': 'Mot de passe modifié. Tu peux te connecter.',
   'auth.reset.back': 'Retour à la connexion',
 
+  // Onboarding (première visite)
+  'onboarding.label': 'Bienvenue sur Vigie',
+  'onboarding.skip': 'Passer',
+  'onboarding.next': 'Suivant',
+  'onboarding.back': 'Retour',
+  'onboarding.step': 'Étape {current} sur {total}',
+  'onboarding.go_to_step': 'Aller à l’étape {n}',
+  'onboarding.intro.title': 'Un écran de veille, pas un fil d’actualité',
+  'onboarding.intro.body': 'Vigie garde les articles et les vidéos que tu as choisi de lire plus tard. Ce qui entre est choisi par toi, et ce qui sort a été vu.',
+  'onboarding.capture.title': 'Dépose un lien, obtiens une carte',
+  'onboarding.capture.body': 'Colle un lien, ou partage-le depuis ton téléphone. Vigie récupère le titre et l’image et le range dans À voir, en moins de trois secondes.',
+  'onboarding.pile.title': 'Vide ta pile à ton rythme',
+  'onboarding.pile.body': 'Marque ce que tu as vu, ajoute des tags et des notes, envoie un lien à quelqu’un. Vigie te montre honnêtement si tu rattrapes ton retard.',
+  'onboarding.final.title': 'Prêt à faire ta veille ?',
+  'onboarding.final.body': 'Crée ton compte en une minute. Pas de profil, pas de fil, pas de pistage : ta bibliothèque reste à toi.',
+
   // Commun (écrans)
   'common.close': 'Fermer',
   'common.delete': 'Supprimer',

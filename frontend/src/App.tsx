@@ -12,6 +12,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ApiError, setUnauthorizedHandler } from '@/lib/api'
 import { errorMessage } from '@/lib/errors'
 import { useT } from '@/lib/i18n'
+import { hasSeenOnboarding, markOnboardingSeen } from '@/lib/onboarding'
 import { clearApiCache } from '@/lib/session'
 import { useMe } from '@/features/auth/useAuth'
 import { useTimezoneSync } from '@/features/auth/useTimezoneSync'
@@ -30,6 +31,9 @@ const LoginPage = lazy(() =>
 )
 const RegisterPage = lazy(() =>
   import('@/features/auth/RegisterPage').then((m) => ({ default: m.RegisterPage })),
+)
+const OnboardingPage = lazy(() =>
+  import('@/features/onboarding/OnboardingPage').then((m) => ({ default: m.OnboardingPage })),
 )
 const LibraryPage = lazy(() =>
   import('@/features/items/LibraryPage').then((m) => ({ default: m.LibraryPage })),
@@ -102,8 +106,16 @@ function RequireAuth() {
   const { data: me, isPending, isError, refetch } = useMe()
   useTimezoneSync(me)
   usePreferencesFromUser()
+  // Anyone who has had an account here knows the app: never show them the welcome tour.
+  useEffect(() => {
+    if (me) markOnboardingSeen()
+  }, [me])
   if (isPending) return <FullScreenLoader />
-  if (!me) return isError ? <OfflineScreen onRetry={() => void refetch()} /> : <Navigate to="/login" replace />
+  if (!me) {
+    if (isError) return <OfflineScreen onRetry={() => void refetch()} />
+    // First visit on this browser: explain the app before asking for an account.
+    return <Navigate to={hasSeenOnboarding() ? '/login' : '/welcome'} replace />
+  }
   return (
     <ItemDialogsProvider>
       <AddItemProvider>
@@ -153,6 +165,7 @@ export default function App() {
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
               <Route element={<PublicOnly />}>
+                <Route path="/welcome" element={<OnboardingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
               </Route>
