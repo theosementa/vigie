@@ -119,10 +119,10 @@ async def _block(
     row = (
         await session.execute(
             select(
-                func.count().filter(eff == "article"),
+                func.count().filter(eff != "video"),
                 func.count().filter(eff == "video"),
                 func.coalesce(func.sum(Resource.duration_seconds).filter(eff == "video"), 0),
-                func.coalesce(func.sum(Resource.reading_time_minutes).filter(eff == "article"), 0),
+                func.coalesce(func.sum(Resource.reading_time_minutes).filter(eff != "video"), 0),
                 func.count().filter(eff == "video", Resource.duration_seconds.is_(None)),
             )
             .select_from(Item)
@@ -265,7 +265,7 @@ async def summary(session: AsyncSession, user: User, period: Period, offset: int
 
 _SEEN_SQL = """
     SELECT CAST(date_trunc('{g}', i.seen_at AT TIME ZONE CAST(:tz AS text)) AS date) AS b,
-           COUNT(*) FILTER (WHERE COALESCE(i.type_override, r.type) = 'article') AS articles,
+           COUNT(*) FILTER (WHERE COALESCE(i.type_override, r.type) <> 'video') AS articles,
            COUNT(*) FILTER (WHERE COALESCE(i.type_override, r.type) = 'video') AS videos,
            COALESCE(SUM(r.duration_seconds)
                     FILTER (WHERE COALESCE(i.type_override, r.type) = 'video'), 0) AS watch

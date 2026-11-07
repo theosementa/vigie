@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Icon, type IconBase } from '@/components/Icon'
-import type { Item, ItemEvent, ResourceType } from '@/lib/api'
+import type { Item, ItemEvent } from '@/lib/api'
 import { formatDateTime, formatDuration, formatMinutesShort, formatDate, fullName } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -8,7 +8,7 @@ import { TagInput } from '@/features/tags/TagInput'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemThumb } from './ItemThumb'
 import { useItemDialogs } from './itemDialogsContext'
-import { isMetadataUnavailable, siteOf } from './metadata'
+import { RESOURCE_TYPES, TYPE_ICON, isMetadataUnavailable, siteOf } from './metadata'
 import { useItemEvents, useSetItemStatus, useUpdateItem } from './queries'
 import { useRefreshWithToast } from './useRefreshItem'
 
@@ -122,21 +122,22 @@ function Facts({ item }: { item: Item }) {
   const t = useT()
   const { resource } = item
   const video = resource.type === 'video'
+  const timed = video || resource.type === 'article'
   const value = video ? resource.duration_seconds : resource.reading_time_minutes
   return (
     <div className="facts">
       <span className="f">
-        <Icon name={video ? 'videocamera' : 'document-text'} className="xs" />
-        {t(video ? 'type.video' : 'type.article')}
+        <Icon name={TYPE_ICON[resource.type]} className="xs" />
+        {t(`type.${resource.type}`)}
       </span>
-      <span className="f">
+      {timed && <span className="f">
         {value != null
           ? video
             ? formatDuration(resource.duration_seconds!)
             : formatMinutesShort(resource.reading_time_minutes!)
           : t(video ? 'item.duration_unknown' : 'item.reading_unknown')}
         <span className="conf">{t(value == null ? 'conf.unknown' : video ? 'conf.measured' : 'conf.estimated')}</span>
-      </span>
+      </span>}
       {resource.published_at && <span className="f">{formatDate(resource.published_at)}</span>}
     </div>
   )
@@ -270,14 +271,14 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           {t('item.type')}
         </span>
         <div className="seg full" role="group" aria-labelledby="type-label">
-          {(['article', 'video'] as ResourceType[]).map((type) => (
+          {RESOURCE_TYPES.map((type) => (
             <button
               key={type}
               type="button"
               aria-pressed={resource.type === type}
               onClick={() => resource.type !== type && update.mutate({ id: item.id, input: { type } })}
             >
-              <Icon name={type === 'video' ? 'videocamera' : 'document-text'} className="xs" />
+              <Icon name={TYPE_ICON[type]} className="xs" />
               {t(`type.${type}`)}
             </button>
           ))}

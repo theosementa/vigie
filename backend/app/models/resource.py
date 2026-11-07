@@ -22,7 +22,7 @@ class Resource(Base):
     url: Mapped[str] = mapped_column(Text)
     # SHA-256 of the normalised url: unique, so the index size does not depend on the URL length
     url_hash: Mapped[str] = mapped_column(String(64), unique=True)
-    type: Mapped[str] = mapped_column(String(20))  # article | video
+    type: Mapped[str] = mapped_column(String(20))  # article | video | website | repo
     title: Mapped[str] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(Text)

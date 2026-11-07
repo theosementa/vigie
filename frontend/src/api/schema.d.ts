@@ -545,7 +545,7 @@ export interface components {
             /** Tags */
             tags?: string[];
             /** Type */
-            type?: ("article" | "video") | null;
+            type?: ("article" | "video" | "website" | "repo") | null;
             /** Url */
             url: string;
         };
@@ -610,7 +610,7 @@ export interface components {
             /** Tags */
             tags?: string[] | null;
             /** Type */
-            type?: ("article" | "video") | null;
+            type?: ("article" | "video" | "website" | "repo") | null;
         };
         /**
          * Locale
@@ -674,7 +674,7 @@ export interface components {
              * Type
              * @enum {string}
              */
-            type: "article" | "video";
+            type: "article" | "video" | "website" | "repo";
             /** Url */
             url: string;
         };
@@ -781,7 +781,7 @@ export interface components {
              * Type
              * @enum {string}
              */
-            type: "article" | "video";
+            type: "article" | "video" | "website" | "repo";
             /** Url */
             url: string;
         };
@@ -1758,7 +1758,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: ("to_watch" | "seen") | null;
-                type?: ("article" | "video") | null;
+                type?: ("article" | "video" | "website" | "repo") | null;
                 tag?: string | null;
                 q?: string | null;
                 shared?: boolean | null;

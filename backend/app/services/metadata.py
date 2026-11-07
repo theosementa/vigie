@@ -36,6 +36,17 @@ class Metadata:
     ok: bool = False  # False = fallback only (nothing could be fetched)
 
 
+_REPO_HOSTS = ("github.com", "gitlab.com", "codeberg.org")
+
+
+def _is_repo(url: str) -> bool:
+    """`host/<owner>/<repo>` on GitHub, GitLab or Codeberg; deeper pages are articles."""
+    parts = urlsplit(url)
+    if (parts.hostname or "").removeprefix("www.") not in _REPO_HOSTS:
+        return False
+    return len([p for p in parts.path.split("/") if p]) == 2
+
+
 def hostname_of(url: str) -> str:
     host = urlsplit(url).hostname or url
     return host.removeprefix("www.")
@@ -130,7 +141,13 @@ def parse_html(html: str, page_url: str, meta: Metadata) -> None:
         meta.duration_seconds = duration
         meta.type = "video"
     if meta.type == "article":
-        meta.reading_time_minutes = _reading_time(tree)
+        if _is_repo(page_url):
+            meta.type = "repo"
+            meta.site_name = meta.site_name or "GitHub"
+        elif urlsplit(page_url).path.strip("/") == "":  # a home page, not a post
+            meta.type = "website"
+        else:
+            meta.reading_time_minutes = _reading_time(tree)
 
 
 def parse_youtube_duration(html: str) -> int | None:

@@ -10,6 +10,7 @@ import { errorMessage } from '@/lib/errors'
 import { formatDuration, formatMinutesShort } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { RESOURCE_TYPES, TYPE_ICON } from './metadata'
 import { AddItemContext, useAddItem } from './addItemContext'
 import { ItemThumb } from './ItemThumb'
 import { siteOf } from './metadata'
@@ -39,7 +40,7 @@ function Preview({ data, type }: { data: ResourcePreview; type: ResourceType }) 
       ? data.duration_seconds != null
         ? formatDuration(data.duration_seconds)
         : null
-      : data.reading_time_minutes != null
+      : type === 'article' && data.reading_time_minutes != null
         ? formatMinutesShort(data.reading_time_minutes)
         : null
   const resource = { ...data, type }
@@ -236,9 +237,9 @@ function CaptureForm({
           ) : (
             <>
               <div className="seg full" role="group" aria-label={t('item.type')}>
-                {(['article', 'video'] as const).map((type) => (
+                {RESOURCE_TYPES.map((type) => (
                   <button key={type} type="button" aria-pressed={effectiveType === type} onClick={() => setOverride(type)}>
-                    <Icon name={type === 'video' ? 'videocamera' : 'document-text'} className="xs" />
+                    <Icon name={TYPE_ICON[type]} className="xs" />
                     {t(`type.${type}`)}
                   </button>
                 ))}

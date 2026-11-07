@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-ItemType = Literal["article", "video"]
+ItemType = Literal["article", "video", "website", "repo"]
 MAX_URL_LENGTH = 2048
 
 

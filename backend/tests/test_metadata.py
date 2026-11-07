@@ -163,3 +163,24 @@ async def test_non_html_content_is_not_parsed():
 async def test_oembed_url_is_json_decodable():
     # sanity check on the helper used above
     assert json.loads(json.dumps({"a": 1})) == {"a": 1}
+
+
+@pytest.mark.usefixtures("public_dns")
+@pytest.mark.parametrize(
+    ("url", "host", "path", "expected"),
+    [
+        ("https://github.com/octo/radar", "github.com", "/octo/radar", "repo"),
+        ("https://github.com/octo/radar/issues/1", "github.com", "/octo/radar/issues/1", "article"),
+        ("https://example.com/", "example.com", "/", "website"),
+        ("https://blog.example.com/post", "blog.example.com", "/post", "article"),
+    ],
+)
+async def test_repo_and_website_types(url, host, path, expected):
+    with respx.mock() as mock:
+        route(mock, host, path).respond(
+            200, text=html("article.html"), headers={"content-type": "text/html"}
+        )
+        meta = await fetch_metadata(url)
+    assert meta.type == expected
+    if expected != "article":
+        assert meta.reading_time_minutes is None

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { ItemStatus, ResourceType } from '@/lib/api'
+import { RESOURCE_TYPES } from './metadata'
 
 export interface LibraryFilters {
   status: ItemStatus
@@ -21,7 +22,7 @@ export function useLibraryFilters() {
     const t = params.get('type')
     return {
       status,
-      type: t === 'article' || t === 'video' ? t : 'all',
+      type: RESOURCE_TYPES.find((x) => x === t) ?? 'all',
       tag: params.get('tag'),
       q: params.get('q') ?? '',
     }

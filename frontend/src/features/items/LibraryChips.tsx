@@ -2,6 +2,7 @@ import { usePile } from '@/features/stats/queries'
 import type { ItemStatus, ResourceType, TagWithCount } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
+import { RESOURCE_TYPES } from './metadata'
 import type { LibraryFilters } from './useLibraryFilters'
 
 type Patch = { status?: ItemStatus; type?: ResourceType | 'all'; tag?: string | null }
@@ -38,12 +39,11 @@ export function LibraryChips({
       <Chip active={filters.status === 'seen'} onClick={() => onChange({ status: 'seen' })}>
         {t('filters.seen')}
       </Chip>
-      <Chip active={filters.type === 'video'} onClick={() => onChange({ type: filters.type === 'video' ? 'all' : 'video' })}>
-        {t('filters.videos')}
-      </Chip>
-      <Chip active={filters.type === 'article'} onClick={() => onChange({ type: filters.type === 'article' ? 'all' : 'article' })}>
-        {t('filters.articles')}
-      </Chip>
+      {RESOURCE_TYPES.map((type) => (
+        <Chip key={type} active={filters.type === type} onClick={() => onChange({ type: filters.type === type ? 'all' : type })}>
+          {t(`filters.${type}`)}
+        </Chip>
+      ))}
       {tags.map((tag) => (
         <Chip key={tag.id} active={filters.tag === tag.name} onClick={() => onChange({ tag: filters.tag === tag.name ? null : tag.name })}>
           #{tag.name}

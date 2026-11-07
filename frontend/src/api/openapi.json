@@ -213,7 +213,9 @@
               {
                 "enum": [
                   "article",
-                  "video"
+                  "video",
+                  "website",
+                  "repo"
                 ],
                 "type": "string"
               },
@@ -447,7 +449,9 @@
               {
                 "enum": [
                   "article",
-                  "video"
+                  "video",
+                  "website",
+                  "repo"
                 ],
                 "type": "string"
               },
@@ -663,7 +667,9 @@
           "type": {
             "enum": [
               "article",
-              "video"
+              "video",
+              "website",
+              "repo"
             ],
             "title": "Type",
             "type": "string"
@@ -1023,7 +1029,9 @@
           "type": {
             "enum": [
               "article",
-              "video"
+              "video",
+              "website",
+              "repo"
             ],
             "title": "Type",
             "type": "string"
@@ -2501,7 +2509,9 @@
                 {
                   "enum": [
                     "article",
-                    "video"
+                    "video",
+                    "website",
+                    "repo"
                   ],
                   "type": "string"
                 },

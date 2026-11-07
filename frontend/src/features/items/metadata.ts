@@ -1,4 +1,5 @@
-import type { Item, Resource } from '@/lib/api'
+import type { IconBase } from '@/components/Icon'
+import type { Item, Resource, ResourceType } from '@/lib/api'
 import { hostname } from '@/lib/format'
 
 type Meta = Pick<Resource, 'url' | 'title' | 'site_name' | 'description' | 'image_url'>
@@ -23,3 +24,12 @@ export function siteInitial(r: Pick<Resource, 'url' | 'site_name'>): string {
 }
 
 export const isSeen = (item: Pick<Item, 'status'>) => item.status === 'seen'
+
+export const RESOURCE_TYPES: ResourceType[] = ['article', 'video', 'website', 'repo']
+
+export const TYPE_ICON: Record<ResourceType, IconBase> = {
+  article: 'document-text',
+  video: 'videocamera',
+  website: 'global',
+  repo: 'code-square',
+}

@@ -58,3 +58,5 @@ playlist-minimalistic-bold
 radar-2-bold
 settings-bold
 users-group-rounded-bold
+global-linear
+code-square-linear
