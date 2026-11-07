@@ -60,7 +60,7 @@ Ou API sur l'hôte (la base reste dans Docker). L'API lit `.env` depuis son rép
 
 ```bash
 docker compose up -d db
-cd backend && uv sync && uv run uvicorn app.main:app --reload
+cd backend && uv sync && uv run alembic upgrade head && uv run uvicorn app.main:app --reload
 cd frontend && npm install && npm run dev
 ```
 

@@ -4,7 +4,7 @@ import json
 import logging
 import math
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from urllib.parse import quote, urljoin, urlsplit
 
@@ -34,7 +34,6 @@ class Metadata:
     reading_time_minutes: int | None = None
     published_at: datetime | None = None
     ok: bool = False  # False = fallback only (nothing could be fetched)
-    extra: dict = field(default_factory=dict)
 
 
 def hostname_of(url: str) -> str:

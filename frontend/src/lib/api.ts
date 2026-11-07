@@ -1,7 +1,6 @@
 /**
  * Typed API client. EVERY backend call lives in this file so that integration
- * work only has to touch it. Contract: see backend/API.md (until it exists,
- * the contract described in the project plan).
+ * work only has to touch it. Contract: backend/API.md.
  */
 
 // ---------- Types ----------
