@@ -1,0 +1,83 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:           # "Run workflow" button, also used to test the Discord webhook
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false    # a running deploy is never interrupted
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, vigie]     # label = this project's runner
+    timeout-minutes: 60
+    env:
+      DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '~/projects/vigie' }}
+      REPO_URL: https://github.com/${{ github.repository }}.git
+      GH_TOKEN: ${{ github.token }}
+      # COMPOSE_FILE: docker-compose.prod.yml   # uncomment if not docker-compose.yml
+    steps:
+      - name: Start timer
+        run: echo "DEPLOY_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Update the code
+        run: |
+          set -euo pipefail
+          DIR="${DEPLOY_DIR/#\~/$HOME}"
+          AUTH="Authorization: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git_auth() { git -c "http.https://github.com/.extraheader=$AUTH" "$@"; }
+          [ -d "$DIR/.git" ] || git_auth clone "$REPO_URL" "$DIR"
+          cd "$DIR"
+          test -f .env || { echo "::error::$DIR/.env missing"; exit 1; }
+          git_auth fetch origin main
+          git checkout main
+          git merge --ff-only origin/main
+          git log -1 --oneline
+
+      - name: Build and restart the stack
+        run: |
+          set -euo pipefail
+          cd "${DEPLOY_DIR/#\~/$HOME}"
+          docker compose up -d --build --remove-orphans
+          docker image prune -f
+
+      - name: Check the site answers
+        run: |
+          set -euo pipefail
+          cd "${DEPLOY_DIR/#\~/$HOME}"
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:8101/" || true)
+            [ "$code" = 200 ] && exit 0      # adapt to the expected code (401 behind auth)
+            sleep 2
+          done
+          docker compose ps
+          docker compose logs --tail 40
+          echo "::error::site not answering (last code: $code)"; exit 1
+
+      - name: Notify Discord
+        if: always()
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          PROJECT: Vigie
+          SITE_URL: http://homelab:8101
+          BUILD: ${{ github.run_number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -n "$DISCORD_WEBHOOK_URL" ] || { echo "::warning::secret DISCORD_WEBHOOK_URL missing"; exit 0; }
+          SECS=$(( $(date +%s) - DEPLOY_START ))
+          DURATION="$((SECS / 60))m $((SECS % 60))s"
+          if [ "$STATUS" = success ]; then TITLE="✅ $PROJECT deployed"; COLOR=3066993; SITE="$SITE_URL"
+          else TITLE="❌ $PROJECT deploy $STATUS"; COLOR=15158332; SITE="$RUN_URL"; fi
+          curl -fsS -H 'Content-Type: application/json' -X POST "$DISCORD_WEBHOOK_URL" -d "$(printf '%s' \
+            '{"embeds":[{"title":"'"$TITLE"'","color":'"$COLOR"',"fields":[' \
+            '{"name":"Project","value":"'"$PROJECT"'","inline":true},' \
+            '{"name":"Build","value":"#'"$BUILD"'","inline":true},' \
+            '{"name":"Duration","value":"'"$DURATION"'","inline":true},' \
+            '{"name":"Link","value":"'"$SITE"'"}' \
+            ']}]}')"
