@@ -150,13 +150,14 @@ export function OnboardingPage() {
   }
 
   return (
+    // Phone: the page itself. Desktop: the same screens in a centred modal-style card.
+    <div className="pt-safe pb-safe flex min-h-dvh items-center justify-center bg-bg md:p-8">
     <div
       role="region"
       aria-label={t('onboarding.label')}
-      className="pt-safe pb-safe flex min-h-dvh flex-col bg-bg"
+      className="flex min-h-dvh w-full flex-col md:h-[680px] md:min-h-0 md:max-w-xl md:overflow-hidden md:rounded-3xl md:bg-surface md:ring-1 md:ring-line"
     >
-      <header className="flex h-14 items-center justify-between px-4">
-        <img src="/logo.png" width={28} height={28} alt="" aria-hidden="true" draggable={false} />
+      <header className="flex h-14 items-center justify-end px-4">
         <Button
           variant="ghost"
           size="lg"
@@ -261,6 +262,7 @@ export function OnboardingPage() {
           </Button>
         </div>
       </footer>
+    </div>
     </div>
   )
 }
