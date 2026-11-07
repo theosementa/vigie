@@ -2,6 +2,7 @@ import type { StatsPeriod, TimeseriesGranularity, TimeseriesPoint } from '@/lib/
 import { niceTicks } from './chartUtils'
 import { ChartShell } from './ChartShell'
 import { bucketAxisLabel, bucketLongLabel } from './dates'
+import { useT } from '@/lib/i18n'
 import { formatCount } from './format'
 import { ChartDataTable } from './StatsCard'
 
@@ -19,6 +20,7 @@ export function BarChart({
   period: StatsPeriod
   label: string
 }) {
+  const t = useT()
   const rows = points.map((p, i) => ({
     bucket: p.bucket,
     articles: p.articles ?? p.value,
@@ -42,19 +44,19 @@ export function BarChart({
           const r = rows[i]
           return (
             <div className="space-y-0.5">
-              <div className="font-semibold capitalize">{bucketLongLabel(r.bucket, granularity)}</div>
+              <div className="font-medium capitalize">{bucketLongLabel(r.bucket, granularity)}</div>
               <div>
                 <span aria-hidden className="mr-1 inline-block size-2 rounded-full bg-chart-1" />
-                Articles : {formatCount(r.articles)}
+                {t('stats.chart.articles', { n: formatCount(r.articles) })}
               </div>
               <div>
                 <span aria-hidden className="mr-1 inline-block size-2 rounded-full bg-chart-4" />
-                Vidéos : {formatCount(r.videos)}
+                {t('stats.chart.videos', { n: formatCount(r.videos) })}
               </div>
-              <div className="font-medium">Total : {formatCount(r.total)}</div>
+              <div className="font-medium">{t('stats.chart.total', { n: formatCount(r.total) })}</div>
               {r.prev && (
                 <div className="text-muted-foreground">
-                  Période précédente : {formatCount(r.prev.value)}
+                  {t('stats.chart.previous', { n: formatCount(r.prev.value) })}
                 </div>
               )}
             </div>
@@ -110,7 +112,7 @@ export function BarChart({
       </ChartShell>
       <ChartDataTable
         caption={label}
-        columns={['Période', 'Articles', 'Vidéos', 'Total', ...(prev ? ['Période précédente'] : [])]}
+        columns={[t('stats.table.period'), t('type.articles'), t('type.videos'), t('stats.table.total'), ...(prev ? [t('stats.previous')] : [])]}
         rows={rows.map((r) => [
           bucketLongLabel(r.bucket, granularity),
           r.articles,

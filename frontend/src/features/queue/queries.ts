@@ -1,6 +1,7 @@
 /** Data hooks for the watch queue, backed by the real API (src/lib/api.ts). */
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { api, type Item, type QueueList } from '@/lib/api'
+import { t } from '@/lib/i18n'
 import {
   itemKey,
   itemsKey,
@@ -56,7 +57,7 @@ export function useAddToQueue() {
   const qc = useQueryClient()
   return useMutation({
     mutationKey,
-    meta: { errorMessage: 'Impossible d’ajouter à la file d’attente.' },
+    meta: { errorMessage: t('queue.add_failed') },
     mutationFn: ({ item, position }: { item: Item; position?: number | null }) =>
       api.queue.add(item.id, position),
     onMutate: async ({ item, position }) => {
@@ -88,7 +89,7 @@ export function useRemoveFromQueue() {
   const qc = useQueryClient()
   return useMutation({
     mutationKey,
-    meta: { errorMessage: 'Impossible de retirer de la file d’attente.' },
+    meta: { errorMessage: t('queue.remove_failed') },
     mutationFn: (id: string) => api.queue.remove(id),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: queueKey })
@@ -114,7 +115,7 @@ export function useMoveInQueue() {
   const qc = useQueryClient()
   return useMutation({
     mutationKey,
-    meta: { errorMessage: 'Impossible de réorganiser la file d’attente.' },
+    meta: { errorMessage: t('queue.move_failed') },
     mutationFn: ({ id, position }: { id: string; position: number }) =>
       api.queue.move(id, position),
     onMutate: async ({ id, position }) => {

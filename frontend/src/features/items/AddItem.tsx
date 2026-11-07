@@ -1,82 +1,86 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Icon } from '@/components/Icon'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { ApiError, api, type ResourceType } from '@/lib/api'
-import { errorMessage } from '@/lib/errors'
-import { formatReadingTime, hostname } from '@/lib/format'
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { useIsMobile } from '@/hooks/useIsMobile'
+import { Icon } from '@/components/Icon'
+import { Sheet } from '@/components/Sheet'
 import { TagInput } from '@/features/tags/TagInput'
-import { ItemThumbnail } from './ItemThumbnail'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { ApiError, api, type ResourcePreview, type ResourceType } from '@/lib/api'
+import { errorMessage } from '@/lib/errors'
+import { formatDuration, formatMinutesShort } from '@/lib/format'
+import { useT } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 import { AddItemContext, useAddItem } from './addItemContext'
-import { useCreateItem } from './queries'
+import { ItemThumb } from './ItemThumb'
+import { siteOf } from './metadata'
+import { removeItemNow, useCreateItem } from './queries'
+import { looksLikeUrl } from './url'
 import { useLibraryFilters } from './useLibraryFilters'
 
-const COPY = {
-  title: 'Ajouter un lien',
-  description: 'Collez une URL : l’aperçu apparaît automatiquement.',
-}
-
-const looksLikeUrl = (v: string) => /^https?:\/\//i.test(v) || /^[^\s/]+\.[^\s/]{2,}/.test(v)
+const FORM_ID = 'capture-form'
 
 function PreviewSkeleton() {
+  const t = useT()
   return (
-    <div
-      className="animate-pulse overflow-hidden rounded-2xl bg-card ring-1 ring-border"
-      aria-label="Chargement de l’aperçu"
-      role="status"
-    >
-      <div className="aspect-video bg-muted" />
-      <div className="space-y-2 p-3">
-        <div className="h-3 w-1/3 rounded bg-muted" />
-        <div className="h-4 w-4/5 rounded bg-muted" />
+    <div className="preview loading" role="status" aria-label={t('capture.preview.loading')}>
+      <div className="th skel" />
+      <div className="grid gap-2">
+        <div className="skel h-4 w-4/5" />
+        <div className="skel h-3 w-1/3" />
       </div>
     </div>
   )
 }
 
-function AddItemForm({ onClose }: { onClose: () => void }) {
+function Preview({ data, type }: { data: ResourcePreview; type: ResourceType }) {
+  const t = useT()
+  const detail =
+    type === 'video'
+      ? data.duration_seconds != null
+        ? formatDuration(data.duration_seconds)
+        : null
+      : data.reading_time_minutes != null
+        ? formatMinutesShort(data.reading_time_minutes)
+        : null
+  const resource = { ...data, type }
+  return (
+    <div className="preview">
+      <ItemThumb resource={resource} />
+      <div className="min-w-0">
+        <div className="tt">{data.title}</div>
+        <div className="meta">
+          <span className="min-w-0 truncate">{[siteOf(data), detail, t(`type.${type}`).toLowerCase()].filter(Boolean).join(' · ')}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CaptureForm({
+  initialUrl,
+  focusRef,
+  onClose,
+  onBusy,
+}: {
+  initialUrl: string
+  focusRef: RefObject<HTMLInputElement | null>
+  onClose: () => void
+  onBusy: (state: { label: string; disabled: boolean }) => void
+}) {
+  const t = useT()
+  const qc = useQueryClient()
   const { update } = useLibraryFilters()
   const create = useCreateItem()
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(initialUrl)
   const [override, setOverride] = useState<ResourceType | null>(null)
   const [tags, setTags] = useState<string[]>([])
   const [notes, setNotes] = useState('')
   const [queue, setQueue] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-
-  // Pre-fill from the clipboard when it holds an http(s) URL. Any failure is ignored.
-  useEffect(() => {
-    let cancelled = false
-    void (async () => {
-      try {
-        const text = (await navigator.clipboard.readText()).trim()
-        if (!cancelled && /^https?:\/\/\S+$/i.test(text)) setUrl((cur) => cur || text)
-      } catch {
-        /* permission denied / unsupported: silently ignore */
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const [pasteError, setPasteError] = useState(false)
 
   const trimmed = url.trim()
-  const debounced = useDebouncedValue(trimmed, 500)
+  const debounced = useDebouncedValue(trimmed, 450)
   const ready = debounced === trimmed && looksLikeUrl(trimmed)
 
   const preview = useQuery({
@@ -99,33 +103,60 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
     onClose()
   }
 
+  // The pinned primary action lives in the sheet footer: tell it what to say and when it is usable.
+  useEffect(() => {
+    onBusy({
+      label: create.isPending ? t('capture.adding') : existingId ? t('capture.open_existing') : t('capture.submit'),
+      disabled: !data || loading || create.isPending,
+    })
+  }, [onBusy, t, create.isPending, existingId, data, loading])
+
+  const paste = async () => {
+    setPasteError(false)
+    try {
+      const text = (await navigator.clipboard.readText()).trim()
+      if (text) {
+        setUrl(text)
+        setOverride(null)
+        setSaveError(null)
+      }
+      focusRef.current?.focus()
+    } catch {
+      // permission denied or unsupported: say so, the field stays usable
+      setPasteError(true)
+    }
+  }
+
   const save = () => {
     if (!data) return
     setSaveError(null)
+    const queued = effectiveType === 'video' && queue
     create.mutate(
       {
         url: data.url,
         type: override && override !== data.type ? override : undefined,
         tags,
         notes: notes.trim() || null,
-        queue: effectiveType === 'video' && queue ? true : undefined,
+        queue: queued ? true : undefined,
       },
       {
-        onSuccess: () => {
-          toast.success(
-            effectiveType === 'video' && queue
-              ? 'Ajouté à la bibliothèque et à la file d’attente'
-              : 'Ajouté à votre bibliothèque',
-          )
+        onSuccess: (item) => {
+          toast(t(queued ? 'capture.added_queue' : 'capture.added'), {
+            action: {
+              label: t('common.undo'),
+              onClick: () =>
+                removeItemNow(qc, item.id).catch((err) => toast.error(errorMessage(err, t('error.undo_failed')))),
+            },
+          })
           onClose()
         },
         onError: (err) => {
           const conflictId = err instanceof ApiError ? err.conflict?.item_id : null
           if (conflictId) {
-            toast('Déjà dans ta bibliothèque')
+            toast(t('capture.duplicate'))
             openItem(conflictId)
           } else {
-            setSaveError(errorMessage(err, 'Ajout impossible. Réessaie.'))
+            setSaveError(errorMessage(err, t('capture.failed')))
           }
         },
       },
@@ -134,22 +165,27 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
 
   return (
     <form
+      id={FORM_ID}
+      className="grid gap-3.5"
+      noValidate
       onSubmit={(e) => {
         e.preventDefault()
-        if (data && !existingId) save()
+        if (!data) return
+        if (existingId) openItem(existingId)
+        else save()
       }}
-      className="space-y-4"
-      noValidate
     >
-      <div className="space-y-1.5">
-        <Label htmlFor="add-url">Lien</Label>
-        <Input
-          id="add-url"
+      <div className="field">
+        <label htmlFor="capture-url">{t('capture.link')}</label>
+        <input
+          id="capture-url"
+          ref={focusRef}
           type="url"
           inputMode="url"
-          autoFocus
           autoCapitalize="none"
           autoCorrect="off"
+          autoComplete="off"
+          spellCheck={false}
           placeholder="https://…"
           value={url}
           onChange={(e) => {
@@ -157,26 +193,33 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
             setOverride(null)
             setSaveError(null)
           }}
-          className="h-11 rounded-xl text-base md:text-sm"
         />
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" className="btn btn-2 btn-sm" onClick={() => void paste()}>
+          <Icon name="clipboard" />
+          {t('capture.paste')}
+        </button>
+        {pasteError && (
+          <span className="sub" role="status">
+            {t('capture.paste_failed')}
+          </span>
+        )}
       </div>
 
       {loading && <PreviewSkeleton />}
 
       {previewError && !loading && (
-        <div
-          role="alert"
-          className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
-        >
-          <Icon name="danger-triangle" className="mt-0.5 size-4 shrink-0" />
+        <div role="alert" className="alert err">
+          <Icon name="danger-triangle" />
           <div className="flex-1">
-            <p>
+            <p className="m-0">
               {previewError instanceof ApiError && previewError.status === 422
-                ? 'Cette adresse n’est pas valide.'
-                : errorMessage(previewError, 'Impossible de récupérer l’aperçu.')}
+                ? t('capture.invalid_url')
+                : errorMessage(previewError, t('capture.preview_failed'))}
             </p>
-            <button type="button" onClick={() => preview.refetch()} className="mt-1 font-medium underline">
-              Réessayer
+            <button type="button" className="link-btn mt-1" onClick={() => preview.refetch()}>
+              {t('common.retry')}
             </button>
           </div>
         </div>
@@ -184,85 +227,50 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
 
       {data && !loading && (
         <>
-          <article className="overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-            <ItemThumbnail resource={{ ...data, type: effectiveType }} />
-            <div className="space-y-1.5 p-3">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                {data.favicon_url && (
-                  <img src={data.favicon_url} alt="" className="size-4 rounded-sm" />
-                )}
-                <span className="truncate">{data.site_name ?? hostname(data.url)}</span>
-                {effectiveType === 'article' && data.reading_time_minutes != null && (
-                  <span className="shrink-0">· {formatReadingTime(data.reading_time_minutes)}</span>
-                )}
-              </div>
-              <h3 className="line-clamp-2 text-[15px] leading-snug font-semibold">{data.title}</h3>
-            </div>
-          </article>
-
+          <Preview data={data} type={effectiveType} />
           {existingId ? (
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-primary/10 p-3 text-sm">
-              <span className="flex items-center gap-1.5 font-medium text-accent-ink">
-                <Icon name="check-circle" className="size-4" />
-                Déjà dans ta bibliothèque
-              </span>
-              <Button type="button" size="sm" className="rounded-lg" onClick={() => openItem(existingId)}>
-                Ouvrir
-              </Button>
+            <div className="alert" role="status">
+              <Icon name="check-circle" />
+              <span className="flex-1 font-medium">{t('capture.duplicate')}</span>
             </div>
           ) : (
             <>
-              <div className="space-y-1.5">
-                <span className="text-sm font-medium">Type</span>
-                <Tabs value={effectiveType} onValueChange={(v) => setOverride(v as ResourceType)}>
-                  <TabsList className="h-9 w-full rounded-xl">
-                    <TabsTrigger value="article" className="flex-1 rounded-lg">
-                      Article
-                    </TabsTrigger>
-                    <TabsTrigger value="video" className="flex-1 rounded-lg">
-                      Vidéo
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
+              <div className="seg full" role="group" aria-label={t('item.type')}>
+                {(['article', 'video'] as const).map((type) => (
+                  <button key={type} type="button" aria-pressed={effectiveType === type} onClick={() => setOverride(type)}>
+                    <Icon name={type === 'video' ? 'videocamera' : 'document-text'} className="xs" />
+                    {t(`type.${type}`)}
+                  </button>
+                ))}
               </div>
               {effectiveType === 'video' && (
-                <label
-                  htmlFor="add-queue"
-                  className="flex cursor-pointer items-center gap-3 rounded-xl bg-muted/60 p-3 text-sm"
-                >
-                  <input
-                    id="add-queue"
-                    type="checkbox"
-                    checked={queue}
-                    onChange={(e) => setQueue(e.target.checked)}
-                    className="size-4 shrink-0 accent-primary"
-                  />
-                  <span className="font-medium">Ajouter à la file d’attente</span>
+                <label className="check">
+                  <input type="checkbox" checked={queue} onChange={(e) => setQueue(e.target.checked)} />
+                  {t('item.queue.add')}
                 </label>
               )}
-              <div className="space-y-1.5">
-                <Label htmlFor="add-tags">Tags</Label>
-                <TagInput id="add-tags" value={tags} onChange={setTags} />
+              <div className="grid gap-1.5">
+                <label htmlFor="capture-tags" className="h-label">
+                  {t('item.tags')}
+                </label>
+                <TagInput id="capture-tags" value={tags} onChange={setTags} />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="add-notes">Notes (facultatif)</Label>
-                <Textarea
-                  id="add-notes"
+              <div className="field">
+                <label htmlFor="capture-note">{t('capture.note')}</label>
+                <textarea
+                  id="capture-note"
+                  rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-16 rounded-xl"
-                  placeholder="Pourquoi ce lien ?"
+                  placeholder={t('capture.note.placeholder')}
                 />
               </div>
-              {saveError && (
-                <p role="alert" className="text-sm text-destructive">
-                  {saveError}
-                </p>
-              )}
-              <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={create.isPending}>
-                {create.isPending ? 'Ajout…' : 'Ajouter'}
-              </Button>
             </>
+          )}
+          {saveError && (
+            <p role="alert" className="alert err m-0">
+              {saveError}
+            </p>
           )}
         </>
       )}
@@ -271,68 +279,76 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
 }
 
 /**
- * Add flow host: bottom Sheet on mobile, centered Dialog on desktop (⌘N / ⌘K). Mounted once by the
- * shell; the tab bar's central action, the rail, and the library toolbar open it via `useAddItem()`.
+ * Capture host: full-screen sheet on a phone, centred modal from 768 px. Mounted once by the shell;
+ * the tab bar's central action, the rail, the header and the N shortcut open it via `useAddItem()`.
  */
 export function AddItemProvider({ children }: { children: ReactNode }) {
-  const isMobile = useIsMobile()
+  const t = useT()
   const [open, setOpen] = useState(false)
-  const api = useMemo(() => ({ open: () => setOpen(true) }), [])
-
-  useEffect(() => {
-    if (isMobile) return
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'n' || e.key === 'k')) {
-        e.preventDefault()
+  const [initialUrl, setInitialUrl] = useState('')
+  const [action, setAction] = useState({ label: '', disabled: true })
+  const focusRef = useRef<HTMLInputElement | null>(null)
+  const api = useMemo(
+    () => ({
+      open: (url?: string) => {
+        setInitialUrl(url ?? '')
         setOpen(true)
-      }
+      },
+    }),
+    [],
+  )
+
+  // N opens the capture when the focus is not in a field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'n' || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return
+      const el = e.target as HTMLElement | null
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return
+      if (document.querySelector('[role="dialog"]')) return
+      e.preventDefault()
+      setInitialUrl('')
+      setOpen(true)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [isMobile])
-
-  const close = () => setOpen(false)
+  }, [])
 
   return (
     <AddItemContext.Provider value={api}>
       {children}
-      {isMobile ? (
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent
-            side="bottom"
-            className="max-h-[calc(100dvh-var(--safe-top)-1rem)] rounded-t-3xl pb-safe"
-          >
-            <SheetHeader>
-              <SheetTitle>{COPY.title}</SheetTitle>
-              <SheetDescription>{COPY.description}</SheetDescription>
-            </SheetHeader>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-              {open && <AddItemForm onClose={close} />}
-            </div>
-          </SheetContent>
-        </Sheet>
-      ) : (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="max-h-[calc(100dvh-4rem)] overflow-y-auto sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>{COPY.title}</DialogTitle>
-              <DialogDescription>{COPY.description}</DialogDescription>
-            </DialogHeader>
-            {open && <AddItemForm onClose={close} />}
-          </DialogContent>
-        </Dialog>
-      )}
+      <Sheet
+        open={open}
+        onOpenChange={setOpen}
+        title={t('capture.title')}
+        initialFocus={focusRef}
+        footer={
+          <button type="submit" form={FORM_ID} className={cn('cta')} disabled={action.disabled}>
+            <Icon name="add" small />
+            {action.label || t('capture.submit')}
+          </button>
+        }
+      >
+        {open && (
+          <CaptureForm
+            initialUrl={initialUrl}
+            focusRef={focusRef}
+            onClose={() => setOpen(false)}
+            onBusy={setAction}
+          />
+        )}
+      </Sheet>
     </AddItemContext.Provider>
   )
 }
 
-/** Desktop trigger for the add flow (library toolbar). */
+/** Desktop trigger for the capture (page header). */
 export function AddItemButton() {
+  const t = useT()
   const { open } = useAddItem()
   return (
-    <Button onClick={open} className="h-9 rounded-xl px-3">
+    <button type="button" className="btn btn-accent" onClick={() => open()}>
       <Icon name="add" />
-      Ajouter
-    </Button>
+      {t('nav.add')}
+    </button>
   )
 }

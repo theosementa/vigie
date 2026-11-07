@@ -20,6 +20,7 @@ import {
   type TagWithCount,
   type UpdateItemInput,
 } from '@/lib/api'
+import { t } from '@/lib/i18n'
 import { statsKey } from '@/features/stats/queries'
 
 export const PAGE_SIZE = 24
@@ -35,6 +36,7 @@ export interface ItemsFilter {
 export const itemsKey = ['items'] as const
 export const itemsListKey = ['items', 'list'] as const
 export const itemKey = (id: string) => ['items', 'detail', id] as const
+export const eventsKey = (id: string) => ['items', 'events', id] as const
 export const tagsKey = ['tags'] as const
 export const queueKey = ['queue'] as const
 
@@ -60,6 +62,15 @@ export function useItem(id: string | null) {
     enabled: id !== null,
     placeholderData: () => (id ? findInLists(qc, id) : undefined),
     retry: (count, err) => !(err instanceof ApiError && err.status === 404) && count < 1,
+  })
+}
+
+/** The item's journal (added, seen, unseen, shared), oldest first. */
+export function useItemEvents(id: string) {
+  return useQuery({
+    queryKey: eventsKey(id),
+    queryFn: () => api.items.events(id),
+    staleTime: 15_000,
   })
 }
 
@@ -145,7 +156,7 @@ export function useCreateItem() {
 export function useSetItemStatus() {
   const qc = useQueryClient()
   return useMutation({
-    meta: { errorMessage: 'Impossible de changer le statut.' },
+    meta: { errorMessage: t('error.status_failed') },
     mutationFn: ({ id, status }: { id: string; status: ItemStatus }) =>
       api.items.update(id, { status }),
     onMutate: async ({ id, status }) => {
@@ -169,10 +180,11 @@ export function useSetItemStatus() {
     },
     onError: (_e, _v, ctx) => restore(qc, ctx?.snap),
     onSuccess: (item) => qc.setQueryData(itemKey(item.id), item),
-    onSettled: () => {
+    onSettled: (_d, _e, { id }) => {
       qc.invalidateQueries({ queryKey: itemsListKey })
       qc.invalidateQueries({ queryKey: queueKey })
       qc.invalidateQueries({ queryKey: statsKey })
+      qc.invalidateQueries({ queryKey: eventsKey(id) })
     },
   })
 }
@@ -180,7 +192,7 @@ export function useSetItemStatus() {
 export function useUpdateItem() {
   const qc = useQueryClient()
   return useMutation({
-    meta: { errorMessage: 'Modification non enregistrée. Réessayez.' },
+    meta: { errorMessage: t('error.save_failed') },
     mutationFn: ({ id, input }: { id: string; input: UpdateItemInput }) =>
       api.items.update(id, input),
     onSuccess: (item, { input }) => {
@@ -219,7 +231,7 @@ export function useDeleteItem() {
 export function useRefreshItem() {
   const qc = useQueryClient()
   return useMutation({
-    meta: { errorMessage: 'Impossible de récupérer les métadonnées. Réessaie plus tard.' },
+    meta: { errorMessage: t('item.refresh.failed') },
     mutationFn: (id: string) => api.items.refresh(id),
     onSuccess: ({ item }) => {
       putItem(qc, item)
@@ -232,6 +244,16 @@ export function useShareItem() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ShareInput }) => api.items.share(id, input),
-    onSuccess: () => qc.invalidateQueries({ queryKey: statsKey }),
+    onSuccess: (_res, { id }) => {
+      qc.invalidateQueries({ queryKey: statsKey })
+      qc.invalidateQueries({ queryKey: eventsKey(id) })
+    },
   })
+}
+
+/** Delete an item right away (the « Annuler » of the capture toast) and refresh every list. */
+export async function removeItemNow(qc: QueryClient, id: string) {
+  await api.items.remove(id)
+  qc.removeQueries({ queryKey: itemKey(id) })
+  for (const key of [itemsListKey, queueKey, tagsKey, statsKey]) qc.invalidateQueries({ queryKey: key })
 }

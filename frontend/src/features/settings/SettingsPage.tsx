@@ -21,21 +21,24 @@ import {
 import { errorMessage } from '@/lib/errors'
 import { browserTimeZone, timeZoneOptions } from '@/lib/timezone'
 import type { Locale, Theme, User } from '@/lib/api'
-import { useT, type MessageKey } from '@/lib/i18n'
+import { useT, type MessageKey, type TFunction } from '@/lib/i18n'
 import { useLocalePreference } from '@/hooks/useLocale'
 import { useTheme } from '@/hooks/useTheme'
 import type { IconBase } from '@/components/Icon'
 
-const sectionClass = 'rounded-2xl bg-card p-4 ring-1 ring-border'
-const headingClass = 'text-xs font-semibold tracking-wide text-muted-foreground uppercase'
+const sectionClass = 'panel'
+const headingClass = 'h-label'
 
-const profileSchema = z.object({
-  first_name: z.string().trim().min(1, 'Prénom requis').max(50, '50 caractères maximum'),
-  last_name: z.string().trim().min(1, 'Nom requis').max(50, '50 caractères maximum'),
-})
-type ProfileValues = z.infer<typeof profileSchema>
+const makeProfileSchema = (t: TFunction) =>
+  z.object({
+    first_name: z.string().trim().min(1, t('auth.validation.first_name_required')).max(50, t('auth.validation.max_50')),
+    last_name: z.string().trim().min(1, t('auth.validation.last_name_required')).max(50, t('auth.validation.max_50')),
+  })
+type ProfileValues = z.infer<ReturnType<typeof makeProfileSchema>>
 
 function ProfileSection({ me }: { me: User }) {
+  const t = useT()
+  const profileSchema = useMemo(() => makeProfileSchema(t), [t])
   const update = useUpdateMe()
   const {
     register,
@@ -51,41 +54,38 @@ function ProfileSection({ me }: { me: User }) {
     update.mutate(values, {
       onSuccess: (user) => {
         reset({ first_name: user.first_name, last_name: user.last_name })
-        toast.success('Nom mis à jour.')
+        toast.success(t('settings.name_updated'))
       },
     })
 
   return (
     <section className={sectionClass}>
-      <h2 className={headingClass}>Compte</h2>
+      <h2 className={headingClass}>{t('settings.account')}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{me.email}</p>
       <form onSubmit={handleSubmit(onSubmit)} className="mt-3 space-y-3" noValidate>
         <div className="grid grid-cols-2 gap-3">
           <Field
             id="first_name"
-            label="Prénom"
+            label={t('auth.first_name')}
             autoComplete="given-name"
             error={errors.first_name?.message}
             {...register('first_name')}
           />
           <Field
             id="last_name"
-            label="Nom"
+            label={t('auth.last_name')}
             autoComplete="family-name"
             error={errors.last_name?.message}
             {...register('last_name')}
           />
         </div>
-        <p className="text-xs text-muted-foreground">
-          Ton nom s’affiche quand tu envoies un lien à quelqu’un. Il n’est visible par personne
-          d’autre.
-        </p>
+        <p className="text-xs text-muted-foreground">{t('auth.name_note')}</p>
         <Button
           type="submit"
-          className="h-10 w-full rounded-xl"
+          className="h-10 w-full rounded-[10px]"
           disabled={!isDirty || update.isPending}
         >
-          Enregistrer
+          {t('common.save')}
         </Button>
       </form>
     </section>
@@ -114,7 +114,7 @@ function AppearanceSection() {
       <p id="theme-label" className="mt-3 text-sm font-medium">
         {t('theme.label')}
       </p>
-      <div role="group" aria-labelledby="theme-label" className="seg full mt-1.5">
+      <div role="group" aria-labelledby="theme-label" className="seg full mt-2">
         {THEMES.map((o) => (
           <button key={o.value} type="button" aria-pressed={theme === o.value} onClick={() => setTheme(o.value)}>
             <Icon name={o.icon} small />
@@ -122,10 +122,10 @@ function AppearanceSection() {
           </button>
         ))}
       </div>
-      <p id="locale-label" className="mt-4 text-sm font-medium">
+      <p id="locale-label" className="mt-3 text-sm font-medium">
         {t('locale.label')}
       </p>
-      <div role="group" aria-labelledby="locale-label" className="seg full mt-1.5">
+      <div role="group" aria-labelledby="locale-label" className="seg full mt-2">
         {LOCALES.map((o) => (
           <button key={o.value} type="button" aria-pressed={preference === o.value} onClick={() => setPreference(o.value)}>
             {t(o.label)}
@@ -137,30 +137,29 @@ function AppearanceSection() {
 }
 
 function TimezoneSection({ timezone }: { timezone: string }) {
+  const t = useT()
   const update = useUpdateMe()
   const browserTz = browserTimeZone()
   const options = useMemo(() => timeZoneOptions(timezone), [timezone])
 
   const change = (tz: string) => {
     if (tz === timezone) return
-    update.mutate({ timezone: tz }, { onSuccess: () => toast.success('Fuseau horaire mis à jour.') })
+    update.mutate({ timezone: tz }, { onSuccess: () => toast.success(t('settings.timezone.updated')) })
   }
 
   return (
     <section className={sectionClass}>
-      <h2 className={headingClass}>Fuseau horaire</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Détermine les jours, semaines et séries des statistiques.
-      </p>
+      <h2 className={headingClass}>{t('settings.timezone')}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{t('settings.timezone.hint')}</p>
       <Label htmlFor="timezone" className="mt-3">
-        Fuseau actuel
+        {t('settings.timezone.current')}
       </Label>
       <select
         id="timezone"
         value={timezone}
         disabled={update.isPending}
         onChange={(e) => change(e.target.value)}
-        className="mt-1.5 h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
+        className="mt-1.5 h-10 w-full rounded-[10px] border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
       >
         {options.map((tz) => (
           <option key={tz} value={tz}>
@@ -171,24 +170,27 @@ function TimezoneSection({ timezone }: { timezone: string }) {
       {browserTz !== timezone && (
         <Button
           variant="outline"
-          className="mt-3 h-10 w-full rounded-xl"
+          className="mt-3 h-10 w-full rounded-[10px]"
           disabled={update.isPending}
           onClick={() => change(browserTz)}
         >
-          Utiliser celui de mon navigateur ({browserTz})
+          {t('settings.timezone.use_browser', { tz: browserTz })}
         </Button>
       )}
     </section>
   )
 }
 
-const passwordSchema = z.object({
-  current_password: z.string().min(1, 'Mot de passe actuel requis'),
-  new_password: z.string().min(8, '8 caractères minimum'),
-})
-type PasswordValues = z.infer<typeof passwordSchema>
+const makePasswordSchema = (t: TFunction) =>
+  z.object({
+    current_password: z.string().min(1, t('settings.password.current_required')),
+    new_password: z.string().min(8, t('auth.validation.password_min')),
+  })
+type PasswordValues = z.infer<ReturnType<typeof makePasswordSchema>>
 
 function PasswordSection() {
+  const t = useT()
+  const passwordSchema = useMemo(() => makePasswordSchema(t), [t])
   const change = useChangePassword()
   const {
     register,
@@ -201,17 +203,17 @@ function PasswordSection() {
     change.mutate(values, {
       onSuccess: () => {
         reset()
-        toast.success('Mot de passe modifié. Tes autres appareils sont déconnectés.')
+        toast.success(t('settings.password.changed'))
       },
     })
 
   return (
     <section className={sectionClass}>
-      <h2 className={headingClass}>Mot de passe</h2>
+      <h2 className={headingClass}>{t('auth.password')}</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="mt-3 space-y-3" noValidate>
         <Field
           id="current_password"
-          label="Mot de passe actuel"
+          label={t('settings.password.current')}
           type="password"
           autoComplete="current-password"
           error={errors.current_password?.message}
@@ -219,20 +221,20 @@ function PasswordSection() {
         />
         <Field
           id="new_password"
-          label="Nouveau mot de passe"
+          label={t('auth.reset.new_password')}
           type="password"
           autoComplete="new-password"
-          hint="8 caractères minimum."
+          hint={t('auth.password.hint')}
           error={errors.new_password?.message}
           {...register('new_password')}
         />
         {change.error && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(change.error, 'Modification impossible. Réessaie.')}
+            {errorMessage(change.error, t('settings.password.failed'))}
           </p>
         )}
-        <Button type="submit" className="h-10 w-full rounded-xl" disabled={change.isPending}>
-          Changer le mot de passe
+        <Button type="submit" className="h-10 w-full rounded-[10px]" disabled={change.isPending}>
+          {t('settings.password.submit')}
         </Button>
       </form>
     </section>
@@ -240,6 +242,7 @@ function PasswordSection() {
 }
 
 function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const t = useT()
   const navigate = useNavigate()
   const del = useDeleteAccount()
   const [password, setPassword] = useState('')
@@ -256,31 +259,25 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     <ConfirmDialog
       open={open}
       onOpenChange={close}
-      title="Supprimer mon compte"
-      description={
-        <>
-          Tout sera supprimé immédiatement et définitivement : ta bibliothèque, tes tags, ta file
-          d’attente, tes statistiques et tes sessions. Les liens que tu as envoyés restent chez leurs
-          destinataires, sans ton nom.
-        </>
-      }
-      confirmLabel="Supprimer définitivement"
+      title={t('settings.delete.title')}
+      description={t('settings.delete.body')}
+      confirmLabel={t('settings.delete.confirm')}
       pending={del.isPending}
-      error={del.error ? errorMessage(del.error, 'Suppression impossible. Réessaie.') : null}
+      error={del.error ? errorMessage(del.error, t('settings.delete.failed')) : null}
       onConfirm={() => {
         if (!password) return
         del.mutate(password, { onSuccess: () => navigate('/login', { replace: true }) })
       }}
     >
-      <div className="space-y-1.5">
-        <Label htmlFor="delete-password">Confirme avec ton mot de passe</Label>
+      <div className="space-y-2">
+        <Label htmlFor="delete-password">{t('settings.delete.password')}</Label>
         <Input
           id="delete-password"
           type="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="h-11 rounded-xl text-base md:text-sm"
+          className="h-10 rounded-[10px] text-base md:text-sm"
         />
       </div>
     </ConfirmDialog>
@@ -288,6 +285,7 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 }
 
 function SessionSection() {
+  const t = useT()
   const logout = useLogout()
   const logoutAll = useLogoutAll()
   const navigate = useNavigate()
@@ -295,25 +293,25 @@ function SessionSection() {
 
   return (
     <section className={sectionClass}>
-      <h2 className={headingClass}>Sessions</h2>
+      <h2 className={headingClass}>{t('settings.sessions')}</h2>
       <div className="mt-3 space-y-2">
         <Button
           variant="outline"
-          className="h-11 w-full rounded-xl"
+          className="h-10 w-full rounded-[10px]"
           onClick={() => logout.mutate(undefined, { onSettled: () => navigate('/login') })}
         >
-          Se déconnecter
+          {t('settings.logout')}
         </Button>
-        <Button variant="outline" className="h-11 w-full rounded-xl" onClick={() => setConfirmAll(true)}>
-          Me déconnecter partout
+        <Button variant="outline" className="h-10 w-full rounded-[10px]" onClick={() => setConfirmAll(true)}>
+          {t('settings.logout_all')}
         </Button>
       </div>
       <ConfirmDialog
         open={confirmAll}
         onOpenChange={setConfirmAll}
-        title="Me déconnecter partout"
-        description="Tous tes appareils, y compris celui-ci, seront déconnectés. Tu devras te reconnecter."
-        confirmLabel="Me déconnecter partout"
+        title={t('settings.logout_all')}
+        description={t('settings.logout_all.body')}
+        confirmLabel={t('settings.logout_all')}
         destructive={false}
         pending={logoutAll.isPending}
         error={logoutAll.error ? errorMessage(logoutAll.error) : null}
@@ -324,15 +322,14 @@ function SessionSection() {
 }
 
 function DangerZone() {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
-    <section className="rounded-2xl bg-card p-4 ring-1 ring-destructive/40">
-      <h2 className="text-xs font-semibold tracking-wide text-destructive uppercase">Zone de danger</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Supprimer ton compte efface toutes tes données, sans retour possible.
-      </p>
-      <Button variant="destructive" className="mt-3 h-11 w-full rounded-xl" onClick={() => setOpen(true)}>
-        Supprimer mon compte
+    <section className="panel">
+      <h2 className="h-label" style={{ color: 'var(--over)' }}>{t('settings.danger')}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{t('settings.danger.body')}</p>
+      <Button variant="destructive" className="mt-3 h-10 w-full rounded-[10px]" onClick={() => setOpen(true)}>
+        {t('settings.delete.title')}
       </Button>
       <DeleteAccountDialog open={open} onOpenChange={setOpen} />
     </section>
@@ -340,9 +337,10 @@ function DangerZone() {
 }
 
 export function SettingsPage() {
+  const t = useT()
   const { data: me } = useMe()
   return (
-    <div className="mx-auto max-w-xl space-y-4 p-0 md:p-6">
+    <div className="lib form-page mx-auto max-w-xl">
       {me && <ProfileSection key={`${me.first_name}|${me.last_name}`} me={me} />}
       <AppearanceSection />
       {me && <TimezoneSection timezone={me.timezone} />}
@@ -351,10 +349,10 @@ export function SettingsPage() {
       {me?.role === 'admin' && (
         <Link
           to="/admin"
-          className="flex items-center gap-3 rounded-2xl bg-card p-4 text-sm font-medium ring-1 ring-border md:hidden"
+          className="panel flex items-center gap-3 text-sm font-medium md:hidden"
         >
           <Icon name="shield-check" className="size-5" />
-          Administration
+          {t('nav.admin')}
         </Link>
       )}
       <DangerZone />

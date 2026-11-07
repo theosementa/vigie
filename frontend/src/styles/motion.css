@@ -1,0 +1,96 @@
+/* Vigie motion: one set of durations and one easing (--ease, tokens.css) for the whole app.
+   Everything here is switched off by the prefers-reduced-motion rule at the end of base.css,
+   except the spinners, which keep turning slowly (a frozen loader no longer says "loading"). */
+
+:root {
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+}
+
+@layer components {
+  /* Colour / fill / press feedback on every interactive control */
+  .tab, .nav a, .nav-btn, .rail-link, .icon-btn, .chip, .start, .cta, .btn, .link-btn, .it {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform, filter;
+    transition-duration: var(--dur-base);
+    transition-timing-function: var(--ease);
+  }
+  .field {
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  }
+
+  .tab .i, .rail-link .i {
+    transition: transform var(--dur-fast) var(--ease);
+  }
+  .tab:active .i, .rail-link:active .i { transform: scale(.86); }
+  .start:active { transform: scale(.92); }
+  .cta:active, .btn:active { transform: scale(.97); }
+  .icon-btn:active, .chip:active { transform: scale(.94); }
+  .it:has(.open:active) { background: var(--surface-2); }
+
+  /* The active icon pops in when its tab becomes current */
+  @keyframes pop {
+    0% { transform: scale(.78); }
+    60% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+  .tab[aria-current="page"] .i, .rail-link[aria-current="page"] .i {
+    animation: pop 300ms var(--ease);
+  }
+
+  /* Hover only where there is a real pointer: no sticky hover on touch screens */
+  @media (hover: hover) {
+    .nav a:hover, .nav-btn:hover, .rail-link:hover { background: var(--surface-2); color: var(--text); }
+    .icon-btn:hover { background: color-mix(in srgb, var(--surface-2) 82%, var(--text)); }
+    .chip:hover:not([aria-pressed="true"]) { color: var(--text); background: color-mix(in srgb, var(--surface-2) 82%, var(--text)); }
+    .btn-accent:hover, .start:hover, .cta:hover { filter: brightness(1.07); }
+    .btn-2:hover { background: color-mix(in srgb, var(--surface-2) 82%, var(--text)); }
+    .btn-ghost:hover, .btn-danger:hover { background: var(--surface-2); }
+    .link-btn:hover { opacity: .75; }
+  }
+
+  /* Toggle: the track fades along with the thumb */
+  .switch {
+    transition: background-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease);
+  }
+  .switch::after {
+    transition: left var(--dur-base) var(--ease), background-color var(--dur-base) var(--ease);
+  }
+
+  /* Card actions slide in with the fade */
+  .card-actions {
+    transform: translateY(-4px);
+    transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease);
+  }
+  .card:hover .card-actions, .card:focus-within .card-actions, .card-actions:has([data-popup-open]) {
+    transform: none;
+  }
+  @media (pointer: coarse) { .card-actions { transform: none; } }
+
+  /* Page change: the new screen fades in (opacity only: a transform would re-anchor the fixed inspector) */
+  @keyframes page-in { from { opacity: 0; } }
+  .page-in { animation: page-in var(--dur-base) var(--ease); }
+
+  /* Rows / cards / empty states rise in, staggered by --i (set inline, kept small) */
+  @keyframes enter { from { opacity: 0; translate: 0 8px; } }
+  .enter, .empty {
+    animation: enter var(--dur-slow) var(--ease) backwards;
+    animation-delay: calc(var(--i, 0) * 35ms);
+  }
+
+  /* A removed row collapses instead of vanishing (see useLeaving) */
+  @keyframes leave { to { grid-template-rows: 0fr; opacity: 0; } }
+  @keyframes leave-card { to { opacity: 0; scale: .96; } }
+  .leaving {
+    display: grid;
+    grid-template-rows: 1fr;
+    pointer-events: none;
+    animation: leave 240ms var(--ease) forwards;
+  }
+  .leaving > * { min-height: 0; overflow: hidden; }
+  .cards > .leaving { animation-name: leave-card; display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin { animation: spin 1.8s linear infinite !important; }
+}

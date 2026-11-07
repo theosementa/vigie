@@ -30,6 +30,9 @@ export function SwipeableRow({
   children: ReactNode
 }) {
   const [dx, setDx] = useState(0)
+  // Last non-zero offset: keeps the action layer mounted while the row slides back.
+  const [shown, setShown] = useState(0)
+  const armed = useRef(false)
   const [dragging, setDragging] = useState(false)
   const start = useRef<{ x: number; y: number; id: number } | null>(null)
   const locked = useRef(false)
@@ -58,7 +61,13 @@ export function SwipeableRow({
         e.currentTarget.setPointerCapture(e.pointerId)
       } else return
     }
-    setDx(Math.max(-MAX, Math.min(MAX, mx)))
+    const next = Math.max(-MAX, Math.min(MAX, mx))
+    setDx(next)
+    if (next !== 0) setShown(next)
+    // Short tick the moment the swipe becomes strong enough to trigger.
+    const isArmed = Math.abs(next) >= TRIGGER
+    if (isArmed && !armed.current) navigator.vibrate?.(8)
+    armed.current = isArmed
   }
 
   const finish = (e: PointerEvent<HTMLDivElement>, cancelled: boolean) => {
@@ -69,6 +78,7 @@ export function SwipeableRow({
     locked.current = false
     swiped.current = true
     setDragging(false)
+    armed.current = false
     const final = dx
     setDx(0)
     if (cancelled) return
@@ -77,22 +87,29 @@ export function SwipeableRow({
     else if (final <= -TRIGGER) left.onTrigger()
   }
 
-  const side = dx > 0 ? (dx >= EXTENDED && right.extended ? right.extended : right) : left
+  const side = shown > 0 ? (dx >= EXTENDED && right.extended ? right.extended : right) : left
   const progress = Math.min(1, Math.abs(dx) / TRIGGER)
+  const reached = progress >= 1
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
-      {dx !== 0 && (
+    <div className="relative overflow-hidden">
+      {shown !== 0 && (
         <div
           aria-hidden
           className={cn(
-            'absolute inset-0 flex items-center px-6 text-sm font-semibold',
-            dx > 0 ? 'justify-start' : 'justify-end',
+            'absolute inset-0 flex items-center px-6 text-sm font-medium',
+            shown > 0 ? 'justify-start' : 'justify-end',
             side.className,
           )}
-          style={{ opacity: 0.4 + progress * 0.6 }}
+          style={{
+            opacity: dx === 0 ? 0 : 0.4 + progress * 0.6,
+            transition: dragging ? 'none' : 'opacity 200ms var(--ease)',
+          }}
         >
-          <span className="flex items-center gap-2 [&_svg]:size-5">
+          <span
+            className="flex items-center gap-2 transition-transform duration-150 [&_svg]:size-5"
+            style={{ transform: reached ? 'scale(1.08)' : 'scale(1)' }}
+          >
             {side.icon}
             {side.label}
           </span>
@@ -104,6 +121,9 @@ export function SwipeableRow({
         onPointerMove={onPointerMove}
         onPointerUp={(e) => finish(e, false)}
         onPointerCancel={(e) => finish(e, true)}
+        onTransitionEnd={(e) => {
+          if (e.target === e.currentTarget && dx === 0) setShown(0)
+        }}
         onClickCapture={(e) => {
           if (swiped.current) {
             e.preventDefault()
@@ -113,7 +133,7 @@ export function SwipeableRow({
         }}
         style={{
           transform: `translateX(${dx}px)`,
-          transition: dragging ? 'none' : 'transform 200ms ease-out',
+          transition: dragging ? 'none' : 'transform 260ms var(--ease)',
           touchAction: 'pan-y',
         }}
         className="relative"

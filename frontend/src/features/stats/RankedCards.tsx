@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { StatsSummary } from '@/lib/api'
-import { formatCount, plural } from './format'
+import { useT } from '@/lib/i18n'
+import { formatCount } from './format'
 import { EmptyNote, StatsCard } from './StatsCard'
 
 interface Row {
@@ -11,6 +12,7 @@ interface Row {
 }
 
 function RankedList({ title, rows, empty }: { title: string; rows: Row[]; empty: string }) {
+  const t = useT()
   const max = Math.max(1, ...rows.map((r) => r.count))
   return (
     <StatsCard title={title}>
@@ -32,7 +34,7 @@ function RankedList({ title, rows, empty }: { title: string; rows: Row[]; empty:
                 <span className="relative min-w-0 truncate font-medium">{r.label}</span>
                 <span className="relative shrink-0 text-muted-foreground tabular-nums">
                   {formatCount(r.count)}
-                  <span className="sr-only"> {plural(r.count, 'élément vu', 'éléments vus')}</span>
+                  <span className="sr-only"> {t('stats.items_seen', { count: r.count })}</span>
                 </span>
               </Link>
             </li>
@@ -45,15 +47,16 @@ function RankedList({ title, rows, empty }: { title: string; rows: Row[]; empty:
 
 /** Clicking a row opens the library (seen items) filtered on it. */
 export function TopTagsCard({ tags }: { tags: StatsSummary['top_tags'] }) {
+  const t = useT()
   return (
     <RankedList
-      title="Top tags"
-      empty="Aucun tag sur les éléments vus de la période."
-      rows={tags.map((t) => ({
-        key: t.name,
-        label: `#${t.name}`,
-        count: t.count,
-        to: `/?status=seen&tag=${encodeURIComponent(t.name)}`,
+      title={t('stats.top_tags')}
+      empty={t('stats.top_tags.empty')}
+      rows={tags.map((tag) => ({
+        key: tag.name,
+        label: `#${tag.name}`,
+        count: tag.count,
+        to: `/?status=seen&tag=${encodeURIComponent(tag.name)}`,
       }))}
     />
   )
@@ -61,10 +64,11 @@ export function TopTagsCard({ tags }: { tags: StatsSummary['top_tags'] }) {
 
 // The library has no source filter: the search box matches the site name.
 export function TopSourcesCard({ sources }: { sources: StatsSummary['top_sources'] }) {
+  const t = useT()
   return (
     <RankedList
-      title="Top sources"
-      empty="Aucune source sur les éléments vus de la période."
+      title={t('stats.top_sources')}
+      empty={t('stats.top_sources.empty')}
       rows={sources.map((s) => ({
         key: s.site_name,
         label: s.site_name,

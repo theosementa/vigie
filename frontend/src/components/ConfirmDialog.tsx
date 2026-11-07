@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/lib/i18n'
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export function ConfirmDialog({
   onConfirm: () => void
   children?: ReactNode
 }) {
+  const t = useT()
   return (
     <Dialog open={open} onOpenChange={(o) => !pending && onOpenChange(o)}>
       <DialogContent className="sm:max-w-md">
@@ -61,7 +63,7 @@ export function ConfirmDialog({
               disabled={pending}
               onClick={() => onOpenChange(false)}
             >
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -69,7 +71,7 @@ export function ConfirmDialog({
               className="h-10 rounded-xl"
               disabled={pending}
             >
-              {pending ? 'Un instant…' : confirmLabel}
+              {pending ? t('common.pending') : confirmLabel}
             </Button>
           </DialogFooter>
         </form>

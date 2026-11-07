@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react'
 
 export interface AddItemApi {
-  /** Open the add-a-link flow (sheet on mobile, dialog on desktop). */
-  open: () => void
+  /** Open the capture (full-screen sheet on a phone, modal from 768 px), optionally with a link already filled in. */
+  open: (url?: string) => void
 }
 
 export const AddItemContext = createContext<AddItemApi | null>(null)

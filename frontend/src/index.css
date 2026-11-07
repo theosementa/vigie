@@ -3,6 +3,12 @@
 @import "./styles/fonts.css";
 @import "./styles/tokens.css";
 @import "./styles/base.css";
+@import "./styles/motion.css";
+
+/* Every Tailwind `transition` utility (shadcn components included) uses the DA easing. */
+@theme {
+  --default-transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
 /* `dark:` follows the Vigie theme: an explicit data-theme wins, otherwise the OS setting. */
 @custom-variant dark {

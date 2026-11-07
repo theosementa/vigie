@@ -14,6 +14,20 @@ export function formatReadingTime(minutes: number): string {
   return t('format.reading_time', { minutes })
 }
 
+/** "12 min": reading time in the meta line of a card. */
+export function formatMinutesShort(minutes: number): string {
+  return t('format.minutes', { minutes })
+}
+
+/** 45 -> "45 min", 125 -> "2 h 05", 120 -> "2 h" (non-breaking spaces in French). */
+export function formatMinutes(totalMinutes: number): string {
+  const m = Math.max(0, Math.round(totalMinutes))
+  const h = Math.floor(m / 60)
+  const rest = m % 60
+  if (h === 0) return t('format.minutes', { minutes: rest })
+  return rest === 0 ? t('format.hours', { h }) : t('format.hours_minutes', { h, m: String(rest).padStart(2, '0') })
+}
+
 export function hostname(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '')
@@ -56,4 +70,22 @@ export function fullName(u: { first_name: string; last_name: string }): string {
 /** Up to two initials, for avatars. */
 export function initials(u: { first_name: string; last_name: string }): string {
   return `${u.first_name.charAt(0)}${u.last_name.charAt(0)}`.toUpperCase()
+}
+
+/** "Thursday 5 November" / "jeudi 5 novembre" */
+export function formatDayLong(date: Date = new Date(), locale: Locale = getLocale()): string {
+  return date.toLocaleDateString(intlLocale(locale), { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+/** ISO datetime -> "today", "yesterday", "3 days ago", then a short date (week-old and older). */
+export function formatRelativeDay(iso: string, locale: Locale = getLocale()): string {
+  const day = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const days = Math.round((day(new Date(iso)) - day(new Date())) / 86_400_000)
+  if (days < -6) return formatShortDate(iso, locale)
+  return new Intl.RelativeTimeFormat(intlLocale(locale), { numeric: 'auto' }).format(Math.min(days, 0), 'day')
+}
+
+/** True when the ISO datetime falls on the user's current calendar day. */
+export function isToday(iso: string): boolean {
+  return new Date(iso).toDateString() === new Date().toDateString()
 }

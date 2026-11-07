@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { LogoMark } from '@/components/Logo'
 
 export function AuthCard({
   title,
@@ -16,9 +15,15 @@ export function AuthCard({
     <div className="pt-safe pb-safe flex min-h-dvh items-center justify-center bg-bg px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-accent text-on-accent">
-            <LogoMark size={30} />
-          </div>
+          <img
+            src="/app-icon.png"
+            width={112}
+            height={112}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            className="rounded-[22.37%] ring-1 ring-line"
+          />
           <h1 className="text-2xl font-medium tracking-tight">{title}</h1>
           <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>

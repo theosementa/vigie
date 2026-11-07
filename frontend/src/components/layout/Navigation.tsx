@@ -1,12 +1,10 @@
-import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { Icon } from '@/components/Icon'
 import { LogoMark } from '@/components/Logo'
 import { useAddItem } from '@/features/items/addItemContext'
-import { useTags } from '@/features/items/queries'
 import { useMe } from '@/features/auth/useAuth'
 import { fullName, initials } from '@/lib/format'
 import { useT } from '@/lib/i18n'
-import { cn } from '@/lib/utils'
 import { ADMIN_ENTRY, NAV, SETTINGS_ENTRY, type NavEntry } from './nav'
 import { useNavCounts } from './useNavCounts'
 
@@ -30,7 +28,7 @@ export function TabBar() {
       {tab(library)}
       {tab(queue)}
       <div className="tab-start">
-        <button type="button" className="start" aria-label={t('nav.add.label')} title={t('nav.add.label')} onClick={open}>
+        <button type="button" className="start" aria-label={t('nav.add.label')} title={t('nav.add.label')} onClick={() => open()}>
           <Icon name="add" />
         </button>
       </div>
@@ -69,7 +67,7 @@ export function Rail() {
       <Link to="/" className="logo" aria-label={t('shell.logo')} title={t('shell.logo')}>
         <LogoMark />
       </Link>
-      <button type="button" className="start" aria-label={t('nav.add.label')} title={t('nav.add.label')} onClick={open}>
+      <button type="button" className="start" aria-label={t('nav.add.label')} title={t('nav.add.label')} onClick={() => open()}>
         <Icon name="add" />
       </button>
       <nav className="rail-nav" aria-label={t('nav.main')}>
@@ -87,11 +85,7 @@ export function Rail() {
 export function Sidebar() {
   const t = useT()
   const { data: me } = useMe()
-  const { data: tags = [] } = useTags()
   const counts = useNavCounts()
-  const { pathname } = useLocation()
-  const [params] = useSearchParams()
-  const activeTag = pathname === '/' ? params.get('tag') : null
 
   const count: Record<string, React.ReactNode> = {
     '/': counts.toWatch,
@@ -117,32 +111,12 @@ export function Sidebar() {
 
   return (
     <aside className="side only-desktop" aria-label={t('nav.main')}>
-      <Link to="/" className="logo">
-        <LogoMark />
-        {t('shell.logo')}
-      </Link>
       <nav className="nav" aria-label={t('nav.main')}>
         {NAV.map(link)}
         <div className="nav-sep" />
         {link(SETTINGS_ENTRY)}
         {me?.role === 'admin' && link(ADMIN_ENTRY)}
       </nav>
-      {tags.length > 0 && (
-        // Tag filter kept until the library gets its own chips (DA); the DA sidebar has no tag list.
-        <nav className="nav" aria-label="Tags">
-          {tags.map((tag) => (
-            <Link
-              key={tag.id}
-              to={`/?tag=${encodeURIComponent(tag.name)}`}
-              aria-current={activeTag === tag.name ? 'page' : undefined}
-            >
-              <Icon name="hashtag" small />
-              <span className={cn('min-w-0 truncate')}>{tag.name}</span>
-              <span className="n">{tag.item_count}</span>
-            </Link>
-          ))}
-        </nav>
-      )}
       {me && (
         <div className="me">
           <span className="av" aria-hidden="true">{initials(me)}</span>

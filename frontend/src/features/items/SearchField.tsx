@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/Icon'
-import { Input } from '@/components/ui/input'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /** Search input, pushes the value to the URL after a 300 ms debounce. */
@@ -9,11 +9,14 @@ export function SearchField({
   value,
   onChange,
   className,
+  autoFocus,
 }: {
   value: string
   onChange: (q: string) => void
   className?: string
+  autoFocus?: boolean
 }) {
+  const t = useT()
   const [text, setText] = useState(value)
   const debounced = useDebouncedValue(text, 300)
 
@@ -23,16 +26,16 @@ export function SearchField({
   }, [debounced])
 
   return (
-    <div className={cn('relative', className)}>
-      <Icon name="magnifier" className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
+    <label className={cn('in', className)}>
+      <Icon name="magnifier" className="xs" />
+      <input
         type="search"
         value={text}
+        autoFocus={autoFocus}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Rechercher"
-        aria-label="Rechercher"
-        className="h-9 rounded-xl border-transparent bg-muted pl-8"
+        placeholder={t('search.placeholder')}
+        aria-label={t('search.label')}
       />
-    </div>
+    </label>
   )
 }

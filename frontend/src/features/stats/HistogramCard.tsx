@@ -1,21 +1,23 @@
 import type { StatsSummary } from '@/lib/api'
 import { BarChart } from './BarChart'
 import { currentRange, previousRange, rangeLabel } from './dates'
-import { formatCount, plural } from './format'
+import { useT } from '@/lib/i18n'
+import { formatCount } from './format'
 import { EmptyNote, ErrorNote, Skeleton, StatsCard } from './StatsCard'
 import { useTimeseries } from './queries'
 
 function Legend() {
+  const t = useT()
   return (
     <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
       <li className="flex items-center gap-1.5">
-        <span aria-hidden className="size-2.5 rounded-sm bg-chart-1" /> Articles
+        <span aria-hidden className="size-2.5 rounded-sm bg-chart-1" /> {t('type.articles')}
       </li>
       <li className="flex items-center gap-1.5">
-        <span aria-hidden className="size-2.5 rounded-sm bg-chart-4" /> Vidéos
+        <span aria-hidden className="size-2.5 rounded-sm bg-chart-4" /> {t('type.videos')}
       </li>
       <li className="flex items-center gap-1.5">
-        <span aria-hidden className="size-2.5 rounded-sm bg-muted-foreground/30" /> Période précédente
+        <span aria-hidden className="size-2.5 rounded-sm bg-muted-foreground/30" /> {t('stats.previous')}
       </li>
     </ul>
   )
@@ -23,6 +25,7 @@ function Legend() {
 
 /** Items seen per bucket (stacked articles/videos) over the previous period as a grey ghost. */
 export function HistogramCard({ summary }: { summary: StatsSummary }) {
+  const t = useT()
   const { period, start, end } = summary
   const cur = currentRange(period, start, end)
   const prevRange = previousRange(period, start)
@@ -35,22 +38,23 @@ export function HistogramCard({ summary }: { summary: StatsSummary }) {
   const hasData =
     (current.data?.points.some((p) => p.value > 0) ?? false) || (prevPoints?.some((p) => p.value > 0) ?? false)
 
-  const label = `Éléments vus, ${rangeLabel(period, start, end)} : ${formatCount(total)} au total, articles et vidéos par ${
-    cur.granularity === 'month' ? 'mois' : 'jour'
-  }, comparé à la période précédente.`
+  const label = t(cur.granularity === 'month' ? 'stats.histogram.label_month' : 'stats.histogram.label_day', {
+    range: rangeLabel(period, start, end),
+    total: formatCount(total),
+  })
 
   return (
-    <StatsCard title="Éléments vus" className="md:col-span-2">
+    <StatsCard title={t('stats.items_seen_title')} className="md:col-span-2">
       {current.isError ? (
-        <ErrorNote message="Impossible de charger l'histogramme." onRetry={() => current.refetch()} />
+        <ErrorNote message={t('stats.histogram.error')} onRetry={() => current.refetch()} />
       ) : !current.data ? (
         <Skeleton className="h-[240px]" />
       ) : (
         <>
-          <p className="text-3xl font-bold tabular-nums">
+          <p className="text-3xl font-medium tabular-nums">
             {formatCount(total)}{' '}
             <span className="text-base font-medium text-muted-foreground">
-              {plural(total, 'élément vu', 'éléments vus')}
+              {t('stats.items_seen', { count: total })}
             </span>
           </p>
           <div className="mt-2 mb-3">
@@ -65,7 +69,7 @@ export function HistogramCard({ summary }: { summary: StatsSummary }) {
               label={label}
             />
           ) : (
-            <EmptyNote>Aucun élément vu sur cette période ni sur la précédente.</EmptyNote>
+            <EmptyNote>{t('stats.histogram.empty')}</EmptyNote>
           )}
         </>
       )}

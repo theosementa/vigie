@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
+import { useT } from '@/lib/i18n'
 import { formatCount } from './format'
 
 const PAD = { l: 30, r: 6, t: 10, b: 24 }
@@ -56,6 +57,7 @@ export function ChartShell({
   anchorValue: (i: number) => number
   children: (geo: Geo, active: number | null) => ReactNode
 }) {
+  const t = useT()
   const [ref, width] = useElementWidth<HTMLDivElement>()
   const [active, setActive] = useState<number | null>(null)
 
@@ -103,7 +105,7 @@ export function ChartShell({
       ref={ref}
       tabIndex={0}
       role="group"
-      aria-label={`${label}. Flèches gauche et droite pour parcourir les valeurs.`}
+      aria-label={`${label}. ${t('stats.chart.keys')}`}
       onKeyDown={onKeyDown}
       onFocus={() => setActive((a) => a ?? count - 1)}
       onBlur={() => setActive(null)}

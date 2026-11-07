@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react'
 import { Icon } from '@/components/Icon'
 import { Button } from '@/components/ui/button'
+import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /** Titled card; the heading labels the region for assistive tech. */
@@ -19,7 +20,7 @@ export function StatsCard({
   return (
     <section aria-labelledby={id} className={cn('rounded-2xl bg-card p-4 ring-1 ring-border', className)}>
       <div className="flex items-center justify-between gap-2">
-        <h2 id={id} className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h2 id={id} className="h-label">
           {title}
         </h2>
         {action}
@@ -38,11 +39,12 @@ export function EmptyNote({ children }: { children: ReactNode }) {
 }
 
 export function ErrorNote({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const t = useT()
   return (
     <div role="alert" className="flex flex-col items-center gap-3 py-6 text-center">
       <p className="text-sm text-destructive">{message}</p>
       <Button variant="outline" size="sm" onClick={onRetry}>
-        <Icon name="restart" /> Réessayer
+        <Icon name="restart" /> {t('common.retry')}
       </Button>
     </div>
   )
@@ -58,10 +60,11 @@ export function ChartDataTable({
   columns: string[]
   rows: (string | number)[][]
 }) {
+  const t = useT()
   return (
     <details className="mt-3 text-sm">
       <summary className="w-fit cursor-pointer rounded text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-        Afficher les données en tableau
+        {t('stats.table.show')}
       </summary>
       <div className="mt-2 max-h-64 overflow-auto rounded-lg ring-1 ring-border">
         <table className="w-full text-left text-xs tabular-nums">

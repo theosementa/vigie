@@ -1,5 +1,6 @@
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { DesktopLibrary } from './desktop/DesktopLibrary'
+import { ItemDetailHost } from './ItemDetailHost'
 import { MobileLibrary } from './mobile/MobileLibrary'
 import { useLibrary } from './useLibrary'
 
@@ -7,5 +8,10 @@ import { useLibrary } from './useLibrary'
 export function LibraryPage({ sharedOnly = false }: { sharedOnly?: boolean }) {
   const isMobile = useIsMobile()
   const lib = useLibrary(sharedOnly)
-  return isMobile ? <MobileLibrary lib={lib} /> : <DesktopLibrary lib={lib} />
+  return (
+    <>
+      {isMobile ? <MobileLibrary lib={lib} /> : <DesktopLibrary lib={lib} />}
+      <ItemDetailHost item={lib.selected} onClose={lib.close} />
+    </>
+  )
 }

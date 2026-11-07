@@ -1,9 +1,10 @@
-import { useState, type KeyboardEvent } from 'react'
+import { useMemo, useState, type KeyboardEvent } from 'react'
 import { Icon } from '@/components/Icon'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import type { Item, ShareResult } from '@/lib/api'
 import { errorMessage } from '@/lib/errors'
+import { useT, type TFunction } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,10 +18,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { useShareItem } from './queries'
 
 const emailSchema = z.string().email()
-const formSchema = z.object({
-  emails: z.array(emailSchema).min(1, 'Ajoutez au moins une adresse email.').max(20),
-  message: z.string().max(500, '500 caractères maximum.'),
-})
+const makeFormSchema = (t: TFunction) =>
+  z.object({
+    emails: z.array(emailSchema).min(1, t('share.emails_required')).max(20),
+    message: z.string().max(500, t('share.message_max')),
+  })
 
 function splitEmails(raw: string): string[] {
   return raw
@@ -30,6 +32,8 @@ function splitEmails(raw: string): string[] {
 }
 
 function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
+  const t = useT()
+  const formSchema = useMemo(() => makeFormSchema(t), [t])
   const share = useShareItem()
   const [emails, setEmails] = useState<string[]>([])
   const [text, setText] = useState('')
@@ -43,7 +47,7 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
     if (parts.length === 0) return emails
     const invalid = parts.find((p) => !emailSchema.safeParse(p).success)
     if (invalid) {
-      setError(`« ${invalid} » n’est pas une adresse email valide.`)
+      setError(t('share.invalid_email', { email: invalid }))
       return null
     }
     const next = [...emails]
@@ -81,11 +85,11 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
       {
         onSuccess: (res) => {
           setResult(res)
-          if (res.shared.length) toast.success(`Partagé avec ${res.shared.join(', ')}`)
-          else toast('Personne n’a reçu ce lien.')
+          if (res.shared.length) toast.success(t('share.shared_with', { names: res.shared.join(', ') }))
+          else toast(t('share.nobody'))
         },
         onError: (err) =>
-          setError(errorMessage(err, 'Partage impossible. Réessaie.')),
+          setError(errorMessage(err, t('share.failed'))),
       },
     )
   }
@@ -95,21 +99,21 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
       <div className="space-y-3 text-sm">
         {result.shared.length > 0 && (
           <p className="text-ok">
-            Partagé avec : {result.shared.join(', ')}
+            {t('share.result.shared', { names: result.shared.join(', ') })}
           </p>
         )}
         {result.already_had.length > 0 && (
           <p className="text-muted-foreground">
-            L’avait déjà dans sa bibliothèque : {result.already_had.join(', ')}
+            {t('share.result.already', { names: result.already_had.join(', ') })}
           </p>
         )}
         {result.not_found.length > 0 && (
           <p className="text-destructive">
-            Aucun compte trouvé pour : {result.not_found.join(', ')}
+            {t('share.result.not_found', { names: result.not_found.join(', ') })}
           </p>
         )}
         <Button className="h-10 w-full rounded-xl" onClick={onClose}>
-          Terminé
+          {t('common.done')}
         </Button>
       </div>
     )
@@ -118,7 +122,7 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
       <div className="space-y-1.5">
-        <Label htmlFor="share-emails">Destinataires</Label>
+        <Label htmlFor="share-emails">{t('share.recipients')}</Label>
         <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-input p-1.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
           {emails.map((em) => (
             <span
@@ -128,7 +132,7 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
               {em}
               <button
                 type="button"
-                aria-label={`Retirer ${em}`}
+                aria-label={t('tags.remove', { name: em })}
                 onClick={() => setEmails(emails.filter((x) => x !== em))}
                 className="rounded-full p-0.5 hover:bg-line"
               >
@@ -145,20 +149,20 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
             onChange={(e) => setText(e.target.value)}
             onKeyDown={onKeyDown}
             onBlur={() => text.trim() && commit(text)}
-            placeholder={emails.length ? '' : 'ami@exemple.com'}
+            placeholder={emails.length ? '' : t('admin.invite.placeholder')}
             className="min-w-40 flex-1 bg-transparent px-1.5 py-1 text-base outline-none placeholder:text-muted-foreground md:text-sm"
           />
         </div>
-        <p className="text-xs text-muted-foreground">Entrée ou virgule pour ajouter plusieurs adresses.</p>
+        <p className="text-xs text-muted-foreground">{t('share.hint')}</p>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="share-message">Message (facultatif)</Label>
+        <Label htmlFor="share-message">{t('share.message')}</Label>
         <Textarea
           id="share-message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           maxLength={500}
-          placeholder="Un petit mot pour accompagner le lien"
+          placeholder={t('share.message.placeholder')}
           className="rounded-xl"
         />
       </div>
@@ -168,18 +172,19 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
         </p>
       )}
       <Button type="submit" className="h-10 w-full rounded-xl" disabled={share.isPending}>
-        {share.isPending ? 'Envoi…' : 'Partager'}
+        {share.isPending ? t('share.sending') : t('share.submit')}
       </Button>
     </form>
   )
 }
 
 export function ShareDialog({ item, onClose }: { item: Item | null; onClose: () => void }) {
+  const t = useT()
   return (
     <Dialog open={item !== null} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Partager</DialogTitle>
+          <DialogTitle>{t('item.share')}</DialogTitle>
           <DialogDescription className="line-clamp-2">{item?.resource.title}</DialogDescription>
         </DialogHeader>
         {/* keyed so the form state resets for each item / each opening */}

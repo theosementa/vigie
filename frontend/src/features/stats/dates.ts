@@ -1,3 +1,4 @@
+import { getLocale, intlLocale, t } from '@/lib/i18n'
 /**
  * Calendar-date helpers. The API speaks "YYYY-MM-DD" in the user's time zone; those are plain
  * calendar dates, so all the arithmetic below is done in UTC to stay independent of the browser zone.
@@ -63,8 +64,20 @@ export function backlogRange(period: StatsPeriod, start: string, end: string, to
   return { from: start, to: last < today ? last : today, granularity: period === 'year' ? 'week' : 'day' }
 }
 
-const fmt = (opts: Intl.DateTimeFormatOptions) =>
-  new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', ...opts })
+const formatters = new Map<string, Intl.DateTimeFormat>()
+/** A formatter that follows the current UI language (built lazily, cached per language). */
+const fmt = (opts: Intl.DateTimeFormatOptions) => ({
+  format(d: Date): string {
+    const tag = intlLocale(getLocale())
+    const key = `${tag}|${JSON.stringify(opts)}`
+    let f = formatters.get(key)
+    if (!f) {
+      f = new Intl.DateTimeFormat(tag, { timeZone: 'UTC', ...opts })
+      formatters.set(key, f)
+    }
+    return f.format(d)
+  },
+})
 
 const F = {
   dayShort: fmt({ day: 'numeric', month: 'short' }),
@@ -77,7 +90,7 @@ const F = {
   year: fmt({ year: 'numeric' }),
 }
 
-/** "3 – 9 nov. 2026", "novembre 2026", "2026" */
+/** "3 – 9 Nov 2026", "November 2026", "2026" */
 export function rangeLabel(period: StatsPeriod, start: string, end: string): string {
   const s = parseYmd(start)
   if (period === 'year') return F.year.format(s)
@@ -100,6 +113,6 @@ export function bucketAxisLabel(bucket: string, granularity: TimeseriesGranulari
 export function bucketLongLabel(bucket: string, granularity: TimeseriesGranularity): string {
   const d = parseYmd(bucket)
   if (granularity === 'month') return F.monthYear.format(d)
-  if (granularity === 'week') return `Semaine du ${F.dayShort.format(d)}`
+  if (granularity === 'week') return t('stats.week_of', { date: F.dayShort.format(d) })
   return F.dayLong.format(d)
 }

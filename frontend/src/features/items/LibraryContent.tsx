@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { Icon } from '@/components/Icon'
-import type { ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
-import { ItemGrid } from './ItemGrid'
+import { useDelayedFlag } from '@/hooks/useDelayedFlag'
+import { useT } from '@/lib/i18n'
+import { useAddItem } from './addItemContext'
+import { ItemList } from './ItemList'
 import type { Library } from './useLibrary'
 
 /** Fires `onVisible` whenever the sentinel is (still) in view; re-armed after every loaded page. */
@@ -34,119 +35,95 @@ function InfiniteSentinel({
   return <div ref={ref} aria-hidden className="h-px" />
 }
 
-function StateBox({
-  icon,
-  title,
-  hint,
-  children,
-}: {
-  icon: ReactNode
-  title: string
-  hint?: string
-  children?: ReactNode
-}) {
+/** The DA empty state: ghost figure, one sentence, the primary action, import for later. */
+function EmptyState({ lib }: { lib: Library }) {
+  const t = useT()
+  const { open } = useAddItem()
+  const seen = lib.filters.status === 'seen'
+  const first = !lib.hasActiveFilters && !lib.sharedOnly && !seen
+  const kind = lib.hasActiveFilters ? 'filtered' : lib.sharedOnly ? (seen ? 'shared_seen' : 'shared') : seen ? 'seen' : 'to_watch'
   return (
-    <div className="flex flex-col items-center gap-2 py-20 text-center text-muted-foreground [&>svg]:size-10">
-      {icon}
-      <p className="text-base font-medium text-foreground">{title}</p>
-      {hint && <p className="max-w-xs text-sm">{hint}</p>}
-      {children}
+    <div className="empty">
+      <div className="ghost">{t(seen ? 'empty.ghost.seen' : 'empty.ghost.to_watch')}</div>
+      <p>{t(`empty.${kind}`)}</p>
+      {first && (
+        <div className="btns">
+          <button type="button" className="btn btn-accent btn-sm" onClick={() => open()}>
+            <Icon name="add" />
+            {t('nav.add')}
+          </button>
+          <button type="button" className="btn btn-ghost btn-sm" disabled title={t('common.soon')}>
+            <Icon name="import" />
+            {t('empty.import')}
+            <span className="conf">{t('common.soon')}</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }
 
-function EmptyState({ lib }: { lib: Library }) {
-  if (lib.hasActiveFilters)
-    return (
-      <StateBox
-        icon={<Icon name="magnifier-close" />}
-        title="Aucun résultat"
-        hint="Aucun élément ne correspond à votre recherche ou à vos filtres."
-      />
-    )
-  if (lib.sharedOnly)
-    return (
-      <StateBox
-        icon={<Icon name="users-group-rounded" />}
-        title={lib.filters.status === 'seen' ? 'Rien de vu parmi les partages' : 'Rien de partagé pour l’instant'}
-        hint="Les liens que vos amis partagent avec vous apparaîtront ici."
-      />
-    )
-  if (lib.filters.status === 'seen')
-    return (
-      <StateBox
-        icon={<Icon name="checklist-minimalistic" />}
-        title="Rien de vu pour l’instant"
-        hint="Les éléments que vous marquez comme vus se retrouvent ici."
-      />
-    )
-  return (
-    <StateBox
-      icon={<Icon name="inbox" />}
-      title="Rien à voir pour l’instant"
-      hint="Ajoutez un article ou une vidéo avec le bouton « Ajouter »."
-    />
-  )
-}
-
-function SkeletonGrid({ className }: { className?: string }) {
-  return (
-    <ul className={`grid gap-4 ${className ?? ''}`} aria-busy="true" aria-label="Chargement">
+function Skeletons({ variant }: { variant: 'list' | 'cards' }) {
+  const t = useT()
+  return variant === 'list' ? (
+    <div className="list" role="status" aria-label={t('common.loading')}>
       {Array.from({ length: 6 }, (_, i) => (
-        <li key={i} className="animate-pulse overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-          <div className="aspect-video bg-muted" />
-          <div className="space-y-2 p-3">
-            <div className="h-3 w-1/3 rounded bg-muted" />
-            <div className="h-4 w-4/5 rounded bg-muted" />
+        <div key={i} className="it">
+          <div className="th skel" />
+          <div className="grid gap-2">
+            <div className="skel h-4 w-4/5" />
+            <div className="skel h-3 w-1/3" />
           </div>
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
+  ) : (
+    <div className="cards" role="status" aria-label={t('common.loading')}>
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} className="card">
+          <div className="th skel" style={{ borderRadius: 0 }} />
+          <div className="cb grid gap-2">
+            <div className="skel h-4 w-4/5" />
+            <div className="skel h-3 w-1/3" />
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 
-/** List body: loading / error / empty states, grid, infinite scroll. */
-export function LibraryContent({
-  lib,
-  className,
-  swipeable,
-}: {
-  lib: Library
-  className?: string
-  swipeable?: boolean
-}) {
-  if (lib.isLoading) return <SkeletonGrid className={className} />
+/** List body: loading / error / empty states, items, infinite scroll. */
+export function LibraryContent({ lib, variant }: { lib: Library; variant: 'list' | 'cards' }) {
+  const t = useT()
+  // Skeletons only for a genuinely slow load: a fast empty answer must not flash one.
+  const showSkeleton = useDelayedFlag(lib.isLoading)
+  if (lib.isLoading) return showSkeleton ? <Skeletons variant={variant} /> : null
   if (lib.isError && lib.items.length === 0)
     return (
-      <StateBox
-        icon={<Icon name="danger-triangle" />}
-        title="Chargement impossible"
-        hint="Vérifiez votre connexion puis réessayez."
-      >
-        <Button className="mt-2 rounded-xl" onClick={() => lib.refetch()}>
-          Réessayer
-        </Button>
-      </StateBox>
+      <div className="empty" role="alert">
+        <div className="ghost">—</div>
+        <p>{t('library.error')}</p>
+        <div className="btns">
+          <button type="button" className="btn btn-2 btn-sm" onClick={() => lib.refetch()}>
+            <Icon name="restart" />
+            {t('common.retry')}
+          </button>
+        </div>
+      </div>
     )
   if (lib.items.length === 0) return <EmptyState lib={lib} />
 
   return (
     <>
-      <ItemGrid
-        items={lib.items}
-        selectedId={lib.selected?.id}
-        onOpen={lib.open}
-        className={className}
-        swipeable={swipeable}
-      />
+      <ItemList items={lib.items} selectedId={lib.selected?.id} onOpen={lib.open} variant={variant} />
       <InfiniteSentinel
         enabled={lib.hasNextPage && !lib.isFetchingNextPage}
         loaded={lib.items.length}
         onVisible={lib.fetchNextPage}
       />
       {lib.isFetchingNextPage && (
-        <p role="status" className="py-4 text-center text-sm text-muted-foreground">
-          Chargement…
+        <p role="status" className="sub py-3 text-center">
+          {t('common.loading')}
         </p>
       )}
     </>

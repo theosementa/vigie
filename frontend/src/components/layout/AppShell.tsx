@@ -1,7 +1,11 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Icon } from '@/components/Icon'
 import { useMe } from '@/features/auth/useAuth'
-import { LibraryToolbar } from '@/features/items/desktop/LibraryToolbar'
+import { CaptureBar } from '@/features/items/CaptureBar'
+import { setSearchOpen, useSearchOpen } from '@/features/items/searchOpen'
+import { useLibraryFilters } from '@/features/items/useLibraryFilters'
+import { usePile } from '@/features/stats/queries'
+import { formatDayLong, formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { Rail, Sidebar, TabBar } from './Navigation'
 import { entryFor, isLibraryPath } from './nav'
@@ -19,13 +23,48 @@ function OfflineNotice() {
   )
 }
 
-/** Screen title: DA screen header on a phone (back or settings icon), main header on tablet and desktop. */
+/** Sub-title of the Library header: « 87 à voir · jeudi 5 novembre » from live data. */
+function LibrarySub() {
+  const t = useT()
+  const { pile } = usePile()
+  const date = formatDayLong()
+  return <p>{pile ? t('library.sub', { count: pile.count, formatted: formatNumber(pile.count), date }) : date}</p>
+}
+
+/** Search button of the phone header: opens the search field under it, closes and clears it. */
+function SearchButton() {
+  const t = useT()
+  const open = useSearchOpen()
+  const { filters, update } = useLibraryFilters()
+  const active = open || filters.q !== ''
+  return (
+    <button
+      type="button"
+      className="icon-btn"
+      aria-label={t('search.label')}
+      title={t('search.label')}
+      aria-pressed={active}
+      onClick={() => {
+        if (active) {
+          setSearchOpen(false)
+          update({ q: null })
+        } else setSearchOpen(true)
+      }}
+    >
+      <Icon name={active ? 'magnifier-close' : 'magnifier'} small />
+    </button>
+  )
+}
+
+/** Screen title: DA screen header on a phone (back, search and settings buttons), main header on tablet and desktop. */
 function PageHeader() {
   const t = useT()
   const { pathname } = useLocation()
   const entry = entryFor(pathname)
   const title = t(entry?.title ?? 'shell.logo')
   const back = pathname === '/settings' ? '/' : pathname === '/admin' ? '/settings' : null
+  const library = isLibraryPath(pathname)
+  const narrow = pathname === '/settings' ? 'xl' : pathname === '/admin' ? '2xl' : null
   return (
     <>
       <header className="scr-h only-mobile">
@@ -37,21 +76,23 @@ function PageHeader() {
           )}
           <h1>{title}</h1>
         </div>
-        {pathname === '/' && (
+        {library && (
           <div className="icon-btns">
-            <Link to="/settings" className="icon-btn" aria-label={t('nav.settings')} title={t('nav.settings')}>
-              <Icon name="settings" small />
-            </Link>
+            <SearchButton />
+            {pathname === '/' && (
+              <Link to="/settings" className="icon-btn" aria-label={t('nav.settings')} title={t('nav.settings')}>
+                <Icon name="settings" small />
+              </Link>
+            )}
           </div>
         )}
       </header>
-      <header className="main-h only-desktop">
-        <h1>{title}</h1>
-        {isLibraryPath(pathname) && (
-          <div className="capture">
-            <LibraryToolbar />
-          </div>
-        )}
+      <header className={`main-h only-desktop${narrow ? ` main-h-narrow main-h-${narrow}` : ''}`}>
+        <div>
+          <h1>{title}</h1>
+          {pathname === '/' && <LibrarySub />}
+        </div>
+        {library && <CaptureBar />}
       </header>
     </>
   )
@@ -59,6 +100,7 @@ function PageHeader() {
 
 /** One shell, three designs (blueprint 04): tab bar < 768 px, icon rail 768-1023 px, sidebar >= 1024 px. */
 export function AppShell() {
+  const { pathname } = useLocation()
   return (
     <div className="app">
       <Sidebar />
@@ -66,7 +108,7 @@ export function AppShell() {
       <main className="main">
         <OfflineNotice />
         <PageHeader />
-        <div className="main-body">
+        <div key={pathname} className="main-body page-in">
           <Outlet />
         </div>
       </main>

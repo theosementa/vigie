@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { StatsPeriod, StatsSummary } from '@/lib/api'
-import { formatCount, formatMinutes, plural } from './format'
+import { useT } from '@/lib/i18n'
+import { formatCount, formatMinutes } from './format'
 import { useGoals, type Goals } from './goals'
 import { StatsCard } from './StatsCard'
 
@@ -70,32 +71,33 @@ function GoalForm({
   onSave: (g: Goals) => void
   onCancel: () => void
 }) {
+  const t = useT()
   const [items, setItems] = useState(String(goals.items))
   const [minutes, setMinutes] = useState(String(goals.minutes))
   const submit = (e: FormEvent) => {
     e.preventDefault()
     onSave({ items: Number(items), minutes: Number(minutes) })
   }
-  const noun = { week: 'de la semaine', month: 'du mois', year: "de l'année" }[period]
+  const title = t(`stats.goals.of_${period}` as const)
   return (
     <form onSubmit={submit} className="mt-4 space-y-3 rounded-xl bg-muted/50 p-3">
-      <p className="text-sm font-medium">Objectifs {noun}</p>
+      <p className="text-sm font-medium">{title}</p>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="goal-items">Éléments vus</Label>
+          <Label htmlFor="goal-items">{t('stats.items_seen_title')}</Label>
           <Input id="goal-items" type="number" min={1} inputMode="numeric" value={items} onChange={(e) => setItems(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="goal-minutes">Visionnage (min)</Label>
+          <Label htmlFor="goal-minutes">{t('stats.goals.minutes')}</Label>
           <Input id="goal-minutes" type="number" min={1} inputMode="numeric" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
         </div>
       </div>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-          Annuler
+          {t('common.cancel')}
         </Button>
         <Button type="submit" size="sm">
-          Enregistrer
+          {t('common.save')}
         </Button>
       </div>
     </form>
@@ -104,6 +106,7 @@ function GoalForm({
 
 /** Apple Health-style concentric rings: items seen, watch time, streak. */
 export function RingsCard({ summary }: { summary: StatsSummary }) {
+  const t = useT()
   const { goals, setGoals } = useGoals(summary.period)
   const [editing, setEditing] = useState(false)
 
@@ -115,28 +118,30 @@ export function RingsCard({ summary }: { summary: StatsSummary }) {
   const rings: Ring[] = [
     {
       key: 'items',
-      name: 'Éléments vus',
+      name: t('stats.items_seen_title'),
       ratio: seen / goals.items,
       text: `${formatCount(seen)} / ${formatCount(goals.items)}`,
     },
     {
       key: 'watch',
-      name: 'Temps de visionnage',
+      name: t('stats.watch_time'),
       ratio: watchMin / goals.minutes,
       text: `${formatMinutes(watchMin)} / ${formatMinutes(goals.minutes)}`,
     },
     {
       key: 'streak',
-      name: 'Série',
+      name: t('kpi.streak'),
       ratio: streakGoal > 0 ? streak / streakGoal : 0,
-      text: `${streak} ${plural(streak, 'jour', 'jours')} · record ${best}`,
+      text: `${t('kpi.days_n', { count: streak })} · ${t('kpi.record', { best })}`,
     },
   ]
-  const label = `Objectifs : ${rings.map((r) => `${r.name} ${r.text.replace(' / ', ' sur ')}`).join(' ; ')}.`
+  const label = t('stats.goals.label', {
+    rings: rings.map((r) => `${r.name} ${r.text.replace(' / ', ` ${t('stats.goals.of')} `)}`).join(' ; '),
+  })
 
   return (
     <StatsCard
-      title="Objectifs"
+      title={t('stats.goals')}
       className="md:col-span-2 xl:col-span-1"
       action={
         <Button
@@ -146,7 +151,7 @@ export function RingsCard({ summary }: { summary: StatsSummary }) {
           onClick={() => setEditing((v) => !v)}
           className="-my-1 text-accent-ink"
         >
-          <Icon name="target" /> Objectif
+          <Icon name="target" /> {t('stats.goals.edit')}
         </Button>
       }
     >
@@ -158,7 +163,7 @@ export function RingsCard({ summary }: { summary: StatsSummary }) {
               <span aria-hidden className={`mt-1 size-3 shrink-0 rounded-full ${COLORS[r.key].dot}`} />
               <div>
                 <dt className="text-xs text-muted-foreground">{r.name}</dt>
-                <dd className="text-base font-semibold tabular-nums">{r.text}</dd>
+                <dd className="text-base font-medium tabular-nums">{r.text}</dd>
               </div>
             </div>
           ))}

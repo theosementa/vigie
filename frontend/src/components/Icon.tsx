@@ -9,7 +9,7 @@ export type IconBase = BaseName<IconName>
 /**
  * Solar icon, inlined from the generated icons.ts (no request at runtime). `linear` by default,
  * `bold` only for the active tab / nav item. The label belongs to the parent control.
- * Size with `small` (18 px) or a `size-*` class; the `.i` class sets 24 px otherwise.
+ * Size with `small` (20 px) or a `size-*` class; the `.i` class sets 24 px otherwise.
  */
 export function Icon({
   name,
@@ -20,10 +20,10 @@ export function Icon({
 }: { name: IconBase; bold?: boolean; small?: boolean } & Omit<SVGProps<SVGSVGElement>, 'name'>) {
   const bodyOf = (style: 'bold' | 'linear') => (ICONS as Record<string, string>)[`${name}-${style}`]
   const body = (bold && bodyOf('bold')) || bodyOf('linear')
-  const size = small ? 18 : 24
+  const size = small ? 20 : 24
   return (
     <svg
-      className={cn('i', className)}
+      className={cn('i', small && 's', className)}
       width={size}
       height={size}
       viewBox="0 0 24 24"

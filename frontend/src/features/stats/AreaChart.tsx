@@ -4,6 +4,7 @@ import { niceTicks } from './chartUtils'
 import { ChartShell } from './ChartShell'
 import { bucketAxisLabel, bucketLongLabel } from './dates'
 import type { StatsPeriod } from '@/lib/api'
+import { useT } from '@/lib/i18n'
 import { formatCount } from './format'
 import { ChartDataTable } from './StatsCard'
 
@@ -22,6 +23,7 @@ export function AreaChart({
   /** Column / tooltip name of the series */
   valueLabel: string
 }) {
+  const t = useT()
   const gradientId = `area-${useId().replace(/:/g, '')}`
   const max = Math.max(0, ...points.map((p) => p.value))
   const { ticks, top } = niceTicks(max)
@@ -38,7 +40,7 @@ export function AreaChart({
         anchorValue={(i) => points[i].value}
         tooltip={(i) => (
           <div className="space-y-0.5">
-            <div className="font-semibold capitalize">{bucketLongLabel(points[i].bucket, granularity)}</div>
+            <div className="font-medium capitalize">{bucketLongLabel(points[i].bucket, granularity)}</div>
             <div>
               {valueLabel} : {formatCount(points[i].value)}
             </div>
@@ -84,7 +86,7 @@ export function AreaChart({
       </ChartShell>
       <ChartDataTable
         caption={label}
-        columns={['Période', valueLabel]}
+        columns={[t('stats.table.period'), valueLabel]}
         rows={points.map((p) => [bucketLongLabel(p.bucket, granularity), p.value])}
       />
     </>

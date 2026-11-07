@@ -1,6 +1,9 @@
 # Solar icons used by the app (one name per line). `-linear` everywhere, `-bold` only for the active tab / nav item.
 # After editing this list run `npm run icons` to regenerate icons.ts.
 add-linear
+videocamera-linear
+import-linear
+inbox-in-linear
 alt-arrow-down-linear
 alt-arrow-left-linear
 alt-arrow-right-linear

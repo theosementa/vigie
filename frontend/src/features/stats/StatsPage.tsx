@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import type { StatsPeriod, StatsSummary } from '@/lib/api'
+import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { BacklogCard } from './BacklogCard'
 import { rangeLabel } from './dates'
@@ -27,8 +28,9 @@ function parseOffset(v: string | null): number {
 const GRID = 'grid gap-4 md:grid-cols-2 xl:grid-cols-3'
 
 function StatsSkeleton() {
+  const t = useT()
   return (
-    <div role="status" aria-label="Chargement des statistiques" className={GRID}>
+    <div role="status" aria-label={t('common.loading')} className={GRID}>
       <Skeleton className="h-[330px] md:col-span-2 xl:col-span-1" />
       <Skeleton className="h-[330px] md:col-span-2" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:col-span-3 xl:grid-cols-5 md:col-span-2">
@@ -56,12 +58,11 @@ function isEmpty(s: StatsSummary): boolean {
 }
 
 function StatsContent({ summary }: { summary: StatsSummary }) {
+  const t = useT()
   if (isEmpty(summary))
     return (
-      <div className="rounded-2xl bg-card p-4 ring-1 ring-border">
-        <EmptyNote>
-          Rien à afficher pour l'instant. Marquez des éléments comme vus pour alimenter vos statistiques.
-        </EmptyNote>
+      <div className="panel">
+        <EmptyNote>{t('stats.empty')}</EmptyNote>
       </div>
     )
   return (
@@ -83,6 +84,7 @@ function StatsContent({ summary }: { summary: StatsSummary }) {
 }
 
 export function StatsPage() {
+  const t = useT()
   const [params, setParams] = useSearchParams()
   const period = parsePeriod(params.get('period'))
   const offset = parseOffset(params.get('offset'))
@@ -103,7 +105,7 @@ export function StatsPage() {
     )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-0 md:p-6">
+    <div className="lib">
       <PeriodNav
         period={period}
         offset={offset}
@@ -112,8 +114,8 @@ export function StatsPage() {
         onOffset={(o) => navigate(period, o)}
       />
       {query.isError && !summary ? (
-        <div className="rounded-2xl bg-card p-4 ring-1 ring-border">
-          <ErrorNote message="Impossible de charger les statistiques." onRetry={() => query.refetch()} />
+        <div className="panel">
+          <ErrorNote message={t('stats.error')} onRetry={() => query.refetch()} />
         </div>
       ) : !summary ? (
         <StatsSkeleton />
@@ -121,9 +123,9 @@ export function StatsPage() {
         <div className={cn('transition-opacity', query.isPlaceholderData && 'opacity-60')} aria-busy={query.isPlaceholderData}>
           <StatsContent summary={summary} />
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Fuseau horaire : {summary.timezone} ·{' '}
+            {t('stats.timezone', { tz: summary.timezone })} ·{' '}
             <Link to="/settings" className="underline underline-offset-2">
-              modifier dans les réglages
+              {t('stats.timezone.edit')}
             </Link>
           </p>
         </div>

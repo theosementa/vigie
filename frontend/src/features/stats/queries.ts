@@ -1,5 +1,8 @@
 /** Data hooks for the statistics page, backed by the real API (src/lib/api.ts). */
+import { useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useMe } from '@/features/auth/useAuth'
+import { addDays, todayIn } from './dates'
 import { api, type StatsPeriod, type TimeseriesQuery } from '@/lib/api'
 
 export const statsKey = ['stats'] as const
@@ -22,4 +25,51 @@ export function useTimeseries(query: TimeseriesQuery | null) {
     enabled: query !== null,
     staleTime: 30_000,
   })
+}
+
+export type PileState = 'ok' | 'watch' | 'over'
+
+export interface Pile {
+  /** Items to watch today, exact. */
+  count: number
+  /** Change over the last 28 days (negative = the pile shrinks). */
+  delta: number
+  state: PileState
+}
+
+/** Least-squares slope of the series, in items per day. */
+function slope(values: number[]): number {
+  const n = values.length
+  if (n < 2) return 0
+  const meanX = (n - 1) / 2
+  const meanY = values.reduce((a, b) => a + b, 0) / n
+  let num = 0
+  let den = 0
+  values.forEach((y, x) => {
+    num += (x - meanX) * (y - meanY)
+    den += (x - meanX) ** 2
+  })
+  return num / den
+}
+
+/**
+ * The pile (items to watch) over the last 28 days, from the journal (`backlog` series).
+ * Trend (VISION 5.4): "tu rattrapes" below -0.1 item/day, "stable" within ±0.1, "ça s'accumule" above.
+ */
+export function usePile() {
+  const { data: me } = useMe()
+  const [now] = useState(() => Date.now())
+  const to = todayIn(me?.timezone ?? 'UTC', now)
+  const query = useTimeseries(me ? { metric: 'backlog', granularity: 'day', from: addDays(to, -27), to } : null)
+  const pile = useMemo<Pile | null>(() => {
+    const values = query.data?.points.map((p) => p.value)
+    if (!values || values.length === 0) return null
+    const s = slope(values)
+    return {
+      count: values[values.length - 1],
+      delta: values[values.length - 1] - values[0],
+      state: s < -0.1 ? 'ok' : s > 0.1 ? 'over' : 'watch',
+    }
+  }, [query.data])
+  return { pile, isError: query.isError }
 }

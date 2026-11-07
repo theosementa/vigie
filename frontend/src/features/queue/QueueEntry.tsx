@@ -13,7 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ItemThumbnail } from '@/features/items/ItemThumbnail'
+import { ItemThumb } from '@/features/items/ItemThumb'
+import { useT } from '@/lib/i18n'
 
 export interface QueueEntryHandlers {
   onMove: (item: Item, position: number) => void
@@ -28,6 +29,7 @@ interface QueueEntryProps extends QueueEntryHandlers {
 }
 
 function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueEntryProps) {
+  const t = useT()
   const { resource } = item
   const title = resource.title ?? resource.url
   const site = resource.site_name ?? hostname(resource.url)
@@ -40,7 +42,8 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
   const style: CSSProperties = {
     transform: CSS.Translate.toString(transform),
     transition,
-  }
+    '--i': index % 8,
+  } as CSSProperties
 
   const openVideo = () => window.open(resource.url, '_blank', 'noopener,noreferrer')
 
@@ -48,8 +51,8 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
     <li
       ref={setNodeRef}
       style={style}
-      className={cn('relative min-w-0', isDragging && 'z-10')}
-      aria-label={`${index + 1} sur ${count} : ${title}`}
+      className={cn('enter relative min-w-0', isDragging && 'z-10')}
+      aria-label={t('queue.entry.label', { position: index + 1, count, title })}
     >
       <article
         className={cn(
@@ -63,24 +66,24 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          aria-label={`Réorganiser : ${title}. Position ${index + 1} sur ${count}. Espace pour saisir, flèches pour déplacer.`}
+          aria-label={t('queue.entry.drag', { title, position: index + 1, count })}
           className="flex w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
         >
           <Icon name="reorder" className="size-5" aria-hidden />
         </button>
 
-        <div className="w-28 shrink-0 self-center overflow-hidden rounded-xl sm:w-40">
-          <ItemThumbnail resource={resource} />
+        <div className="q-th w-28 shrink-0 self-center sm:w-40">
+          <ItemThumb resource={resource} />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 py-0.5">
           <div className="flex items-center gap-1.5 text-xs">
             {first ? (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-primary px-2 py-0.5 font-semibold text-primary-foreground">
-                À suivre
+              <span className="inline-flex shrink-0 items-center rounded-full bg-primary px-2 py-0.5 font-medium text-primary-foreground">
+                {t('queue.next')}
               </span>
             ) : (
-              <span className="shrink-0 font-semibold text-muted-foreground tabular-nums">
+              <span className="shrink-0 font-medium text-muted-foreground tabular-nums">
                 #{index + 1}
               </span>
             )}
@@ -89,7 +92,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
               {resource.duration_seconds != null && ` · ${formatDuration(resource.duration_seconds)}`}
             </span>
           </div>
-          <h3 className="line-clamp-2 text-[15px] leading-snug font-semibold">
+          <h3 className="line-clamp-2 text-[15px] leading-snug font-medium">
             <a
               href={resource.url}
               target="_blank"
@@ -97,7 +100,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
               className="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
             >
               {title}
-              <span className="sr-only"> (s’ouvre dans un nouvel onglet)</span>
+              <span className="sr-only"> {t('common.new_tab')}</span>
             </a>
           </h3>
         </div>
@@ -110,7 +113,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  aria-label={`Actions : ${title}`}
+                  aria-label={t('queue.entry.actions', { title })}
                   className="rounded-full"
                 />
               }
@@ -120,29 +123,29 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem onClick={openVideo}>
                 <Icon name="arrow-right-up" />
-                Ouvrir la vidéo
+                {t('queue.open')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onSeen(item)}>
                 <Icon name="check-circle" />
-                Marquer comme vu
+                {t('item.mark_seen')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled={first} onClick={() => onMove(item, 0)}>
                 <Icon name="arrow-up-to-line" />
-                Placer en premier
+                {t('queue.move_first')}
               </DropdownMenuItem>
               <DropdownMenuItem disabled={first} onClick={() => onMove(item, index - 1)}>
                 <Icon name="arrow-up" />
-                Monter
+                {t('queue.move_up')}
               </DropdownMenuItem>
               <DropdownMenuItem disabled={last} onClick={() => onMove(item, index + 1)}>
                 <Icon name="arrow-down" />
-                Descendre
+                {t('queue.move_down')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onClick={() => onRemove(item)}>
                 <Icon name="list-minus-minimalistic" />
-                Retirer de la file
+                {t('queue.remove')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -150,8 +153,8 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
             type="button"
             size="icon-sm"
             variant="secondary"
-            aria-label={`Marquer comme vu : ${title}`}
-            title="Marquer comme vu"
+            aria-label={t('queue.entry.mark_seen', { title })}
+            title={t('item.mark_seen')}
             onClick={() => onSeen(item)}
             className="rounded-full"
           >
