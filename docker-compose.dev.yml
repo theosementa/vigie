@@ -1,0 +1,57 @@
+# Development mode:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# DEV ONLY. Everything is bound to 127.0.0.1 and the secrets are public
+# placeholders. Never use this file on a server.
+#
+# docker-compose.yml requires SECRET_KEY and POSTGRES_PASSWORD when it is
+# parsed, so the dev values come from the environment, not from this file:
+#   export POSTGRES_PASSWORD=vigie-dev-only
+#   export SECRET_KEY=dev-only-secret-key-not-for-production-0123456789
+# (or put them in a local .env).
+
+services:
+  db:
+    ports:
+      - "127.0.0.1:${VIGIE_DB_PORT:-5432}:5432"   # for pytest on the host
+    volumes:
+      - ./docker/dev/initdb:/docker-entrypoint-initdb.d:ro   # creates vigie_test
+
+  api:
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app --proxy-headers --forwarded-allow-ips='*'
+    ports:
+      - "127.0.0.1:${VIGIE_API_PORT:-8000}:8000"
+    volumes:
+      # Source dirs only: the container keeps its own Linux .venv.
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+    environment:
+      WATCHFILES_FORCE_POLLING: "true"
+      COOKIE_SECURE: "false"
+
+  # Vite dev server with hot reload (npm never runs on the macOS host).
+  web-dev:
+    image: node:24.11.0-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_API_PROXY: http://api:8000
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - ./frontend:/app
+      - web_node_modules:/app/node_modules   # Linux binaries, kept off the host
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # The production web service (Caddy) is not used in dev.
+  web:
+    profiles: ["prod-only"]
+
+volumes:
+  web_node_modules:

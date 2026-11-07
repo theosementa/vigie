@@ -1,148 +1,219 @@
-# radar
+# Vigie
 
-PWA multi-utilisateur de veille techno : enregistrez articles et vidéos sous forme de cartes avec image de preview, suivez-les avec les statuts **À voir** / **Vu**, organisez-les avec des tags, retrouvez-les par la recherche, ajoutez des notes personnelles et envoyez des ressources à d'autres utilisateurs. Un seul site, installable comme une app, avec une interface adaptée au mobile (style iOS) et au desktop (style iPadOS/macOS).
+Vigie is a self-hosted, multi-user watch list for articles and videos. You paste a link (or share it from your phone); Vigie fetches its title, image and duration, and files it under **To watch**. You work through the pile at your own pace, mark things **Seen**, add notes and tags, send a link to a specific person, and see honestly whether you are catching up.
 
-Voir aussi : [Contrat d'API](backend/API.md) · [Vision produit et pistes post-MVP](VISION.md)
+It is a reading and viewing pile, not a news feed: what comes in is chosen, what goes out is seen. There is no social network, no recommendation, no analytics, and no archived copy of the content (Vigie keeps the link and its metadata).
 
-## Stack
+It is a PWA: one site, installable on iPhone, Android and desktop. The interface is available in English and French.
 
-- **Frontend** : React 19, TypeScript, Vite, Tailwind CSS v4, shadcn/ui, TanStack Query, React Router, react-hook-form + zod, `vite-plugin-pwa`
-- **Backend** : FastAPI, SQLAlchemy 2 (async, asyncpg), Alembic, Pydantic, `httpx` + `selectolax`, Argon2 (`pwdlib`), JWT (`pyjwt`), géré avec `uv` (Python 3.13)
-- **Base de données** : PostgreSQL 17 (extension `pg_trgm` pour la recherche)
-- **Infra** : Docker Compose (`db`, `api`, `web` = nginx)
+See [VISION.md](VISION.md) for the product vision (in French) and [backend/API.md](backend/API.md) for the API contract.
 
-## Architecture
+## Features
 
-### Resource vs Item
+- Capture a link and get a card with image, title, source, duration or reading time.
+- **To watch / Seen** statuses, a video queue, tags, personal notes, search.
+- Send a link to another user by exact e-mail address, with an optional message.
+- Statistics: items seen, viewing time, streak, backlog trend, each figure with its base.
+- Accounts with e-mail and password, admin and user roles, revocable sessions.
+- Registration modes (invite, open, closed) and an invite list managed by the admin.
+- Mobile layout (tab bar, bottom sheets) under 768 px, desktop layout (sidebar, inspector) above.
+- English and French interface.
 
-- Une **`Resource`** est globale : URL normalisée (sans `utm_*`, fragment, slash final…) et métadonnées (titre, image, durée, temps de lecture…). Elle est partagée entre tous les utilisateurs, donc scrapée une seule fois.
-- Un **`Item`** appartient à un utilisateur et référence une `Resource` : statut (`to_watch` / `seen`), notes, tags, `type_override` (le type auto-détecté est modifiable par utilisateur), `seen_at`. Contrainte unique `(user_id, resource_id)`.
-- Un **`ItemEvent`** est une ligne du journal (`added`, `seen`, `unseen`, `deleted`, `shared`) écrite dans la même transaction que le changement ; il survit à la suppression de l'item et alimente les statistiques (`/api/stats`). Le fuseau horaire de l'utilisateur (`users.timezone`) détermine jours, semaines (lundi) et séries.
-- **Partage = « envoyer à »** : partager un item crée un `Item` `to_watch` chez le destinataire (identifié par email exact, sans annuaire d'utilisateurs), avec `shared_by_user_id` et un message optionnel. Notes et tags ne sont pas copiés.
-- **File d'attente** : liste ordonnée de vidéos à regarder ensuite, distincte du statut `to_watch` / `seen`. Un item y figure s'il a un `queue_position` (colonne nullable de `items`, 0-based, contiguë par utilisateur, recompactée après chaque ajout, déplacement ou retrait) et que son type effectif est `video`. Marquer l'item `seen`, le supprimer ou lui retirer le type vidéo le sort de la file. Endpoints : `GET/POST /api/queue`, `PATCH/DELETE /api/queue/{item_id}`, et filtre `queued` sur `GET /api/items` (voir `backend/API.md`). Les opérations de file ne sont pas écrites dans le journal d'événements.
-- Un item d'un autre utilisateur répond toujours `404`, comme un id inexistant.
+## Quick start
 
-### Récupération des métadonnées et protection SSRF
-
-Le serveur récupère les métadonnées (OpenGraph / Twitter cards, favicon ; YouTube via oEmbed et parsing de la page pour la durée ; temps de lecture ≈ mots / 230). Comme l'URL vient de l'utilisateur, la requête sortante est protégée :
-
-- http/https uniquement ;
-- résolution DNS puis refus des IP privées, loopback et link-local ;
-- timeout de 5 s, taille max 2 Mo, 3 redirections max, revérifiées à chaque saut.
-
-Un échec de récupération n'est jamais bloquant : le titre retombe sur le nom d'hôte.
-
-### Authentification
-
-Email + mot de passe (hash Argon2). Le JWT est stocké dans un cookie **httpOnly** `radar_session` (`SameSite=Lax`, `Secure` si `COOKIE_SECURE=true`). Front et API partagent la même origine (nginx en prod, proxy Vite en dev) : pas de CORS.
-
-## Démarrage rapide (Docker)
+You need Docker with the Compose plugin.
 
 ```bash
-cp .env.example .env        # optionnel, des valeurs par défaut existent ; changez JWT_SECRET
+git clone <this repository> vigie && cd vigie
+cp .env.example .env
+```
+
+Edit `.env` and set the two required secrets (compose refuses to start without them):
+
+```bash
+openssl rand -hex 32   # -> SECRET_KEY
+openssl rand -hex 24   # -> POSTGRES_PASSWORD
+```
+
+Then start the stack. Until prebuilt images are published, build them locally:
+
+```bash
 docker compose up -d --build
 ```
 
-Ouvrir http://localhost : nginx sert la SPA et proxifie `/api` vers le service `api`. L'API est aussi exposée sur http://localhost:8000 (docs interactives : http://localhost:8000/api/docs). Les migrations sont appliquées automatiquement au démarrage de l'API.
+Open http://localhost:8080 (the default `VIGIE_HTTP_PORT`). **The first account you create becomes the admin.** Migrations run automatically when the API starts.
 
-> En production derrière HTTPS : définir `COOKIE_SECURE=true` et un `JWT_SECRET` généré (`openssl rand -hex 32`).
+Only the `web` service is published on the host. The database and the API stay on the internal compose network.
 
-## Développement local
+### HTTPS
 
-Base + API en Docker, front en local :
-
-```bash
-docker compose up -d db api
-cd frontend && npm install && npm run dev
-```
-
-Ou API sur l'hôte (la base reste dans Docker). L'API lit `.env` depuis son répertoire de travail (`backend/`) ; les valeurs par défaut pointent déjà sur `localhost:5432`, sinon copiez `.env` dans `backend/` ou exportez les variables :
+Set a real domain and let Caddy obtain and renew a certificate:
 
 ```bash
-docker compose up -d db
-cd backend && uv sync && uv run alembic upgrade head && uv run uvicorn app.main:app --reload
-cd frontend && npm install && npm run dev
+VIGIE_DOMAIN=vigie.example.com
+VIGIE_HTTP_PORT=80
+VIGIE_HTTPS_PORT=443
 ```
 
-Le serveur Vite proxifie `/api` vers `http://localhost:8000`.
+The domain must point to the server and ports 80 and 443 must be reachable. With the default `VIGIE_DOMAIN=:80`, Vigie serves plain HTTP, which suits a LAN or a setup behind your own proxy. The `Strict-Transport-Security` header is sent only on requests that arrive over HTTPS. Session cookies are `Secure` automatically over HTTPS (`COOKIE_SECURE=auto`).
 
-## Variables d'environnement
+### Behind another reverse proxy or a tunnel
 
-Lues depuis `.env` (voir `.env.example`) ; `docker compose` les transmet à `db` et `api`.
+Keep `VIGIE_DOMAIN=:80`, point your proxy at `VIGIE_HTTP_PORT`, and let Vigie trust it so rate limiting sees the real client IP:
 
-| Variable | Valeur par défaut | Rôle |
+```bash
+VIGIE_TRUSTED_PROXIES=private_ranges
+```
+
+Use the exact range of your proxy if it is not on a private network. Leave the variable empty if clients reach Vigie directly: otherwise anyone could forge their address. If your proxy terminates HTTPS, set `COOKIE_SECURE=true` unless it forwards `X-Forwarded-Proto`.
+
+## Configuration
+
+Set in `.env` (see [.env.example](.env.example)).
+
+| Variable | Default | Purpose |
 |---|---|---|
-| `POSTGRES_USER` | `radar` | Utilisateur PostgreSQL |
-| `POSTGRES_PASSWORD` | `radar` | Mot de passe PostgreSQL |
-| `POSTGRES_DB` | `radar` | Nom de la base |
-| `DATABASE_URL` | `postgresql+asyncpg://radar:radar@localhost:5432/radar` | URL de la base pour l'API lancée sur l'hôte (dans Compose, elle est dérivée des `POSTGRES_*`) |
-| `TEST_DATABASE_URL` | `postgresql+asyncpg://radar:radar@localhost:5432/radar_test` | Base utilisée par `uv run pytest` (créée automatiquement si absente) |
-| `JWT_SECRET` | `change-me-in-production` | Clé de signature des JWT (`openssl rand -hex 32`) |
-| `JWT_EXPIRE_DAYS` | `30` | Durée de validité de la session |
-| `COOKIE_SECURE` | `false` | `true` quand le site est servi en HTTPS |
+| `SECRET_KEY` | required | Signs session tokens, at least 32 characters (`openssl rand -hex 32`). The API refuses to start otherwise |
+| `POSTGRES_PASSWORD` | required | Database password |
+| `POSTGRES_USER` / `POSTGRES_DB` | `vigie` / `vigie` | Database user and name |
+| `JWT_EXPIRE_DAYS` | `30` | Session lifetime |
+| `COOKIE_SECURE` | `auto` | `auto` (Secure over HTTPS), `true` or `false` |
+| `REGISTRATION` | `invite` | Initial registration mode of a new instance (`invite`, `open`, `closed`) |
+| `PUBLIC_URL` | empty | Public base URL, used in password-reset links |
+| `FETCH_TIMEOUT_SECONDS` | `5` | Timeout when fetching a link's metadata |
+| `FETCH_MAX_BYTES` | `2097152` | Maximum size of a fetched page |
+| `FETCH_MAX_REDIRECTS` | `3` | Maximum redirects followed |
+| `VIGIE_DOMAIN` | `:80` | `:80` for plain HTTP, or a domain for automatic HTTPS |
+| `VIGIE_HTTP_PORT` | `8080` | Host port for HTTP |
+| `VIGIE_HTTPS_PORT` | `8443` | Host port for HTTPS (set `80` / `443` for automatic HTTPS) |
+| `VIGIE_TRUSTED_PROXIES` | empty | Proxies whose `X-Forwarded-For` is trusted, e.g. `private_ranges` |
 
-## Migrations
+### Registration modes
 
-Depuis `backend/` (base démarrée ; `DATABASE_URL` par défaut ou défini dans l'environnement) :
+| Mode | Behaviour |
+|---|---|
+| `invite` (default) | After the first account, only e-mail addresses added to the invite list by an admin can sign up |
+| `open` | Anyone can sign up |
+| `closed` | No new sign-ups |
+
+`REGISTRATION` only sets the mode of a fresh instance. Afterwards the admin changes it in the app, and changing it never affects existing accounts.
+
+### Resetting a password
+
+An admin can generate a reset link in the app. If nobody can log in, use the CLI:
 
 ```bash
-uv run alembic revision --autogenerate -m "description"
-uv run alembic upgrade head
+docker compose exec api vigie reset-password <email>
 ```
 
-## Tests et lint
+## Updating
+
+Once images are published:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Until then, rebuild from the updated source:
+
+```bash
+git pull && docker compose up -d --build
+```
+
+Database migrations run on startup.
+
+## Backups
+
+Everything is in PostgreSQL:
+
+```bash
+docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > vigie-backup.sql
+```
+
+Restore into a fresh instance:
+
+```bash
+docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" "$POSTGRES_DB"' < vigie-backup.sql
+```
+
+## Development
+
+Everything runs in Docker; do not run `npm` or `vite` on the host. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+```bash
+export POSTGRES_PASSWORD=vigie-dev-only
+export SECRET_KEY=dev-only-secret-key-not-for-production-0123456789
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
+| What | Where |
+|---|---|
+| Frontend (Vite, hot reload) | http://127.0.0.1:5173 |
+| API (auto-reload, docs at `/api/docs`) | http://127.0.0.1:8000 |
+| PostgreSQL (with a `vigie_test` database) | `127.0.0.1:5432` |
+
+`docker-compose.dev.yml` is for development only: it publishes ports on 127.0.0.1 and relies on placeholder secrets. If a port is taken on your machine, set `VIGIE_DB_PORT` (5432) or `VIGIE_API_PORT` (8000).
+
+### Tests and linters
 
 ```bash
 cd backend
-uv run pytest            # nécessite la base db (docker compose up -d db)
-uv run ruff check .
+uv run pytest              # needs the dev db service
+uv run ruff check . && uv run ruff format --check .
 
-cd frontend
-npm run lint
-npm run build            # tsc -b && vite build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec web-dev npm run lint
 ```
 
-## Installer la PWA
+## Architecture
 
-- **iOS (Safari)** : ouvrir le site, bouton Partager, puis **« Ajouter à l'écran d'accueil »**.
-- **Chrome / Android** : menu ⋮ puis **« Installer l'application »** (ou la bannière d'installation).
-- **Chrome / Edge desktop** : icône d'installation dans la barre d'adresse.
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, TanStack Query, React Router, `vite-plugin-pwa`.
+- **Backend**: FastAPI, SQLAlchemy 2 (async), Alembic, Pydantic, `httpx` + `selectolax`, Argon2, JWT in an `httpOnly` cookie, managed with `uv` (Python 3.13).
+- **Database**: PostgreSQL 17 (`pg_trgm` for search).
+- **Infra**: Docker Compose with `web` (Caddy: static app, `/api` reverse proxy, security headers, optional automatic HTTPS), `api` (non-root) and `db`.
 
-Une PWA exige HTTPS en dehors de `localhost`. Le service worker précache le shell ; `/api` passe en NetworkFirst et les images en CacheFirst (7 jours).
+Front and API share one origin (Caddy in production, the Vite proxy in dev), so there is no CORS.
 
-## Statistiques
+### Resource vs Item
 
-La page `/stats` (onglet « Stats » sur mobile, « Statistiques » dans la sidebar) affiche, pour une semaine, un mois ou une année navigable : anneaux d'objectifs (éléments vus, temps de visionnage, série), histogramme articles/vidéos avec la période précédente en fantôme, chiffres clés avec delta, top tags et sources (clic = bibliothèque filtrée), partages et tendance du backlog. Les graphiques sont écrits à la main en SVG (pas de dépendance) et ont une alternative en tableau. Les objectifs sont stockés dans le `localStorage` par période. Les jours et semaines suivent le fuseau horaire du compte (`users.timezone`, détecté à l'inscription, modifiable dans Réglages).
+- A **Resource** is global: a normalised URL (no `utm_*`, fragment or trailing slash) and its metadata (title, image, duration, reading time). It is shared by all users, so a page is fetched once.
+- An **Item** belongs to one user and points to a Resource: status (`to_watch` / `seen`), notes, tags, a per-user `type_override`, `seen_at`. Unique on `(user_id, resource_id)`.
+- Sending a link creates a `to_watch` Item for the recipient (found by exact e-mail, there is no user directory) with the sender and an optional message. Notes and tags are not copied.
+- The **queue** is an ordered list of videos to watch next, separate from the status. Marking an item seen or deleting it removes it from the queue.
+- Another user's item always answers `404`, like a missing id.
 
-## Responsive
+### The journal
 
-Un seul site, un seul build, une seule URL. Sous **768px** : coque mobile style iOS (barre d'onglets en bas, bottom sheets, gros titres). À partir de **768px** : coque style iPadOS/macOS (sidebar, grille multi-colonnes, panneau inspecteur). Données, hooks et `ItemCard` sont communs.
+Every change of an item writes an **ItemEvent** (`added`, `seen`, `unseen`, `deleted`, `shared`) in the same transaction. Events survive the deletion of the item and feed the statistics. Days, weeks (Monday start) and streaks follow the user's time zone.
 
-## Arborescence
+### SSRF protections
 
-```
-docker-compose.yml        # db, api, web (nginx)
-.env.example
-README.md  VISION.md
-backend/
-  API.md                  # contrat d'API
-  Dockerfile  pyproject.toml  alembic.ini
-  alembic/versions/       # migrations
-  docker/initdb/          # création de la base de test
-  app/
-    main.py  db.py
-    core/                 # config, sécurité, dépendances
-    models/               # user, resource, item, tag, event (journal)
-    schemas/              # schémas Pydantic
-    api/routes/           # auth, items, queue, resources, tags, stats
-    services/             # metadata, url (normalisation + SSRF), share, items, events, stats, queue
-  tests/                  # pytest + fixtures HTML
-frontend/
-  vite.config.ts          # PWA + proxy /api
-  public/                 # icônes PWA
-  src/
-    lib/  hooks/
-    components/{layout,ui}/
-    features/{auth,items,tags,settings,...}/
-    features/stats/       # page /stats : anneaux, histogramme, cartes (SVG/CSS maison, sans lib de graphiques)
-```
+The server fetches metadata (OpenGraph and Twitter cards, favicon, YouTube oEmbed) for URLs supplied by users, so outgoing requests are restricted:
+
+- http and https only;
+- DNS is resolved first, and private, loopback and link-local addresses are refused;
+- timeout, maximum size and maximum redirects are bounded (`FETCH_*`), and every redirect hop is checked again.
+
+A failed fetch never blocks saving: the title falls back to the host name.
+
+### Installing the PWA
+
+- iOS (Safari): Share, then **Add to Home Screen**.
+- Android / Chrome: menu, then **Install app**.
+- Desktop Chrome / Edge: install icon in the address bar.
+
+Outside `localhost`, a PWA requires HTTPS.
+
+## Roadmap
+
+Not built yet: history imports, personal API tokens, optional SMTP (verification, reset and invitation e-mails). See [VISION.md](VISION.md) for the plan.
+
+## Licence
+
+Copyright (C) 2026 Théo Sementa
+
+Vigie is free software under the [GNU Affero General Public License v3.0](LICENSE). If you run a modified version as a network service, you must offer its source to its users.
+
+## Credits
+
+- Icons: [Solar](https://www.figma.com/community/file/1166831539721848736) by 480 Design, CC BY 4.0.
+- Font: [Geologica](https://fonts.google.com/specimen/Geologica), SIL Open Font License.

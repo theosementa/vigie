@@ -1,18 +1,16 @@
-name: radar
+name: vigie
 
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:17.6-alpine
     restart: unless-stopped
+    # Not published on the host: only the api reaches it, on the compose network.
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-radar}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-radar}
-      POSTGRES_DB: ${POSTGRES_DB:-radar}
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-vigie}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-vigie}
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./backend/docker/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -22,24 +20,50 @@ services:
   api:
     build: ./backend
     restart: unless-stopped
+    # Not published on the host: only `web` reaches it (see backend/Dockerfile
+    # for why trusting forwarded headers is safe here).
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-radar}:${POSTGRES_PASSWORD:-radar}@db:5432/${POSTGRES_DB:-radar}
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-vigie}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-vigie}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env (openssl rand -hex 32)}
       JWT_EXPIRE_DAYS: ${JWT_EXPIRE_DAYS:-30}
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
-    ports:
-      - "8000:8000"
+      COOKIE_SECURE: ${COOKIE_SECURE:-auto}
+      REGISTRATION: ${REGISTRATION:-invite}
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      FETCH_TIMEOUT_SECONDS: ${FETCH_TIMEOUT_SECONDS:-5}
+      FETCH_MAX_BYTES: ${FETCH_MAX_BYTES:-2097152}
+      FETCH_MAX_REDIRECTS: ${FETCH_MAX_REDIRECTS:-3}
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
 
   web:
     build: ./frontend
     restart: unless-stopped
+    environment:
+      VIGIE_DOMAIN: ${VIGIE_DOMAIN:-:80}
+      VIGIE_TRUSTED_PROXIES: ${VIGIE_TRUSTED_PROXIES:-}
     ports:
-      - "80:80"
+      - "${VIGIE_HTTP_PORT:-8080}:80"
+      - "${VIGIE_HTTPS_PORT:-8443}:443"
+      - "${VIGIE_HTTPS_PORT:-8443}:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   db_data:
+  caddy_data:
+  caddy_config:

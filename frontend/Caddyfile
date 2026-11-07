@@ -1,0 +1,54 @@
+{
+	# Real client IP only from proxies you list (VIGIE_TRUSTED_PROXIES, e.g.
+	# `private_ranges`); empty by default.
+	servers {
+		trusted_proxies static {$VIGIE_TRUSTED_PROXIES:}
+	}
+	# Default `:80` serves plain HTTP; a real domain turns on automatic HTTPS.
+	# Needs ports 80/443 reachable (VIGIE_HTTP_PORT=80, VIGIE_HTTPS_PORT=443).
+}
+
+{$VIGIE_DOMAIN::80} {
+	root * /srv
+	encode zstd gzip
+
+	# Swagger UI (/api/docs) loads its assets from jsDelivr and runs an inline
+	# script, so that one page gets a looser policy than the app.
+	@docs path /api/docs*
+	@notdocs not path /api/docs*
+	header @notdocs Content-Security-Policy "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+	header @docs Content-Security-Policy "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+		-Server
+	}
+
+	# HSTS only when the request reached Caddy over HTTPS (i.e. VIGIE_DOMAIN is
+	# a real domain). Plain HTTP and LAN setups never get it.
+	@https protocol https
+	header @https Strict-Transport-Security "max-age=31536000"
+
+	handle /api/* {
+		request_body {
+			max_size 2MB
+		}
+		reverse_proxy api:8000
+	}
+
+	# Hashed build assets: cache for a year.
+	handle /assets/* {
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	# Everything else (index.html, sw.js, registerSW.js, manifest, icons and the
+	# SPA fallback) is always revalidated so PWA updates are picked up.
+	handle {
+		header Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

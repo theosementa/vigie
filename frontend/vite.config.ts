@@ -14,8 +14,8 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'Radar',
-        short_name: 'Radar',
+        name: 'Vigie',
+        short_name: 'Vigie',
         description: 'Votre veille techno : articles et vidéos à voir, tags, notes et partage.',
         lang: 'fr',
         start_url: '/',
@@ -61,6 +61,6 @@ export default defineConfig({
   ],
   resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } },
   server: {
-    proxy: { '/api': { target: 'http://localhost:8000', changeOrigin: true } },
+    proxy: { '/api': { target: process.env.VITE_API_PROXY ?? 'http://localhost:8000', changeOrigin: true } },
   },
 })
