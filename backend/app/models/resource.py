@@ -19,7 +19,9 @@ class Resource(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    url: Mapped[str] = mapped_column(Text, unique=True)
+    url: Mapped[str] = mapped_column(Text)
+    # SHA-256 of the normalised url: unique, so the index size does not depend on the URL length
+    url_hash: Mapped[str] = mapped_column(String(64), unique=True)
     type: Mapped[str] = mapped_column(String(20))  # article | video
     title: Mapped[str] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)

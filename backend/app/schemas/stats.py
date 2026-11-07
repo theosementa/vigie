@@ -29,7 +29,8 @@ class SourceCount(BaseModel):
 
 class SharerCount(BaseModel):
     user_id: uuid.UUID
-    display_name: str
+    first_name: str
+    last_name: str
     count: int
 
 

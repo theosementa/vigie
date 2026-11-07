@@ -1,23 +1,28 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 
 from app.core.deps import CurrentUser, SessionDep
+from app.core.ratelimit import MINUTE, user_limit
 from app.models import Item, Resource
 from app.schemas.resource import PreviewIn, PreviewOut
 from app.services.metadata import fetch_metadata
-from app.services.url import InvalidUrlError, normalize_url
+from app.services.url import InvalidUrlError, normalize_url, url_hash
 
 router = APIRouter(prefix="/resources", tags=["resources"])
 
 
-@router.post("/preview", response_model=PreviewOut)
+@router.post(
+    "/preview",
+    response_model=PreviewOut,
+    dependencies=[Depends(user_limit("preview", 60, MINUTE))],
+)
 async def preview(body: PreviewIn, user: CurrentUser, session: SessionDep) -> PreviewOut:
     try:
         url = normalize_url(body.url)
     except InvalidUrlError as exc:
         raise HTTPException(422, str(exc)) from exc
 
-    resource = await session.scalar(select(Resource).where(Resource.url == url))
+    resource = await session.scalar(select(Resource).where(Resource.url_hash == url_hash(url)))
     existing_item_id = None
     if resource is not None:
         existing = await session.scalar(
@@ -30,6 +35,7 @@ async def preview(body: PreviewIn, user: CurrentUser, session: SessionDep) -> Pr
             if existing.type_override:
                 data.type = existing.type_override  # type: ignore[assignment]
     else:
+        await session.commit()  # no transaction (or connection) held during the fetch
         meta = await fetch_metadata(url)
         data = PreviewOut(
             url=url,

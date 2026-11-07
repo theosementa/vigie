@@ -5,9 +5,21 @@ from collections.abc import AsyncIterator
 # Point the app at the test database BEFORE importing it.
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
-    "postgresql+asyncpg://radar:radar@localhost:5432/radar_test",
+    "postgresql+asyncpg://vigie:vigie@localhost:5432/vigie_test",
 )
+# The suite truncates tables and downgrades the schema: never let it near a real database.
+_db_name = TEST_DATABASE_URL.rsplit("/", 1)[-1].split("?")[0]
+if not _db_name.endswith("_test"):
+    raise SystemExit(
+        f"Refusing to run: TEST_DATABASE_URL points at {_db_name!r}, whose name must end with "
+        "'_test' (the tests truncate every table and downgrade the schema)."
+    )
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+TEST_SECRET_KEY = "test-secret-key-0123456789abcdef-0123456789abcdef"
+os.environ["SECRET_KEY"] = TEST_SECRET_KEY
+os.environ["REGISTRATION"] = "open"  # tests sign several users up; invite/closed set per test
+os.environ.pop("PUBLIC_URL", None)
+os.environ["COOKIE_SECURE"] = "false"
 
 import asyncpg  # noqa: E402
 import httpx  # noqa: E402
@@ -18,6 +30,7 @@ from sqlalchemy import text  # noqa: E402
 from sqlalchemy.engine import make_url  # noqa: E402
 
 from alembic import command  # noqa: E402
+from app.core.ratelimit import limiter  # noqa: E402
 from app.db import engine  # noqa: E402
 from app.main import app  # noqa: E402
 from app.services.metadata import Metadata, hostname_of  # noqa: E402
@@ -58,10 +71,26 @@ async def _clean_tables(_database: None) -> None:
     async with engine.begin() as conn:
         await conn.execute(
             text(
-                "TRUNCATE item_events, item_tags, tags, items, resources, users "
-                "RESTART IDENTITY CASCADE"
+                "TRUNCATE item_events, item_tags, tags, items, resources, users, "
+                "instance_settings, invitations, password_resets RESTART IDENTITY CASCADE"
             )
         )
+
+
+@pytest.fixture(autouse=True)
+def _rate_limiter():
+    """Rate limiting is off unless a test asks for it (`rate_limits` fixture)."""
+    limiter.reset()
+    limiter.enabled = False
+    yield
+    limiter.reset()
+    limiter.enabled = True
+
+
+@pytest.fixture
+def rate_limits():
+    limiter.reset()
+    limiter.enabled = True
 
 
 def pytest_configure(config):
@@ -106,12 +135,47 @@ async def client() -> AsyncIterator[httpx.AsyncClient]:
 
 
 async def register(c: httpx.AsyncClient, email: str, name: str | None = None) -> dict:
+    first, _, last = (name or email.split("@")[0]).partition(" ")
     r = await c.post(
         "/api/auth/register",
-        json={"email": email, "password": "correct horse", "display_name": name},
+        json={
+            "email": email,
+            "password": "correct horse",
+            "first_name": first,
+            "last_name": last or "Tester",
+        },
     )
     assert r.status_code == 201, r.text
     return r.json()
+
+
+async def set_mode(mode: str) -> None:
+    """Set the instance registration mode directly in the database."""
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "INSERT INTO instance_settings (id, registration_mode) VALUES (1, :m) "
+                "ON CONFLICT (id) DO UPDATE SET registration_mode = :m"
+            ),
+            {"m": mode},
+        )
+
+
+async def sql(query: str, **params):
+    """Run a statement on the test database, returning all rows (if any)."""
+    async with engine.begin() as conn:
+        result = await conn.execute(text(query), params)
+        return list(result) if result.returns_rows else []
+
+
+def signup_payload(email: str, **over) -> dict:
+    return {
+        "email": email,
+        "password": "correct horse",
+        "first_name": "Test",
+        "last_name": "User",
+        **over,
+    }
 
 
 @pytest_asyncio.fixture

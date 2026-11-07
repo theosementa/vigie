@@ -1,14 +1,16 @@
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import and_, exists, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, SessionDep
+from app.core.errors import api_error
+from app.core.ratelimit import DAY, MINUTE, enforce, user_limit
 from app.models import Item, ItemTag, Resource, Tag
-from app.schemas.item import ItemCreate, ItemList, ItemOut, ItemStatus, ItemUpdate
+from app.schemas.item import ItemCreate, ItemList, ItemOut, ItemStatus, ItemUpdate, RefreshOut
 from app.schemas.resource import ItemType
 from app.schemas.share import ShareIn, ShareOut
 from app.services.events import record_event
@@ -125,7 +127,12 @@ async def list_items(
     return ItemList(items=[item_to_out(i) for i in rows], next_cursor=next_cursor)
 
 
-@router.post("", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ItemOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(user_limit("item_create", 60, MINUTE))],
+)
 async def create_item(body: ItemCreate, user: CurrentUser, session: SessionDep) -> ItemOut:
     try:
         url = normalize_url(body.url)
@@ -138,9 +145,11 @@ async def create_item(body: ItemCreate, user: CurrentUser, session: SessionDep) 
     )
     if existing is not None:
         await session.rollback()
-        raise HTTPException(
+        raise api_error(
             status.HTTP_409_CONFLICT,
-            detail={"message": "Already in your library", "item_id": str(existing)},
+            "already_in_library",
+            "Already in your library",
+            item_id=str(existing),
         )
 
     item = Item(
@@ -176,12 +185,11 @@ async def create_item(body: ItemCreate, user: CurrentUser, session: SessionDep) 
         existing = await session.scalar(
             select(Item.id).where(Item.user_id == user_id, Item.resource_id == resource_id)
         )
-        raise HTTPException(
+        raise api_error(
             status.HTTP_409_CONFLICT,
-            detail={
-                "message": "Already in your library",
-                "item_id": str(existing) if existing else None,
-            },
+            "already_in_library",
+            "Already in your library",
+            item_id=str(existing) if existing else None,
         ) from None
     await session.refresh(item)
     return item_to_out(item)
@@ -241,15 +249,22 @@ async def delete_item(item_id: uuid.UUID, user: CurrentUser, session: SessionDep
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/{item_id}/refresh", response_model=ItemOut)
-async def refresh_item(item_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> ItemOut:
+@router.post(
+    "/{item_id}/refresh",
+    response_model=RefreshOut,
+    dependencies=[Depends(user_limit("item_refresh", 60, MINUTE))],
+)
+async def refresh_item(item_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> RefreshOut:
     item = await _get_owned(session, user.id, item_id)
-    meta = await fetch_metadata(item.resource.url)
-    if meta.ok:  # keep the previous data when the refetch failed
-        apply_metadata(item.resource, meta)
-        await session.commit()
-        await session.refresh(item)
-    return item_to_out(item)
+    url = item.resource.url
+    await session.commit()  # no transaction (or connection) held during the fetch
+    meta = await fetch_metadata(url)
+    if not meta.ok:  # keep the previous data when the refetch failed
+        return RefreshOut(refreshed=False, reason="fetch_failed", item=item_to_out(item))
+    apply_metadata(item.resource, meta)
+    await session.commit()
+    await session.refresh(item)
+    return RefreshOut(refreshed=True, item=item_to_out(item))
 
 
 @router.post("/{item_id}/share", response_model=ShareOut)
@@ -257,4 +272,6 @@ async def share(
     item_id: uuid.UUID, body: ShareIn, user: CurrentUser, session: SessionDep
 ) -> ShareOut:
     item = await _get_owned(session, user.id, item_id)
+    recipients = {e.strip().lower() for e in body.emails if e.strip()}
+    enforce(f"share:user:{user.id}", 50, DAY, cost=len(recipients))
     return await share_item(session, user, item, body.emails, body.message)

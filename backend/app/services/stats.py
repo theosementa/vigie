@@ -185,17 +185,19 @@ async def _shares(session: AsyncSession, user: User, start: date, end: date) -> 
     received = await session.scalar(select(func.count()).where(*received_filters))
     count = func.count()
     rows = await session.execute(
-        select(User.id, User.display_name, count)
+        select(User.id, User.first_name, User.last_name, count)
         .select_from(ItemEvent)
         .join(User, User.id == ItemEvent.other_user_id)
         .where(*received_filters)
-        .group_by(User.id, User.display_name)
-        .order_by(count.desc(), User.display_name)
+        .group_by(User.id, User.first_name, User.last_name)
+        .order_by(count.desc(), User.first_name, User.last_name)
     )
     return SharesStats(
         sent=sent or 0,
         received=received or 0,
-        by_user=[SharerCount(user_id=i, display_name=n, count=c) for i, n, c in rows],
+        by_user=[
+            SharerCount(user_id=i, first_name=f, last_name=ln, count=c) for i, f, ln, c in rows
+        ],
     )
 
 

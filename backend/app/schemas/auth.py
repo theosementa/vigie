@@ -1,9 +1,18 @@
+import re
 import uuid
 from datetime import datetime
 from functools import lru_cache
+from typing import Annotated, Literal
 from zoneinfo import available_timezones
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from email_validator import EmailNotValidError, validate_email
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
+
+# Not-so-private names (RFC 6761 / 8375 and homelab habits). Accepted in `invite` and `closed`
+# instances (homelabs), refused in `open` ones, where the address could never be reached.
+SPECIAL_USE_SUFFIXES = (".local", ".lan", ".home.arpa", ".test", ".internal")
+
+Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
 
 
 @lru_cache(maxsize=1)
@@ -18,16 +27,47 @@ def validate_timezone(value: str) -> str:
     return value
 
 
-class RegisterIn(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8, max_length=128)
-    display_name: str | None = Field(default=None, max_length=100)
-    timezone: str | None = Field(default=None, max_length=64)
+_DOMAIN = re.compile(r"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}")
+
+
+def is_special_use_email(email: str) -> bool:
+    domain = email.rpartition("@")[2].lower()
+    return any(domain.endswith(s) for s in SPECIAL_USE_SUFFIXES)
+
+
+def normalize_email(value: str) -> str:
+    """Validate and lower-case an address. Whether a special-use domain is acceptable depends on
+    the instance's registration mode, which the route checks."""
+    value = value.strip()
+    local, _, domain = value.rpartition("@")
+    try:
+        if is_special_use_email(value):
+            # email-validator refuses these names outright: validate the local part against a
+            # stand-in domain and the domain syntax ourselves.
+            domain = domain.lower()
+            if not _DOMAIN.fullmatch(domain):
+                raise EmailNotValidError("The part after the @-sign is not a valid domain.")
+            checked = validate_email(f"{local}@example.com", check_deliverability=False)
+            return f"{checked.local_part}@{domain}".lower()
+        return validate_email(value, check_deliverability=False).normalized.lower()
+    except EmailNotValidError as exc:
+        raise ValueError(str(exc)) from None
+
+
+class _EmailIn(BaseModel):
+    email: str = Field(max_length=320)
 
     @field_validator("email")
     @classmethod
-    def lower_email(cls, v: str) -> str:
-        return v.strip().lower()
+    def check_email(cls, v: str) -> str:
+        return normalize_email(v)
+
+
+class RegisterIn(_EmailIn):
+    password: str = Field(min_length=8, max_length=128)
+    first_name: Name
+    last_name: Name
+    timezone: str | None = Field(default=None, max_length=64)
 
     @field_validator("timezone")
     @classmethod
@@ -36,18 +76,9 @@ class RegisterIn(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    display_name: str | None = Field(default=None, max_length=100)
+    first_name: Name | None = None
+    last_name: Name | None = None
     timezone: str | None = Field(default=None, max_length=64)
-
-    @field_validator("display_name")
-    @classmethod
-    def check_display_name(cls, v: str | None) -> str | None:
-        if v is None:
-            return None
-        v = v.strip()
-        if not v:
-            raise ValueError("display_name must not be empty")
-        return v
 
     @field_validator("timezone")
     @classmethod
@@ -65,12 +96,28 @@ class LoginIn(BaseModel):
         return v.strip().lower()
 
 
+class PasswordChangeIn(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+class PasswordConfirmIn(BaseModel):
+    password: str
+
+
+class ResetIn(BaseModel):
+    token: str = Field(max_length=200)
+    password: str = Field(min_length=8, max_length=128)
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
     email: str
-    display_name: str
+    first_name: str
+    last_name: str
+    role: Literal["admin", "user"]
     timezone: str
     created_at: datetime
 
@@ -79,5 +126,6 @@ class UserRef(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    display_name: str
+    first_name: str
+    last_name: str
     email: str

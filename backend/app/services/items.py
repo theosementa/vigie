@@ -10,6 +10,7 @@ from app.models import Item, Resource, Tag
 from app.schemas.item import ItemOut
 from app.schemas.resource import ResourceOut
 from app.services.metadata import Metadata, fetch_metadata
+from app.services.url import url_hash
 
 
 def item_to_out(item: Item) -> ItemOut:
@@ -49,18 +50,25 @@ def apply_metadata(resource: Resource, meta: Metadata) -> None:
 
 
 async def get_or_create_resource(session: AsyncSession, url: str) -> Resource:
-    resource = await session.scalar(select(Resource).where(Resource.url == url))
+    """Find the resource of `url`, fetching its metadata when it is new.
+
+    The network is never touched while a transaction is open: the read transaction is ended
+    before the fetch, and the insert runs in a fresh, short one.
+    """
+    digest = url_hash(url)
+    resource = await session.scalar(select(Resource).where(Resource.url_hash == digest))
     if resource is not None:
         return resource
+    await session.commit()  # release the connection: nothing is held during the fetch
     meta = await fetch_metadata(url)
-    resource = Resource(url=url)
+    resource = Resource(url=url, url_hash=digest)
     apply_metadata(resource, meta)
     try:
         async with session.begin_nested():
             session.add(resource)
             await session.flush()
     except IntegrityError:  # concurrent insert of the same URL
-        existing = await session.scalar(select(Resource).where(Resource.url == url))
+        existing = await session.scalar(select(Resource).where(Resource.url_hash == digest))
         if existing is None:
             raise
         return existing

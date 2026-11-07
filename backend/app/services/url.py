@@ -1,6 +1,7 @@
 """URL normalisation and SSRF-safe fetching."""
 
 import asyncio
+import hashlib
 import ipaddress
 import re
 import socket
@@ -82,6 +83,11 @@ def normalize_url(raw: str) -> str:
     )
     path = parts.path.rstrip("/")
     return urlunsplit((scheme, netloc, path, query, ""))
+
+
+def url_hash(normalized_url: str) -> str:
+    """SHA-256 (hex) of a normalised URL: the uniqueness key of `resources`."""
+    return hashlib.sha256(normalized_url.encode()).hexdigest()
 
 
 # --------------------------------------------------------------------------- SSRF
@@ -189,7 +195,7 @@ async def _fetch_loop(
                 pinned,
                 headers={
                     "Host": _host_header(host, parts.port, scheme),
-                    "User-Agent": "Mozilla/5.0 (compatible; RadarBot/1.0)",
+                    "User-Agent": "VigieBot/1.0 (+https://github.com/theosementa/vigie)",
                     "Accept": accept,
                     "Accept-Language": "en,fr;q=0.8",
                 },

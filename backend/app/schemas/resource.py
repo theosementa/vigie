@@ -2,9 +2,10 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 ItemType = Literal["article", "video"]
+MAX_URL_LENGTH = 2048
 
 
 class ResourceOut(BaseModel):
@@ -26,7 +27,7 @@ class ResourceOut(BaseModel):
 
 
 class PreviewIn(BaseModel):
-    url: str
+    url: str = Field(max_length=MAX_URL_LENGTH)
 
 
 class PreviewOut(BaseModel):

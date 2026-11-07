@@ -230,8 +230,9 @@ async def test_refresh_updates_metadata(alice, monkeypatch):
     monkeypatch.setattr("app.api.routes.items.fetch_metadata", new_meta)
     r = await alice.post(f"/api/items/{item['id']}/refresh")
     assert r.status_code == 200
-    assert r.json()["resource"]["title"] == "New title"
-    assert r.json()["resource"]["reading_time_minutes"] == 9
+    assert r.json()["refreshed"] is True and r.json()["reason"] is None
+    assert r.json()["item"]["resource"]["title"] == "New title"
+    assert r.json()["item"]["resource"]["reading_time_minutes"] == 9
 
 
 async def test_refresh_failure_keeps_old_data(alice, monkeypatch):
@@ -243,7 +244,8 @@ async def test_refresh_failure_keeps_old_data(alice, monkeypatch):
 
     monkeypatch.setattr("app.api.routes.items.fetch_metadata", failed)
     r = await alice.post(f"/api/items/{item['id']}/refresh")
-    assert r.json()["resource"]["title"] == item["resource"]["title"]
+    assert r.json()["refreshed"] is False and r.json()["reason"] == "fetch_failed"
+    assert r.json()["item"]["resource"]["title"] == item["resource"]["title"]
 
 
 async def test_preview(alice):
@@ -308,4 +310,8 @@ async def test_duplicate_race_returns_same_conflict_object(alice, bob, monkeypat
     monkeypatch.setattr("app.api.routes.items.resolve_tags", racing_resolve_tags)
     r = await alice.post("/api/items", json={"url": url})
     assert r.status_code == 409
-    assert r.json()["detail"] == {"message": "Already in your library", "item_id": created["id"]}
+    assert r.json()["detail"] == {
+        "code": "already_in_library",
+        "message": "Already in your library",
+        "item_id": created["id"],
+    }

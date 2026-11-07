@@ -26,7 +26,8 @@ async def test_share_with_existing_user(alice, bob):
     assert got["share_message"] == "you should read this"
     assert got["shared_by"] == {
         "id": alice.user["id"],
-        "display_name": "Alice",
+        "first_name": "Alice",
+        "last_name": "Tester",
         "email": "alice@example.com",
     }
     shared_only = (await bob.get("/api/items", params={"shared": "true"})).json()["items"]

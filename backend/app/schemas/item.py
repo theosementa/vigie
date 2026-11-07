@@ -5,14 +5,14 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.auth import UserRef
-from app.schemas.resource import ItemType, ResourceOut
+from app.schemas.resource import MAX_URL_LENGTH, ItemType, ResourceOut
 from app.schemas.tag import TagRef
 
 ItemStatus = Literal["to_watch", "seen"]
 
 
 class ItemCreate(BaseModel):
-    url: str
+    url: str = Field(max_length=MAX_URL_LENGTH)
     type: ItemType | None = None
     status: ItemStatus = "to_watch"
     notes: str | None = Field(default=None, max_length=10000)
@@ -39,6 +39,13 @@ class ItemOut(BaseModel):
     seen_at: datetime | None
     queue_position: int | None
     resource: ResourceOut
+
+
+class RefreshOut(BaseModel):
+    refreshed: bool
+    # why nothing changed (only when refreshed is false): `fetch_failed`
+    reason: Literal["fetch_failed"] | None = None
+    item: ItemOut
 
 
 class ItemList(BaseModel):

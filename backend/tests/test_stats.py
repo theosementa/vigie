@@ -328,10 +328,11 @@ async def test_shares_sent_and_received(alice, bob):
         b = await summary(bob, period="week")
         assert b["shares"]["sent"] == 0 and b["shares"]["received"] == 3
         assert b["shares"]["by_user"] == [
-            {"user_id": alice.user["id"], "display_name": "Alice", "count": 2},
+            {"user_id": alice.user["id"], "first_name": "Alice", "last_name": "Tester", "count": 2},
             {
                 "user_id": (await carol.get("/api/auth/me")).json()["id"],
-                "display_name": "Carol",
+                "first_name": "Carol",
+                "last_name": "Tester",
                 "count": 1,
             },
         ]
@@ -343,7 +344,7 @@ async def test_shares_sent_and_received(alice, bob):
 
         c = await summary(carol, period="week")
         assert c["shares"]["sent"] == 1 and c["shares"]["received"] == 1
-        assert c["shares"]["by_user"][0]["display_name"] == "Alice"
+        assert c["shares"]["by_user"][0]["first_name"] == "Alice"
 
         # shares only count in the period they happened in
         last_week = await summary(alice, period="week", offset=-1)

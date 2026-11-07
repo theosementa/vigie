@@ -1,6 +1,10 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import APIRouter, FastAPI
 
-from app.api.routes import auth, items, queue, resources, stats, tags
+from app.api.routes import admin, auth, items, queue, resources, stats, tags
+from app.core.config import check_secret_key, settings
 
 api = APIRouter(prefix="/api")
 
@@ -11,11 +15,21 @@ async def health() -> dict[str, str]:
 
 
 api.include_router(auth.router)
+api.include_router(admin.router)
 api.include_router(resources.router)
 api.include_router(items.router)
 api.include_router(queue.router)
 api.include_router(tags.router)
 api.include_router(stats.router)
 
-app = FastAPI(title="radar API", docs_url="/api/docs", openapi_url="/api/openapi.json")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    check_secret_key(settings.secret_key)  # refuse to start with a missing / weak secret
+    yield
+
+
+app = FastAPI(
+    title="Vigie API", docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=lifespan
+)
 app.include_router(api)

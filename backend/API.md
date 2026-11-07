@@ -1,23 +1,77 @@
-# radar API contract
+# Vigie API contract
 
 Base path: `/api`. JSON only. Fields are `snake_case`, ids are UUID strings, datetimes are ISO 8601 with
 timezone (`2026-11-05T08:00:00.123456Z` style offsets).
 
-Auth is a JWT stored in an httpOnly cookie `radar_session` (SameSite=Lax, `Secure` when
-`COOKIE_SECURE=true`). The browser sends it automatically (same origin, no CORS). Every route except
-`/health`, `/auth/register` and `/auth/login` returns `401 {"detail": "Not authenticated"}` without a valid
-session. Interactive docs: `/api/docs`.
+Auth is a JWT stored in an httpOnly cookie `vigie_session` (SameSite=Lax; `Secure` per `COOKIE_SECURE`, see
+[Configuration](#configuration)). The token carries `sub` (user id) and `ver` (the user's `token_version`):
+a token whose `ver` is no longer current is rejected. The browser sends the cookie automatically (same
+origin, no CORS). Every route except `/health`, `/auth/register`, `/auth/login`, `/auth/logout` and
+`/auth/reset` answers `401 not_authenticated` without a valid session. Interactive docs: `/api/docs`.
 
-Errors: `{"detail": "message"}`. Schema validation errors (missing/invalid fields) are `422` with FastAPI's
-`detail: [{"loc", "msg", "type"}]` array, but an invalid URL (`"Invalid URL"`-style message) or an invalid
-cursor is a `422` with a plain string `detail`. The duplicate `POST /items` `409` uses an object `detail`.
-Another user's item always answers `404 {"detail": "Item not found"}`, identical to a non-existent id.
+## Errors
+
+Errors raised by the API are `{"detail": {"code": "<stable_code>", "message": "<English sentence>", ...}}`.
+Front ends branch on `code` and translate; `message` is for logs. Some errors add fields (see the table).
+Pydantic validation errors stay FastAPI's `422 {"detail": [{"loc", "msg", "type"}]}` array. Legacy plain
+`detail` strings remain on a few older `404`/`422` errors (item not found, invalid URL/cursor, queue and
+stats range errors). Another user's item always answers `404`, identical to a non-existent id.
+
+| Code | Status | Meaning |
+|---|---|---|
+| `not_authenticated` | 401 | No / invalid / expired / revoked session |
+| `invalid_credentials` | 401 | Login failed (same answer for an unknown email and a wrong password) |
+| `wrong_password` | 403 | Current password wrong (password change, account deletion) |
+| `not_invited` | 403 | `invite` mode: the email is not on the invitation list |
+| `registration_closed` | 403 | `closed` mode |
+| `email_taken` | 409 | An account already uses this email |
+| `email_domain_not_allowed` | 422 | Special-use domain (`.local`, `.lan`, `.home.arpa`, `.test`, `.internal`) while the instance is `open` |
+| `invalid_reset_token` | 400 | Reset token unknown, expired (1 h) or already used |
+| `last_admin` | 409 | Deleting the only admin while other accounts exist |
+| `cannot_delete_self` | 400 | Admin route used on one's own account |
+| `already_in_library` | 409 | `POST /items` duplicate; adds `item_id` |
+| `rate_limited` | 429 | Too many requests; `Retry-After` header (seconds) |
+| `not_found` | 404 | Admin routes called by a non-admin (they look absent) |
+| `user_not_found` | 404 | Admin: unknown user id |
+| `invitation_not_found` | 404 | Admin: unknown invitation id |
+
+## Rate limits
+
+In-process sliding windows keyed by client IP (`request.client.host`: behind Caddy, uvicorn's proxy
+headers make it the real client IP) or by user id. They live in the memory of one process: with several
+workers each keeps its own counters, which is fine for the single-worker default. Over the limit: `429
+rate_limited` with `Retry-After`.
+
+| Route | Limit |
+|---|---|
+| `POST /auth/login` | 10 / min / IP and 5 / min / email |
+| `POST /auth/register` | 5 / hour / IP |
+| `POST /auth/reset` | 5 / hour / IP |
+| `POST /auth/password` | 5 / min / user |
+| `POST /resources/preview`, `POST /items`, `POST /items/{id}/refresh` | 60 / min / user, each its own bucket |
+| `POST /items/{id}/share` | 50 recipients / day / user |
+
+## Configuration
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `DATABASE_URL` | local `vigie` db | `postgresql+asyncpg://...` |
+| `SECRET_KEY` | none, required | JWT signing key. The app refuses to start if it is missing, shorter than 32 chars or a known default. `openssl rand -hex 32` |
+| `JWT_EXPIRE_DAYS` | `30` | Session lifetime |
+| `COOKIE_SECURE` | `auto` | `auto` (Secure when the request scheme is https, as seen through proxy headers), `true`, `false` |
+| `REGISTRATION` | `invite` | `invite` / `open` / `closed`: initial mode of a fresh instance only; afterwards the admin owns it |
+| `PUBLIC_URL` | unset | e.g. `https://vigie.example.org`; base of reset links (falls back to the request's base URL) |
+| `FETCH_TIMEOUT_SECONDS`, `FETCH_MAX_BYTES`, `FETCH_MAX_REDIRECTS` | `5`, 2 MiB, `3` | Metadata fetching |
+| `TEST_DATABASE_URL` | `postgresql+asyncpg://vigie:vigie@localhost:5432/vigie_test` | Tests only; the database name must end with `_test` |
+
+CLI: `vigie reset-password <email>` (or `python -m app.cli reset-password <email>`) prints a one-time reset
+link valid 1 hour, e.g. `docker compose exec api vigie reset-password alice@example.com`.
 
 ## Types
 
 ```jsonc
 // ItemType = "article" | "video"      ItemStatus = "to_watch" | "seen"
-User     = { "id": "uuid", "email": "a@b.com", "display_name": "Alice", "timezone": "Europe/Paris", "created_at": "..." }
+User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "created_at": "..." }
 Tag      = { "id": "uuid", "name": "python" }
 Resource = {
   "id": "uuid", "url": "https://example.com/post",          // normalized
@@ -31,7 +85,7 @@ Resource = {
 Item = {
   "id": "uuid", "status": "to_watch", "notes": "..."|null,
   "tags": [Tag],
-  "shared_by": { "id": "uuid", "display_name": "Alice", "email": "alice@example.com" } | null,
+  "shared_by": { "id": "uuid", "first_name": "Alice", "last_name": "Liddell", "email": "alice@example.com" } | null,
   "share_message": "..."|null,
   "created_at": "...", "updated_at": "...", "seen_at": "..."|null,
   "queue_position": 0|null,             // 0-based rank in the watch queue, null = not queued
@@ -52,30 +106,77 @@ defaults to `https://`.
 
 ### `POST /api/auth/register` -> 201
 ```json
-{ "email": "alice@example.com", "password": "min 8 chars", "display_name": "Alice",
+{ "email": "alice@example.com", "password": "min 8 chars", "first_name": "Alice", "last_name": "Liddell",
   "timezone": "Europe/Paris" }
 ```
-`display_name` optional (defaults to the email local part). `timezone` optional, an IANA name (defaults to
-`"UTC"`; the web app sends the browser's). Email is lowercased. Sets the session cookie.
-Response: `User`. Errors: `409` email already registered, `422` invalid input (including an unknown timezone).
+`first_name` and `last_name` are required, trimmed, 1-50 chars each. `timezone` optional, an IANA name
+(defaults to `"UTC"`). Email is lowercased. Sets the session cookie. Response: `User`.
+The first account of an instance with no users becomes `admin`, whatever the mode. After that:
+`invite` mode needs an invitation for the email (case-insensitive, marked used on signup) else
+`403 not_invited`; `closed` -> `403 registration_closed`; `open` -> anyone. Special-use email domains are
+accepted in `invite`/`closed`, refused (`422 email_domain_not_allowed`) in `open`.
+Other errors: `409 email_taken`, `422` invalid input, `429`.
 
 ### `POST /api/auth/login` -> 200
 ```json
 { "email": "alice@example.com", "password": "..." }
 ```
-Response: `User` + session cookie. `401 {"detail": "Invalid email or password"}`.
+Response: `User` + session cookie. `401 invalid_credentials` for an unknown email and for a wrong password
+alike (a dummy hash is verified for unknown emails so timing does not differ). `429`.
 
 ### `POST /api/auth/logout` -> 204
 Clears the cookie. Works with or without a session.
+
+### `POST /api/auth/logout-all` -> 204
+Bumps `token_version` (every session of the user, including this one, is revoked) and clears the cookie.
+
+### `POST /api/auth/password` -> 204
+```json
+{ "current_password": "...", "new_password": "min 8 chars" }
+```
+Bumps `token_version` (other sessions are revoked) and re-issues the caller's cookie.
+`403 wrong_password`, `422`, `429`.
+
+### `POST /api/auth/reset` -> 204 (no session needed)
+```json
+{ "token": "from the reset link", "password": "min 8 chars" }
+```
+Sets the password, bumps `token_version`, marks the token used. `400 invalid_reset_token` when unknown,
+expired (1 h) or already used. Tokens are random, stored hashed (SHA-256), single use. A reset link is
+`<PUBLIC_URL or base URL>/reset-password?token=...`; admins create one with
+`POST /api/admin/users/{id}/reset-link`, operators with the CLI.
 
 ### `GET /api/auth/me` -> 200 `User`, or `401` when there is no session.
 
 ### `PATCH /api/auth/me` -> 200 `User`
 ```json
-{ "display_name": "Alicia", "timezone": "America/New_York" }
+{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York" }
 ```
-Both fields optional (omitted = unchanged). `422` for an empty `display_name` or a timezone that is not a
+All fields optional (omitted = unchanged). `422` for an empty / over-long name or a timezone that is not a
 known IANA name (`zoneinfo`). The timezone drives "day", "week" and streaks in the statistics.
+
+### `DELETE /api/auth/me` -> 204
+```json
+{ "password": "..." }
+```
+Immediate and irreversible: the user's items, tags, events and sessions are deleted. Invitations they
+created stay (`created_by` becomes null); items they shared to others stay with `shared_by` null.
+`403 wrong_password`; `409 last_admin` if they are the only admin and other accounts exist.
+
+## Admin
+
+All routes require `role = admin`; anyone else gets `404 not_found` (the section looks absent). Admins
+never see library content.
+
+- `GET /api/admin/settings` -> `{ "registration_mode": "invite|open|closed", "updated_at", "updated_by" }`
+- `PATCH /api/admin/settings` `{ "registration_mode": "open" }` -> same shape. Never affects existing accounts.
+- `GET /api/admin/invitations` -> `[{ "id", "email", "created_by", "created_at", "used_at" }]` (`used_at` set = account created)
+- `POST /api/admin/invitations` `{ "email" }` -> `201` new, or `200` with the existing invitation (idempotent)
+- `DELETE /api/admin/invitations/{id}` -> 204 (`404 invitation_not_found`)
+- `GET /api/admin/users` -> `[{ "id", "first_name", "last_name", "email", "role", "created_at", "item_count" }]`
+- `DELETE /api/admin/users/{id}` -> 204, same rules as self-deletion; `400 cannot_delete_self`, `404 user_not_found`
+- `POST /api/admin/users/{id}/reset-link` -> `{ "url": "https://.../reset-password?token=...", "expires_at" }`;
+  voids that user's previous unused links
 
 ## Resources
 
@@ -95,7 +196,7 @@ Fetches metadata without saving anything (used by the add form).
 }
 ```
 `existing_item_id` is the current user's item id if this URL is already in their library, else `null`.
-Metadata failures never error: the title falls back to the hostname. `422` for an invalid URL.
+Metadata failures never error: the title falls back to the hostname. `422` for an invalid URL or one longer than 2048 chars.
 
 ## Items
 
@@ -117,8 +218,9 @@ Pass `next_cursor` back as `cursor` for the next page. `422` for a malformed cur
 ```
 Only `url` is required. `queue: true` appends the new item to the end of the [watch queue](#queue) when its
 effective type is `video` (ignored otherwise, and for `status: "seen"`). `type` overrides the auto-detected type for this user only. Tags are created on
-demand (per user, case-insensitive unique). `409 {"detail": {"message": "Already in your library",
-"item_id": "uuid"}}` when the user already has this URL. `422` for an invalid URL (only http/https).
+demand (per user, case-insensitive unique). `409 already_in_library` (with `item_id`) when the user already has this URL. `422` for an invalid URL
+(only http/https) or one longer than 2048 chars. Resources are unique on `url_hash`, the SHA-256 of the
+normalised URL. No DB transaction is held while the page is fetched.
 
 ### `GET /api/items/{id}` -> 200 `Item` (404 if not yours)
 
@@ -134,8 +236,12 @@ type to something other than `video`, removes it from the watch queue (positions
 ### `DELETE /api/items/{id}` -> 204
 Also removes the item from the watch queue (positions are compacted).
 
-### `POST /api/items/{id}/refresh` -> 200 `Item`
-Re-fetches the metadata. If the re-fetch fails, existing data is kept.
+### `POST /api/items/{id}/refresh` -> 200
+```json
+{ "refreshed": true, "reason": null, "item": Item }
+```
+Re-fetches the metadata. If the re-fetch fails, existing data is kept and the answer is
+`{ "refreshed": false, "reason": "fetch_failed", "item": Item }`.
 
 ### `POST /api/items/{id}/share` -> 200
 ```json
@@ -207,7 +313,7 @@ and so on; a positive offset is a `422`.
   "top_sources": [ { "site_name": "youtube.com", "count": 3 } ],  // max 5, items seen in the period
   "shares": {
     "sent": 3, "received": 2,                         // in the period
-    "by_user": [ { "user_id": "uuid", "display_name": "Alice", "count": 2 } ]  // who shared with me
+    "by_user": [ { "user_id": "uuid", "first_name": "Alice", "last_name": "Liddell", "count": 2 } ]  // who shared with me
   },
   "streak": { "current": 3, "best": 12 },
   "videos_without_duration": 1                        // seen videos of the period with no duration
