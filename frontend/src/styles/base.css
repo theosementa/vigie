@@ -203,16 +203,18 @@
 .note-s .i{width:16px;height:16px;margin-top:1px}
 
 /* Sheets: full screen on a phone, centred modal from 768 px (blueprint 04) */
-.sheet-backdrop{position:fixed;inset:0;z-index:50;background:var(--scrim);transition:opacity 150ms var(--ease)}
+.sheet-backdrop{position:fixed;inset:0;z-index:50;background:var(--scrim);transition:opacity var(--dur-slow) var(--ease)}
 .sheet-backdrop[data-starting-style],.sheet-backdrop[data-ending-style]{opacity:0}
-.sheet{position:fixed;inset:0;z-index:51;display:flex;flex-direction:column;gap:14px;background:var(--bg);color:var(--text);padding:calc(14px + var(--safe-top)) 18px 0;outline:0;transition:transform 220ms var(--ease),opacity 150ms var(--ease)}
-.sheet[data-starting-style],.sheet[data-ending-style]{transform:translateY(24px);opacity:0}
+.sheet{position:fixed;inset:0;z-index:51;display:flex;flex-direction:column;gap:14px;background:var(--bg);color:var(--text);padding:calc(14px + var(--safe-top)) 18px 0;outline:0;transition:transform var(--dur-slow) var(--ease),opacity var(--dur-slow) var(--ease);will-change:transform}
+/* Phone: the full-screen sheet slides up from the bottom edge and back down */
+.sheet[data-starting-style],.sheet[data-ending-style]{transform:translateY(100%)}
 .sheet-body{flex:1;min-height:0;overflow-y:auto;display:grid;gap:14px;align-content:start;margin:0 -18px;padding:2px 18px 8px}
 .sheet-foot{flex:none;padding:10px 0 calc(10px + var(--safe-bottom))}
 .sheet-foot .cta{position:static;margin:0;width:100%}
 @media (min-width:768px){
   .sheet{inset:50% auto auto 50%;width:min(var(--sheet-w,480px),92vw);max-height:min(88dvh,880px);transform:translate(-50%,-50%);border:1px solid var(--line);border-radius:20px;padding:18px 20px 0}
-  .sheet[data-starting-style],.sheet[data-ending-style]{transform:translate(-50%,-48%) scale(.985)}
+  .sheet{transition:transform 220ms var(--ease),opacity 150ms var(--ease)}
+  .sheet[data-starting-style],.sheet[data-ending-style]{transform:translate(-50%,-48%) scale(.985);opacity:0}
   .sheet-body{margin:0 -20px;padding:2px 20px 8px}
   .sheet-foot{padding:12px 0 20px}
 }
