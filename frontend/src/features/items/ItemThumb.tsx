@@ -27,19 +27,32 @@ export function ItemThumb({ resource, className }: { resource: ThumbResource; cl
   )
 }
 
+/**
+ * YouTube serves `hqdefault` (480x360, letterboxed) by default, which looks soft on a retina card.
+ * `maxresdefault` is 1280x720 but missing on some videos: we try it first and fall back to the stored URL.
+ */
+const YT_HQ = /^(https:\/\/i\.ytimg\.com\/vi\/[\w-]+\/)hqdefault\.jpg(\?.*)?$/
+
+function sharperUrl(url: string): string {
+  const m = YT_HQ.exec(url)
+  return m ? `${m[1]}maxresdefault.jpg` : url
+}
+
 function ThumbImage({ resource }: { resource: ThumbResource }) {
+  const original = resource.image_url
+  const [src, setSrc] = useState(original ? sharperUrl(original) : null)
   const [failed, setFailed] = useState(false)
-  if (resource.image_url && !failed)
+  if (src && !failed)
     return (
       <img
         className="og"
-        src={resource.image_url}
+        src={src}
         alt=""
         // Publishers' image hosts often refuse a foreign Referer.
         referrerPolicy="no-referrer"
         loading="lazy"
         decoding="async"
-        onError={() => setFailed(true)}
+        onError={() => (original && src !== original ? setSrc(original) : setFailed(true))}
       />
     )
   return (
