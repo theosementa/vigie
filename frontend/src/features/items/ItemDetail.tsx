@@ -232,6 +232,27 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
         {resource.description && <p className="sub line-clamp-4">{resource.description}</p>}
       </div>
 
+      {/* Primary actions, right under the title: reachable without scrolling */}
+      <div className="primary-row">
+        <a className="btn btn-accent" href={resource.url} target="_blank" rel="noopener noreferrer">
+          <Icon name="arrow-right-up" />
+          {t('item.open_link')}
+        </a>
+        {queue.available && (
+          <button
+            type="button"
+            className="btn btn-2"
+            aria-pressed={queue.queued}
+            aria-label={t(queue.queued ? 'item.queue.remove' : 'item.queue.add')}
+            title={t(queue.queued ? 'item.queue.remove' : 'item.queue.add')}
+            disabled={queue.pending}
+            onClick={queue.toggle}
+          >
+            <Icon name={queue.queued ? 'list-minus-minimalistic' : 'list-plus-minimalistic'} />
+          </button>
+        )}
+      </div>
+
       {item.shared_by && (
         <div className="recv">
           <span className="dot" aria-hidden="true" />
@@ -270,7 +291,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
         <span className="h-label" id="type-label">
           {t('item.type')}
         </span>
-        <div className="seg full" role="group" aria-labelledby="type-label">
+        <div className="seg full stack" role="group" aria-labelledby="type-label">
           {RESOURCE_TYPES.map((type) => (
             <button
               key={type}
@@ -290,20 +311,10 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
       <NotesEditor key={`notes-${item.id}`} item={item} />
 
       <div className="actions">
-        <a className="btn btn-accent" href={resource.url} target="_blank" rel="noopener noreferrer">
-          <Icon name="arrow-right-up" />
-          {t('item.open_link')}
-        </a>
         <button type="button" className="btn btn-2" onClick={() => dialogs.share(item)}>
           <Icon name="share" />
           {t('item.share')}
         </button>
-        {queue.available && (
-          <button type="button" className="btn btn-2" aria-pressed={queue.queued} disabled={queue.pending} onClick={queue.toggle}>
-            <Icon name={queue.queued ? 'list-minus-minimalistic' : 'list-plus-minimalistic'} />
-            {t(queue.queued ? 'item.queue.remove' : 'item.queue.add')}
-          </button>
-        )}
         <button
           type="button"
           className="btn btn-2"

@@ -96,6 +96,8 @@
 .site img{width:16px;height:16px;border-radius:4px;flex:none}
 .site span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .h-label{font-size:12.5px;font-weight:500;color:var(--muted);margin:0}
+.primary-row{display:flex;gap:8px}
+.primary-row .btn-accent{flex:1;min-width:0}
 .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .actions .btn{width:100%}
 .history{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -103,7 +105,7 @@
 .history .i{width:18px;height:18px;color:var(--muted)}
 .history time{color:var(--muted);font-size:12.5px;white-space:nowrap}
 .field textarea,.field input{font:inherit;font-size:16px;color:var(--text);background:none;border:0;outline:0;resize:vertical;width:100%;padding:0;min-width:0}
-.field textarea::placeholder,.field input::placeholder{color:var(--muted)}
+.field textarea::placeholder,.field input::placeholder{color:color-mix(in srgb,var(--muted) 55%,transparent)}
 .field:focus-within{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink)}
 .field .help.err{color:var(--over)}
 .alert{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:13.5px}
@@ -217,8 +219,13 @@
 .inspector{position:fixed;top:0;right:0;bottom:0;width:380px;z-index:10;display:none;flex-direction:column;gap:14px;padding:22px 20px 0;background:var(--surface);border-left:1px solid var(--line)}
 .inspector .sheet-body{margin:0 -20px;padding:2px 20px 24px}
 @media (min-width:1280px){
-  .inspector{display:flex}
-  .app:has(.inspector) .main{padding-right:calc(380px + 28px)}
+  /* Always mounted so it can slide; the page makes room with a real (animated) resize. */
+  .inspector{display:flex;transform:translateX(100%);visibility:hidden;transition:transform 260ms var(--ease),visibility 0s linear 260ms}
+  .inspector[data-open="true"]{transform:none;visibility:visible;transition:transform 260ms var(--ease),visibility 0s}
+  .main{transition:padding-right 260ms var(--ease)}
+  .app:has(.inspector[data-open="true"]) .main{padding-right:calc(380px + 28px)}
+  /* Column count is pinned (see useStableCards) so the resize never flips it: cards only grow/shrink. */
+  .cards{grid-template-columns:repeat(var(--cards-cols,4),minmax(0,1fr))}
 }
 
 /* Buttons */
@@ -234,6 +241,7 @@
 .seg button{position:relative;z-index:1;border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:500;padding:6px 12px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-align:center;gap:6px;transition:color 200ms var(--ease)}
 .seg button[aria-pressed="true"]{color:var(--text)}
 .seg.full{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+.seg.stack button{flex-direction:column;gap:4px;padding:8px 4px;white-space:nowrap;font-size:12.5px}
 /* Sliding thumb: sized from the button count, moved to the pressed button's index (up to 5 segments). */
 .seg.full:has(>button:nth-child(3)){--n:3}
 .seg.full:has(>button:nth-child(4)){--n:4}
@@ -310,7 +318,7 @@
 .capture .in{width:320px;max-width:100%}
 .in:focus-within{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink)}
 .in input{flex:1;min-width:0;height:100%;border:0;outline:0;background:none;font:inherit;color:var(--text)}
-.in input::placeholder{color:var(--muted)}
+.in input::placeholder{color:color-mix(in srgb,var(--muted) 55%,transparent)}
 .in input[type=search]::-webkit-search-cancel-button{display:none}
 .capture kbd,.kbd{margin-left:auto;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:0 5px;color:var(--muted)}
 .strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}

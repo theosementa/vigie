@@ -55,20 +55,22 @@ function SheetHeader({ title, closeLabel }: { title: string; closeLabel: string 
   )
 }
 
-/** Same header and body without the dialog, for the persistent inspector (>= 1280 px). */
+/** Same header and body without the dialog, for the persistent inspector (>= 1280 px). Stays mounted so it can slide in and out. */
 export function Panel({
+  open,
   title,
   onClose,
   closeLabel,
   children,
 }: {
+  open: boolean
   title: string
   onClose: () => void
   closeLabel: string
   children: ReactNode
 }) {
   return (
-    <aside className="inspector" aria-label={title}>
+    <aside className="inspector" data-open={open} inert={!open} aria-label={title}>
       <div className="sheet-h">
         <h3>{title}</h3>
         <button type="button" className="icon-btn" aria-label={closeLabel} onClick={onClose}>

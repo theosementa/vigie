@@ -57,7 +57,6 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
       <article
         className={cn(
           'flex items-stretch gap-2 rounded-2xl bg-card p-2 text-card-foreground shadow-sm ring-1 ring-border transition-shadow',
-          first && 'ring-2 ring-accent-ink',
           isDragging && 'shadow-xl ring-2 ring-accent-ink/60',
         )}
       >
@@ -112,7 +111,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
                 <Button
                   type="button"
                   size="icon-sm"
-                  variant="ghost"
+                  variant="secondary"
                   aria-label={t('queue.entry.actions', { title })}
                   className="rounded-full"
                 />

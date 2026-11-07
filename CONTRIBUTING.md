@@ -44,6 +44,15 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec web-dev node
 
 CI runs all of these on every push and pull request, plus the Docker image builds.
 
+## Motion and smoothness
+
+Every open/close, resize and reorder in the UI must stay smooth, with no visible glitch. This is a quality bar, not a nice-to-have.
+
+- **Animate, don't pop.** Panels, sheets, menus and rows enter and leave with a transition (`--ease`, 200-320 ms, tokens in `styles/motion.css`). Keep a closing element mounted until its exit has played (the inspector stays mounted and slides; `ItemDetailHost` keeps the last item so content does not blank mid-close). Everything must respect `prefers-reduced-motion`.
+- **A real resize beats a fake one, but never reflow per frame in a way that jumps.** When the page makes room for the inspector, `.main` animates its `padding-right` and the grid really resizes. To keep that glitch-free: the grid column count is pinned to the open-panel count, open or closed (`useStableCards`, `--cards-cols`), so cards only grow and shrink continuously; titles reserve a fixed line count (`.tt`: two lines) so heights never flip when a title re-wraps.
+- **Measure, don't eyeball.** For any animation that resizes layout, sample each `requestAnimationFrame` (column count, card width and height, line counts) and check nothing changes discretely. View Transitions were tried for the page resize and rejected (stretched snapshots).
+- Avoid animating layout properties on large lists unless the above holds; prefer `transform` and `opacity`.
+
 ## Commits and pull requests
 
 - Commit messages: imperative English, one behaviour per commit ("Add invite list", not "Added stuff").
