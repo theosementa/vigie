@@ -65,7 +65,7 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           STATUS: ${{ job.status }}
           PROJECT: Vigie
-          SITE_URL: http://homelab:8101
+          SITE_URL: https://vigie.theosementa.fr
           BUILD: ${{ github.run_number }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
