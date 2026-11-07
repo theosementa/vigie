@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Trash2 } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -144,7 +144,7 @@ function InvitationsSection() {
                   remove.mutate(inv.id, { onError: (e) => toast.error(errorMessage(e)) })
                 }
               >
-                <Trash2 />
+                <Icon name="trash-bin-minimalistic" />
               </Button>
             </li>
           ))}
@@ -184,7 +184,7 @@ function ResetLinkDialog({ link, name, onClose }: { link: ResetLink | null; name
               className="h-10 rounded-xl text-base md:text-sm"
             />
             <Button className="h-10 rounded-xl" onClick={copy}>
-              <Copy />
+              <Icon name="copy" />
               Copier
             </Button>
           </div>

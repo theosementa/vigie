@@ -1,25 +1,30 @@
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { errorMessage, messageForCode } from '@/lib/errors'
+import { useT, type TFunction } from '@/lib/i18n'
 import { AuthCard } from './AuthCard'
 import { Field } from './Field'
 import { useResetPassword } from './useAuth'
 
-const schema = z
-  .object({
-    password: z.string().min(8, '8 caractères minimum'),
-    confirm: z.string(),
-  })
-  .refine((v) => v.password === v.confirm, {
-    path: ['confirm'],
-    message: 'Les deux mots de passe ne correspondent pas',
-  })
-type Values = z.infer<typeof schema>
+const makeSchema = (t: TFunction) =>
+  z
+    .object({
+      password: z.string().min(8, t('auth.validation.password_min')),
+      confirm: z.string(),
+    })
+    .refine((v) => v.password === v.confirm, {
+      path: ['confirm'],
+      message: t('auth.validation.password_mismatch'),
+    })
+type Values = z.infer<ReturnType<typeof makeSchema>>
 
 export function ResetPasswordPage() {
+  const t = useT()
+  const schema = useMemo(() => makeSchema(t), [t])
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const token = params.get('token') ?? ''
@@ -37,18 +42,18 @@ export function ResetPasswordPage() {
         onSuccess: () =>
           navigate('/login', {
             replace: true,
-            state: { notice: 'Mot de passe modifié. Tu peux te connecter.' },
+            state: { notice: t('auth.reset.done') },
           }),
       },
     )
 
   return (
     <AuthCard
-      title="Nouveau mot de passe"
-      subtitle="Choisis un nouveau mot de passe pour ton compte."
+      title={t('auth.reset.title')}
+      subtitle={t('auth.reset.subtitle')}
       footer={
-        <Link to="/login" className="font-medium text-primary">
-          Retour à la connexion
+        <Link to="/login" className="font-medium text-accent-ink">
+          {t('auth.reset.back')}
         </Link>
       }
     >
@@ -56,16 +61,16 @@ export function ResetPasswordPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <Field
             id="password"
-            label="Nouveau mot de passe"
+            label={t('auth.reset.new_password')}
             type="password"
             autoComplete="new-password"
-            hint="8 caractères minimum."
+            hint={t('auth.password.hint')}
             error={errors.password?.message}
             {...register('password')}
           />
           <Field
             id="confirm"
-            label="Confirmation"
+            label={t('auth.reset.confirm')}
             type="password"
             autoComplete="new-password"
             error={errors.confirm?.message}
@@ -73,11 +78,11 @@ export function ResetPasswordPage() {
           />
           {reset.error && (
             <p role="alert" className="text-sm text-destructive">
-              {errorMessage(reset.error, 'Réinitialisation impossible. Réessaie.')}
+              {errorMessage(reset.error, t('auth.reset.failed'))}
             </p>
           )}
           <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={reset.isPending}>
-            {reset.isPending ? 'Enregistrement…' : 'Changer mon mot de passe'}
+            {reset.isPending ? t('auth.reset.pending') : t('auth.reset.submit')}
           </Button>
         </form>
       ) : (

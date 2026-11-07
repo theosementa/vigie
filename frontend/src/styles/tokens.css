@@ -1,0 +1,24 @@
+/* Vigie design tokens, copied verbatim from the :root blocks of vigie-da.html. The rest of the app reads these variables; no colour literal lives outside this file. */
+:root{
+  --page:#DCE0E1; --bg:#EEF1F1; --surface:#FFFFFF; --surface-2:#E3E7E8; --line:#CED5D7;
+  --text:#0B0F10; --muted:#56606A; --accent:#A6E33F; --accent-ink:#3B6A00; --on-accent:#0B0F10;
+  --ok:#1F6FD1; --watch:#8A6A00; --plan:#B4530A; --over:#C62828; --unknown:#6B757B;
+  --bezel:#1A1D1F;
+  --font:"Geologica",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#050607; --bg:#0A0C0E; --surface:#111417; --surface-2:#1A1E22; --line:#252A2F;
+    --text:#E6ECE9; --muted:#8A949A; --accent:#B8F25C; --accent-ink:#B8F25C; --on-accent:#0A0C0E;
+    --ok:#5AB0FF; --watch:#E3C04D; --plan:#F29B4B; --over:#FF5D5D; --unknown:#6E777D;
+    --bezel:#24282C; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#050607; --bg:#0A0C0E; --surface:#111417; --surface-2:#1A1E22; --line:#252A2F;
+  --text:#E6ECE9; --muted:#8A949A; --accent:#B8F25C; --accent-ink:#B8F25C; --on-accent:#0A0C0E;
+  --ok:#5AB0FF; --watch:#E3C04D; --plan:#F29B4B; --over:#FF5D5D; --unknown:#6E777D;
+  --bezel:#24282C; color-scheme:dark;
+}

@@ -1,20 +1,25 @@
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
+import { useT, type TFunction } from '@/lib/i18n'
 import { AuthCard } from './AuthCard'
 import { Field } from './Field'
 import { useLogin } from './useAuth'
 
-const schema = z.object({
-  email: z.string().min(1, 'E‑mail requis').email('E‑mail invalide'),
-  password: z.string().min(1, 'Mot de passe requis'),
-})
-type Values = z.infer<typeof schema>
+const makeSchema = (t: TFunction) =>
+  z.object({
+    email: z.string().min(1, t('auth.validation.email_required')).email(t('auth.validation.email_invalid')),
+    password: z.string().min(1, t('auth.validation.password_required')),
+  })
+type Values = z.infer<ReturnType<typeof makeSchema>>
 
 export function LoginPage() {
+  const t = useT()
+  const schema = useMemo(() => makeSchema(t), [t])
   const navigate = useNavigate()
   const location = useLocation()
   const notice = (location.state as { notice?: string } | null)?.notice
@@ -30,26 +35,26 @@ export function LoginPage() {
 
   return (
     <AuthCard
-      title="Vigie"
-      subtitle="Connecte-toi pour retrouver ta veille."
+      title={t('auth.login.title')}
+      subtitle={t('auth.login.subtitle')}
       footer={
         <>
-          Pas encore de compte{' '}?{' '}
-          <Link to="/register" className="font-medium text-primary">
-            Créer un compte
+          {t('auth.login.footer')}{' '}
+          <Link to="/register" className="font-medium text-accent-ink">
+            {t('auth.login.register_link')}
           </Link>
         </>
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {notice && (
-          <p role="status" className="rounded-xl bg-primary/10 p-3 text-sm text-primary">
+          <p role="status" className="rounded-xl bg-surface-2 p-3 text-sm">
             {notice}
           </p>
         )}
         <Field
           id="email"
-          label="E‑mail"
+          label={t('auth.email')}
           type="email"
           autoComplete="email"
           error={errors.email?.message}
@@ -57,7 +62,7 @@ export function LoginPage() {
         />
         <Field
           id="password"
-          label="Mot de passe"
+          label={t('auth.password')}
           type="password"
           autoComplete="current-password"
           error={errors.password?.message}
@@ -65,11 +70,11 @@ export function LoginPage() {
         />
         {login.error && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(login.error, 'Connexion impossible. Réessaie.')}
+            {errorMessage(login.error, t('auth.login.failed'))}
           </p>
         )}
         <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={login.isPending}>
-          {login.isPending ? 'Connexion…' : 'Se connecter'}
+          {login.isPending ? t('auth.login.pending') : t('auth.login.submit')}
         </Button>
       </form>
     </AuthCard>

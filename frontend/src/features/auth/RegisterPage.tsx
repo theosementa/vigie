@@ -1,23 +1,28 @@
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
+import { useT, type TFunction } from '@/lib/i18n'
 import { browserTimeZone } from '@/lib/timezone'
 import { AuthCard } from './AuthCard'
 import { Field } from './Field'
 import { useRegister } from './useAuth'
 
-const schema = z.object({
-  first_name: z.string().trim().min(1, 'Prénom requis').max(50, '50 caractères maximum'),
-  last_name: z.string().trim().min(1, 'Nom requis').max(50, '50 caractères maximum'),
-  email: z.string().min(1, 'E‑mail requis').email('E‑mail invalide'),
-  password: z.string().min(8, '8 caractères minimum'),
-})
-type Values = z.infer<typeof schema>
+const makeSchema = (t: TFunction) =>
+  z.object({
+    first_name: z.string().trim().min(1, t('auth.validation.first_name_required')).max(50, t('auth.validation.max_50')),
+    last_name: z.string().trim().min(1, t('auth.validation.last_name_required')).max(50, t('auth.validation.max_50')),
+    email: z.string().min(1, t('auth.validation.email_required')).email(t('auth.validation.email_invalid')),
+    password: z.string().min(8, t('auth.validation.password_min')),
+  })
+type Values = z.infer<ReturnType<typeof makeSchema>>
 
 export function RegisterPage() {
+  const t = useT()
+  const schema = useMemo(() => makeSchema(t), [t])
   const navigate = useNavigate()
   const registerUser = useRegister()
   const {
@@ -35,13 +40,13 @@ export function RegisterPage() {
   const err = registerUser.error
   return (
     <AuthCard
-      title="Créer un compte"
-      subtitle="Garde tes articles et vidéos à portée de main."
+      title={t('auth.register.title')}
+      subtitle={t('auth.register.subtitle')}
       footer={
         <>
-          Déjà inscrit{' '}?{' '}
-          <Link to="/login" className="font-medium text-primary">
-            Se connecter
+          {t('auth.register.footer')}{' '}
+          <Link to="/login" className="font-medium text-accent-ink">
+            {t('auth.register.login_link')}
           </Link>
         </>
       }
@@ -51,27 +56,26 @@ export function RegisterPage() {
           <div className="grid grid-cols-2 gap-3">
             <Field
               id="first_name"
-              label="Prénom"
+              label={t('auth.first_name')}
               autoComplete="given-name"
               error={errors.first_name?.message}
               {...register('first_name')}
             />
             <Field
               id="last_name"
-              label="Nom"
+              label={t('auth.last_name')}
               autoComplete="family-name"
               error={errors.last_name?.message}
               {...register('last_name')}
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Ton nom s’affiche quand tu envoies un lien à quelqu’un, pour qu’il sache de qui il vient.
-            Il n’est visible par personne d’autre.
+            {t('auth.name_note')}
           </p>
         </div>
         <Field
           id="email"
-          label="E‑mail"
+          label={t('auth.email')}
           type="email"
           autoComplete="email"
           error={errors.email?.message}
@@ -79,16 +83,16 @@ export function RegisterPage() {
         />
         <Field
           id="password"
-          label="Mot de passe"
+          label={t('auth.password')}
           type="password"
           autoComplete="new-password"
-          hint="8 caractères minimum."
+          hint={t('auth.password.hint')}
           error={errors.password?.message}
           {...register('password')}
         />
         {err && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(err, 'Inscription impossible. Réessaie.')}
+            {errorMessage(err, t('auth.register.failed'))}
           </p>
         )}
         <Button
@@ -96,7 +100,7 @@ export function RegisterPage() {
           className="h-11 w-full rounded-xl text-base"
           disabled={registerUser.isPending}
         >
-          {registerUser.isPending ? 'Création…' : 'Créer mon compte'}
+          {registerUser.isPending ? t('auth.register.pending') : t('auth.register.submit')}
         </Button>
       </form>
     </AuthCard>

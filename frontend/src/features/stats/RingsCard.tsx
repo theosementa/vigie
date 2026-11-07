@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Target } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -144,9 +144,9 @@ export function RingsCard({ summary }: { summary: StatsSummary }) {
           size="sm"
           aria-expanded={editing}
           onClick={() => setEditing((v) => !v)}
-          className="-my-1 text-primary"
+          className="-my-1 text-accent-ink"
         >
-          <Target /> Objectif
+          <Icon name="target" /> Objectif
         </Button>
       }
     >

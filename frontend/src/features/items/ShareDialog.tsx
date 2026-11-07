@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
-import { X } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import type { Item, ShareResult } from '@/lib/api'
@@ -94,7 +94,7 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
     return (
       <div className="space-y-3 text-sm">
         {result.shared.length > 0 && (
-          <p className="text-emerald-700 dark:text-emerald-400">
+          <p className="text-ok">
             Partagé avec : {result.shared.join(', ')}
           </p>
         )}
@@ -130,9 +130,9 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
                 type="button"
                 aria-label={`Retirer ${em}`}
                 onClick={() => setEmails(emails.filter((x) => x !== em))}
-                className="rounded-full p-0.5 hover:bg-black/10"
+                className="rounded-full p-0.5 hover:bg-line"
               >
-                <X className="size-3" />
+                <Icon name="close" className="size-3" />
               </button>
             </span>
           ))}

@@ -1,16 +1,7 @@
 import { memo, type CSSProperties } from 'react'
+import { Icon } from '@/components/Icon'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpToLine,
-  Check,
-  ExternalLink,
-  GripVertical,
-  ListMinus,
-  MoreHorizontal,
-} from 'lucide-react'
 import type { Item } from '@/lib/api'
 import { formatDuration, hostname } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -63,8 +54,8 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
       <article
         className={cn(
           'flex items-stretch gap-2 rounded-2xl bg-card p-2 text-card-foreground shadow-sm ring-1 ring-border transition-shadow',
-          first && 'ring-2 ring-primary',
-          isDragging && 'shadow-xl ring-2 ring-primary/60',
+          first && 'ring-2 ring-accent-ink',
+          isDragging && 'shadow-xl ring-2 ring-accent-ink/60',
         )}
       >
         <button
@@ -75,7 +66,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
           aria-label={`Réorganiser : ${title}. Position ${index + 1} sur ${count}. Espace pour saisir, flèches pour déplacer.`}
           className="flex w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
         >
-          <GripVertical className="size-5" aria-hidden />
+          <Icon name="reorder" className="size-5" aria-hidden />
         </button>
 
         <div className="w-28 shrink-0 self-center overflow-hidden rounded-xl sm:w-40">
@@ -124,33 +115,33 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
                 />
               }
             >
-              <MoreHorizontal />
+              <Icon name="menu-dots" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem onClick={openVideo}>
-                <ExternalLink />
+                <Icon name="arrow-right-up" />
                 Ouvrir la vidéo
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onSeen(item)}>
-                <Check />
+                <Icon name="check-circle" />
                 Marquer comme vu
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled={first} onClick={() => onMove(item, 0)}>
-                <ArrowUpToLine />
+                <Icon name="arrow-up-to-line" />
                 Placer en premier
               </DropdownMenuItem>
               <DropdownMenuItem disabled={first} onClick={() => onMove(item, index - 1)}>
-                <ArrowUp />
+                <Icon name="arrow-up" />
                 Monter
               </DropdownMenuItem>
               <DropdownMenuItem disabled={last} onClick={() => onMove(item, index + 1)}>
-                <ArrowDown />
+                <Icon name="arrow-down" />
                 Descendre
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onClick={() => onRemove(item)}>
-                <ListMinus />
+                <Icon name="list-minus-minimalistic" />
                 Retirer de la file
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -164,7 +155,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove }: QueueE
             onClick={() => onSeen(item)}
             className="rounded-full"
           >
-            <Check />
+            <Icon name="check-circle" />
           </Button>
         </div>
       </article>

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { BookCheck, Inbox, SearchX, TriangleAlert, Users } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { ItemGrid } from './ItemGrid'
@@ -59,7 +59,7 @@ function EmptyState({ lib }: { lib: Library }) {
   if (lib.hasActiveFilters)
     return (
       <StateBox
-        icon={<SearchX />}
+        icon={<Icon name="magnifier-close" />}
         title="Aucun résultat"
         hint="Aucun élément ne correspond à votre recherche ou à vos filtres."
       />
@@ -67,7 +67,7 @@ function EmptyState({ lib }: { lib: Library }) {
   if (lib.sharedOnly)
     return (
       <StateBox
-        icon={<Users />}
+        icon={<Icon name="users-group-rounded" />}
         title={lib.filters.status === 'seen' ? 'Rien de vu parmi les partages' : 'Rien de partagé pour l’instant'}
         hint="Les liens que vos amis partagent avec vous apparaîtront ici."
       />
@@ -75,14 +75,14 @@ function EmptyState({ lib }: { lib: Library }) {
   if (lib.filters.status === 'seen')
     return (
       <StateBox
-        icon={<BookCheck />}
+        icon={<Icon name="checklist-minimalistic" />}
         title="Rien de vu pour l’instant"
         hint="Les éléments que vous marquez comme vus se retrouvent ici."
       />
     )
   return (
     <StateBox
-      icon={<Inbox />}
+      icon={<Icon name="inbox" />}
       title="Rien à voir pour l’instant"
       hint="Ajoutez un article ou une vidéo avec le bouton « Ajouter »."
     />
@@ -119,7 +119,7 @@ export function LibraryContent({
   if (lib.isError && lib.items.length === 0)
     return (
       <StateBox
-        icon={<TriangleAlert />}
+        icon={<Icon name="danger-triangle" />}
         title="Chargement impossible"
         hint="Vérifiez votre connexion puis réessayez."
       >

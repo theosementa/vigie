@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
+import { Icon } from '@/components/Icon'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
-import { ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -20,7 +20,11 @@ import {
 } from '@/features/auth/useAuth'
 import { errorMessage } from '@/lib/errors'
 import { browserTimeZone, timeZoneOptions } from '@/lib/timezone'
-import type { User } from '@/lib/api'
+import type { Locale, Theme, User } from '@/lib/api'
+import { useT, type MessageKey } from '@/lib/i18n'
+import { useLocalePreference } from '@/hooks/useLocale'
+import { useTheme } from '@/hooks/useTheme'
+import type { IconBase } from '@/components/Icon'
 
 const sectionClass = 'rounded-2xl bg-card p-4 ring-1 ring-border'
 const headingClass = 'text-xs font-semibold tracking-wide text-muted-foreground uppercase'
@@ -84,6 +88,50 @@ function ProfileSection({ me }: { me: User }) {
           Enregistrer
         </Button>
       </form>
+    </section>
+  )
+}
+
+const THEMES: { value: Theme; label: MessageKey; icon: IconBase }[] = [
+  { value: 'dark', label: 'theme.dark', icon: 'moon' },
+  { value: 'light', label: 'theme.light', icon: 'sun-2' },
+  { value: 'system', label: 'theme.system', icon: 'monitor' },
+]
+const LOCALES: { value: Locale; label: MessageKey }[] = [
+  { value: 'auto', label: 'locale.auto' },
+  { value: 'fr', label: 'locale.fr' },
+  { value: 'en', label: 'locale.en' },
+]
+
+/** Theme (Sombre / Clair / Système) and language: applied at once, saved on the account. */
+function AppearanceSection() {
+  const t = useT()
+  const { theme, setTheme } = useTheme()
+  const { preference, setPreference } = useLocalePreference()
+  return (
+    <section className={sectionClass}>
+      <h2 className={headingClass}>{t('settings.appearance')}</h2>
+      <p id="theme-label" className="mt-3 text-sm font-medium">
+        {t('theme.label')}
+      </p>
+      <div role="group" aria-labelledby="theme-label" className="seg full mt-1.5">
+        {THEMES.map((o) => (
+          <button key={o.value} type="button" aria-pressed={theme === o.value} onClick={() => setTheme(o.value)}>
+            <Icon name={o.icon} small />
+            {t(o.label)}
+          </button>
+        ))}
+      </div>
+      <p id="locale-label" className="mt-4 text-sm font-medium">
+        {t('locale.label')}
+      </p>
+      <div role="group" aria-labelledby="locale-label" className="seg full mt-1.5">
+        {LOCALES.map((o) => (
+          <button key={o.value} type="button" aria-pressed={preference === o.value} onClick={() => setPreference(o.value)}>
+            {t(o.label)}
+          </button>
+        ))}
+      </div>
     </section>
   )
 }
@@ -296,6 +344,7 @@ export function SettingsPage() {
   return (
     <div className="mx-auto max-w-xl space-y-4 p-0 md:p-6">
       {me && <ProfileSection key={`${me.first_name}|${me.last_name}`} me={me} />}
+      <AppearanceSection />
       {me && <TimezoneSection timezone={me.timezone} />}
       <PasswordSection />
       <SessionSection />
@@ -304,7 +353,7 @@ export function SettingsPage() {
           to="/admin"
           className="flex items-center gap-3 rounded-2xl bg-card p-4 text-sm font-medium ring-1 ring-border md:hidden"
         >
-          <ShieldCheck className="size-5" strokeWidth={1.75} />
+          <Icon name="shield-check" className="size-5" />
           Administration
         </Link>
       )}

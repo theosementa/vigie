@@ -1,30 +1,59 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./styles/fonts.css";
+@import "./styles/tokens.css";
+@import "./styles/base.css";
 
-/* Dark mode follows the OS setting (prefers-color-scheme). */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/* `dark:` follows the Vigie theme: an explicit data-theme wins, otherwise the OS setting. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
 
+/* The DA tokens (tokens.css) feed Tailwind's theme. */
 @theme inline {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, "Segoe UI", Roboto, system-ui, sans-serif;
-  --font-heading: var(--font-sans);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
+  --font-sans: var(--font);
+  --font-heading: var(--font);
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-text: var(--text);
   --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-ok: var(--ok);
+  --color-watch: var(--watch);
+  --color-plan: var(--plan);
+  --color-over: var(--over);
+  --color-unknown: var(--unknown);
+  --color-scrim: var(--scrim);
+
+  /* shadcn roles. `muted` is the fill (surface-2), `muted-foreground` is the DA's muted text. */
   --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--muted);
+  --color-accent-foreground: var(--on-accent);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
@@ -34,110 +63,55 @@
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
-  --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: calc(var(--radius) * 0.75);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.25);
-  --radius-2xl: calc(var(--radius) * 1.5);
-  --radius-3xl: calc(var(--radius) * 2);
-  --radius-4xl: calc(var(--radius) * 2.5);
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
 }
 
+/* shadcn variables, remapped onto the DA tokens so every component picks up the palette.
+   (--accent and --muted are the DA tokens themselves, so they cannot be remapped here.) */
 :root {
-  color-scheme: light dark;
-  --radius: 1rem;
-  --background: #f2f2f7; /* iOS systemGroupedBackground */
-  --foreground: #000000;
-  --card: #ffffff;
-  --card-foreground: #000000;
-  --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #007aff; /* iOS system blue */
-  --primary-foreground: #ffffff;
-  --secondary: rgb(118 118 128 / 0.12);
-  --secondary-foreground: #000000;
-  --muted: rgb(118 118 128 / 0.12);
-  --muted-foreground: #8e8e93;
-  --accent: rgb(118 118 128 / 0.12);
-  --accent-foreground: #000000;
-  --destructive: #ff3b30;
-  --border: rgb(60 60 67 / 0.18);
-  --input: rgb(60 60 67 / 0.18);
-  --ring: #007aff;
-  --sidebar: #f2f2f7;
-  --sidebar-foreground: #000000;
-  --sidebar-border: rgb(60 60 67 / 0.18);
-  --sidebar-accent: rgb(0 122 255 / 0.12);
-  --sidebar-accent-foreground: #007aff;
-  /* Statistics palette: 1 items/articles, 2 watch time, 3 streak, 4 videos (>= 3:1 on --card) */
-  --chart-1: #007aff;
-  --chart-2: #248a3d;
-  --chart-3: #c93400;
-  --chart-4: #8944ab;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #ffffff;
-    --card: #1c1c1e;
-    --card-foreground: #ffffff;
-    --popover: #2c2c2e;
-    --popover-foreground: #ffffff;
-    --primary: #0a84ff;
-    --primary-foreground: #ffffff;
-    --secondary: rgb(118 118 128 / 0.24);
-    --secondary-foreground: #ffffff;
-    --muted: rgb(118 118 128 / 0.24);
-    --muted-foreground: #8e8e93;
-    --accent: rgb(118 118 128 / 0.24);
-    --accent-foreground: #ffffff;
-    --destructive: #ff453a;
-    --border: rgb(84 84 88 / 0.65);
-    --input: rgb(84 84 88 / 0.65);
-    --ring: #0a84ff;
-    --sidebar: #1c1c1e;
-    --sidebar-foreground: #ffffff;
-    --sidebar-border: rgb(84 84 88 / 0.65);
-    --sidebar-accent: rgb(10 132 255 / 0.2);
-    --sidebar-accent-foreground: #0a84ff;
-    --chart-1: #0a84ff;
-    --chart-2: #30d158;
-    --chart-3: #ff9f0a;
-    --chart-4: #bf5af2;
-  }
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--on-accent);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --destructive: var(--over);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--accent-ink);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-border: var(--line);
+  --sidebar-accent: var(--surface-2);
+  --sidebar-accent-foreground: var(--text);
+  /* Statistics palette: 1 items/articles, 2 watch time, 3 streak, 4 videos */
+  --chart-1: var(--accent-ink);
+  --chart-2: var(--ok);
+  --chart-3: var(--plan);
+  --chart-4: var(--watch);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   html {
     @apply font-sans antialiased;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-text-size-adjust: 100%;
-  }
-  body {
-    @apply bg-background text-foreground;
-    margin: 0;
-    overflow-x: hidden;
-  }
-  button, [role="button"] {
-    cursor: pointer;
   }
 }
 
 @layer utilities {
-  /* Translucent bar surface (nav bars, tab bar, sidebar, toolbar) */
-  .glass {
-    background-color: color-mix(in srgb, var(--background) 70%, transparent);
-    -webkit-backdrop-filter: saturate(180%) blur(24px);
-    backdrop-filter: saturate(180%) blur(24px);
-  }
   .pt-safe { padding-top: var(--safe-top); }
   .pb-safe { padding-bottom: var(--safe-bottom); }
   .scrollbar-none { scrollbar-width: none; }
@@ -160,14 +134,5 @@
     transform-box: fill-box;
     transform-origin: 50% 100%;
     animation: bar-grow 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }

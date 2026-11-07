@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { Icon } from '@/components/Icon'
 import { Link } from 'react-router-dom'
 import {
   DndContext,
@@ -17,7 +18,6 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers'
-import { ListVideo } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Item } from '@/lib/api'
 import { Button } from '@/components/ui/button'
@@ -67,8 +67,8 @@ function QueueSkeleton() {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl bg-card px-6 py-12 text-center ring-1 ring-border">
-      <span className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <ListVideo className="size-7" aria-hidden />
+      <span className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-accent-ink">
+        <Icon name="playlist-minimalistic" className="size-7" aria-hidden />
       </span>
       <h2 className="text-lg font-semibold">Votre file d’attente est vide</h2>
       <p className="max-w-sm text-sm text-muted-foreground">

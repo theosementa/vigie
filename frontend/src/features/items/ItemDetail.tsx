@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Check, ExternalLink, ListEnd, ListMinus, RefreshCw, Share2, Trash2, Users } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import { toast } from 'sonner'
 import type { Item, ResourceType } from '@/lib/api'
 import { formatDate, formatReadingTime, fullName, hostname } from '@/lib/format'
@@ -157,8 +157,8 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
 
       {item.shared_by && (
         <div className="rounded-xl bg-primary/10 p-3 text-sm">
-          <p className="flex items-center gap-1.5 font-medium text-primary">
-            <Users className="size-4" />
+          <p className="flex items-center gap-1.5 font-medium text-accent-ink">
+            <Icon name="users-group-rounded" className="size-4" />
             Partagé par {fullName(item.shared_by)}
           </p>
           {item.share_message && <p className="mt-1 text-foreground/80">« {item.share_message} »</p>}
@@ -170,7 +170,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
         variant={seen ? 'secondary' : 'default'}
         onClick={() => setStatus.mutate({ id: item.id, status: seen ? 'to_watch' : 'seen' })}
       >
-        <Check />
+        <Icon name="check-circle" />
         {seen ? 'Remettre à voir' : 'Marquer comme vu'}
       </Button>
 
@@ -182,7 +182,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           disabled={queue.pending}
           onClick={queue.toggle}
         >
-          {queue.queued ? <ListMinus /> : <ListEnd />}
+          {queue.queued ? <Icon name="list-minus-minimalistic" /> : <Icon name="list-plus-minimalistic" />}
           {queue.queued
             ? `Retirer de la file (position ${(item.queue_position ?? 0) + 1})`
             : 'Ajouter à la file d’attente'}
@@ -221,11 +221,11 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           nativeButton={false}
           render={<a href={resource.url} target="_blank" rel="noopener noreferrer" />}
         >
-          <ExternalLink />
+          <Icon name="arrow-right-up" />
           Ouvrir le lien
         </Button>
         <Button variant="secondary" className="h-10 rounded-xl" onClick={() => dialogs.share(item)}>
-          <Share2 />
+          <Icon name="share" />
           Partager
         </Button>
         <Button
@@ -243,7 +243,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
             })
           }
         >
-          <RefreshCw className={refresh.isPending ? 'animate-spin' : undefined} />
+          <Icon name="refresh" className={refresh.isPending ? 'animate-spin' : undefined} />
           Actualiser
         </Button>
         <Button
@@ -251,7 +251,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           className="h-10 rounded-xl"
           onClick={() => dialogs.confirmDelete(item, onClose)}
         >
-          <Trash2 />
+          <Icon name="trash-bin-minimalistic" />
           Supprimer
         </Button>
       </div>

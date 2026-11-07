@@ -86,7 +86,7 @@ export function SwipeableRow({
         <div
           aria-hidden
           className={cn(
-            'absolute inset-0 flex items-center px-6 text-sm font-semibold text-white',
+            'absolute inset-0 flex items-center px-6 text-sm font-semibold',
             dx > 0 ? 'justify-start' : 'justify-end',
             side.className,
           )}

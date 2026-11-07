@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from 'react'
-import { RotateCw } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -42,7 +42,7 @@ export function ErrorNote({ message, onRetry }: { message: string; onRetry: () =
     <div role="alert" className="flex flex-col items-center gap-3 py-6 text-center">
       <p className="text-sm text-destructive">{message}</p>
       <Button variant="outline" size="sm" onClick={onRetry}>
-        <RotateCw /> Réessayer
+        <Icon name="restart" /> Réessayer
       </Button>
     </div>
   )

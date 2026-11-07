@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
-import { X } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import { cn } from '@/lib/utils'
 import { useTags } from '@/features/items/queries'
 
@@ -65,9 +65,9 @@ export function TagInput({
             type="button"
             aria-label={`Retirer ${t}`}
             onClick={() => onChange(value.filter((v) => v !== t))}
-            className="rounded-full p-0.5 hover:bg-black/10"
+            className="rounded-full p-0.5 hover:bg-line"
           >
-            <X className="size-3" />
+            <Icon name="close" className="size-3" />
           </button>
         </span>
       ))}

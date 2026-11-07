@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Icon } from '@/components/Icon'
 import { useQuery } from '@tanstack/react-query'
-import { Check, Plus, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { ApiError, api, type ResourceType } from '@/lib/api'
 import { errorMessage } from '@/lib/errors'
@@ -22,6 +22,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { TagInput } from '@/features/tags/TagInput'
 import { ItemThumbnail } from './ItemThumbnail'
+import { AddItemContext, useAddItem } from './addItemContext'
 import { useCreateItem } from './queries'
 import { useLibraryFilters } from './useLibraryFilters'
 
@@ -167,7 +168,7 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
           role="alert"
           className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
         >
-          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          <Icon name="danger-triangle" className="mt-0.5 size-4 shrink-0" />
           <div className="flex-1">
             <p>
               {previewError instanceof ApiError && previewError.status === 422
@@ -201,8 +202,8 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
 
           {existingId ? (
             <div className="flex items-center justify-between gap-3 rounded-xl bg-primary/10 p-3 text-sm">
-              <span className="flex items-center gap-1.5 font-medium text-primary">
-                <Check className="size-4" />
+              <span className="flex items-center gap-1.5 font-medium text-accent-ink">
+                <Icon name="check-circle" className="size-4" />
                 Déjà dans ta bibliothèque
               </span>
               <Button type="button" size="sm" className="rounded-lg" onClick={() => openItem(existingId)}>
@@ -270,12 +271,13 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
 }
 
 /**
- * Add flow: floating "+" button + bottom Sheet on mobile, toolbar button + centered Dialog on desktop
- * (⌘N / ⌘K).
+ * Add flow host: bottom Sheet on mobile, centered Dialog on desktop (⌘N / ⌘K). Mounted once by the
+ * shell; the tab bar's central action, the rail, and the library toolbar open it via `useAddItem()`.
  */
-export function AddItem() {
+export function AddItemProvider({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
+  const api = useMemo(() => ({ open: () => setOpen(true) }), [])
 
   useEffect(() => {
     if (isMobile) return
@@ -291,17 +293,10 @@ export function AddItem() {
 
   const close = () => setOpen(false)
 
-  if (isMobile) {
-    return (
-      <>
-        <Button
-          size="icon-lg"
-          aria-label="Ajouter un élément"
-          onClick={() => setOpen(true)}
-          className="fixed right-4 bottom-[calc(4.25rem+var(--safe-bottom))] z-30 size-14 rounded-full shadow-lg"
-        >
-          <Plus className="size-6" />
-        </Button>
+  return (
+    <AddItemContext.Provider value={api}>
+      {children}
+      {isMobile ? (
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetContent
             side="bottom"
@@ -316,25 +311,28 @@ export function AddItem() {
             </div>
           </SheetContent>
         </Sheet>
-      </>
-    )
-  }
+      ) : (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-h-[calc(100dvh-4rem)] overflow-y-auto sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{COPY.title}</DialogTitle>
+              <DialogDescription>{COPY.description}</DialogDescription>
+            </DialogHeader>
+            {open && <AddItemForm onClose={close} />}
+          </DialogContent>
+        </Dialog>
+      )}
+    </AddItemContext.Provider>
+  )
+}
 
+/** Desktop trigger for the add flow (library toolbar). */
+export function AddItemButton() {
+  const { open } = useAddItem()
   return (
-    <>
-      <Button onClick={() => setOpen(true)} className="h-9 rounded-xl px-3">
-        <Plus />
-        Ajouter
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[calc(100dvh-4rem)] overflow-y-auto sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{COPY.title}</DialogTitle>
-            <DialogDescription>{COPY.description}</DialogDescription>
-          </DialogHeader>
-          {open && <AddItemForm onClose={close} />}
-        </DialogContent>
-      </Dialog>
-    </>
+    <Button onClick={open} className="h-9 rounded-xl px-3">
+      <Icon name="add" />
+      Ajouter
+    </Button>
   )
 }

@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Check, ListVideo, MoreHorizontal, Users } from 'lucide-react'
+import { Icon } from '@/components/Icon'
 import type { Item } from '@/lib/api'
 import { formatReadingTime, formatShortDate, fullName, hostname } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -32,7 +32,7 @@ function ItemCardBase({ item, selected, onOpen }: ItemCardProps) {
           <article
             className={cn(
               'group relative overflow-hidden rounded-2xl bg-card text-card-foreground shadow-sm ring-1 ring-border transition-shadow hover:shadow-md',
-              selected && 'ring-2 ring-primary',
+              selected && 'ring-2 ring-accent-ink',
             )}
           />
         }
@@ -50,7 +50,7 @@ function ItemCardBase({ item, selected, onOpen }: ItemCardProps) {
                 className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground tabular-nums shadow-sm"
                 title={`Dans la file d’attente, position ${item.queue_position + 1}`}
               >
-                <ListVideo className="size-3" aria-hidden />
+                <Icon name="playlist-minimalistic" className="size-3" aria-hidden />
                 <span className="sr-only">Dans la file d’attente, position </span>
                 {item.queue_position + 1}
               </span>
@@ -75,8 +75,8 @@ function ItemCardBase({ item, selected, onOpen }: ItemCardProps) {
             {(item.tags.length > 0 || item.shared_by) && (
               <div className="flex flex-wrap items-center gap-1.5">
                 {item.shared_by && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    <Users className="size-3" />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-accent-ink">
+                    <Icon name="users-group-rounded" className="size-3" />
                     Partagé par {fullName(item.shared_by)}
                   </span>
                 )}
@@ -99,11 +99,11 @@ function ItemCardBase({ item, selected, onOpen }: ItemCardProps) {
               setStatus.mutate({ id: item.id, status: seen ? 'to_watch' : 'seen' })
             }
             className={cn(
-              'glass rounded-full ring-1 ring-black/5',
+              'rounded-full bg-surface/90 ring-1 ring-line',
               seen && 'bg-primary text-primary-foreground hover:bg-primary/90',
             )}
           >
-            <Check />
+            <Icon name="check-circle" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -113,11 +113,11 @@ function ItemCardBase({ item, selected, onOpen }: ItemCardProps) {
                   size="icon-sm"
                   variant="secondary"
                   aria-label="Actions"
-                  className="glass rounded-full ring-1 ring-black/5 md:opacity-0 md:transition-opacity md:group-hover:opacity-100 md:focus-visible:opacity-100 md:data-popup-open:opacity-100"
+                  className="rounded-full bg-surface/90 ring-1 ring-line md:opacity-0 md:transition-opacity md:group-hover:opacity-100 md:focus-visible:opacity-100 md:data-popup-open:opacity-100"
                 />
               }
             >
-              <MoreHorizontal />
+              <Icon name="menu-dots" />
             </DropdownMenuTrigger>
             <ActionsDropdownContent actions={actions} />
           </DropdownMenu>

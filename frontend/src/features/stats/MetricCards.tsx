@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 import type { StatsBlock, StatsPeriod } from '@/lib/api'
+import { Icon } from '@/components/Icon'
 import { cn } from '@/lib/utils'
 import { computeDelta, formatCount, formatMinutes, formatWatchTime, plural } from './format'
 
@@ -28,7 +28,7 @@ function Delta({
     const text = current > 0 ? `+${format(current)}` : 'Aucune activité'
     return (
       <p className="flex items-center gap-1 text-xs text-muted-foreground">
-        {current > 0 ? <ArrowUp aria-hidden className="size-3.5" /> : <Minus aria-hidden className="size-3.5" />}
+        {current > 0 ? <Icon name="arrow-up" className="size-3.5" /> : <Icon name="minus" className="size-3.5" />}
         <span>
           {text} <span className="sr-only">, aucune donnée la {PREVIOUS[period]}</span>
         </span>
@@ -36,7 +36,7 @@ function Delta({
     )
   }
 
-  const Icon = d.direction === 'up' ? ArrowUp : d.direction === 'down' ? ArrowDown : Minus
+  const arrow = d.direction === 'up' ? 'arrow-up' : d.direction === 'down' ? 'arrow-down' : 'minus'
   const sign = d.direction === 'up' ? '+' : d.direction === 'down' ? '−' : ''
   return (
     <p
@@ -47,7 +47,7 @@ function Delta({
         d.direction === 'flat' && 'text-muted-foreground',
       )}
     >
-      <Icon aria-hidden className="size-3.5" />
+      <Icon name={arrow} className="size-3.5" />
       <span className="font-medium">
         {d.direction === 'flat' ? 'Stable' : `${sign}${format(Math.abs(d.diff))} (${sign}${Math.abs(d.pct ?? 0)} %)`}
       </span>

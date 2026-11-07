@@ -1,39 +1,49 @@
-import { BookOpen, ChartColumn, ListVideo, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
+import type { IconBase } from '@/components/Icon'
+import type { MessageKey } from '@/lib/i18n'
 
 export interface NavEntry {
   to: string
-  label: string
-  /** Label used in the desktop sidebar */
-  sidebarLabel: string
-  /** Page title when it differs from `label` (e.g. the mobile tab label is shorter) */
-  title?: string
-  icon: LucideIcon
+  icon: IconBase
+  /** Match the path exactly (the library lives at "/"). */
   end?: boolean
+  /** Label under a tab, and in the rail's tooltip */
+  label: MessageKey
+  /** Label in the desktop sidebar (defaults to `label`) */
+  sideLabel?: MessageKey
+  /** Screen title */
+  title: MessageKey
 }
 
+/** The four destinations of the tab bar, rail and sidebar (the add action sits between them on a phone). */
 export const NAV: NavEntry[] = [
-  { to: '/', label: 'Bibliothèque', sidebarLabel: 'Bibliothèque', icon: BookOpen, end: true },
-  {
-    to: '/queue',
-    label: 'File',
-    sidebarLabel: 'File d’attente',
-    title: 'File d’attente',
-    icon: ListVideo,
-  },
-  { to: '/shared', label: 'Partagés', sidebarLabel: 'Partagés avec moi', icon: Users },
-  { to: '/stats', label: 'Stats', sidebarLabel: 'Statistiques', title: 'Statistiques', icon: ChartColumn },
-  { to: '/settings', label: 'Réglages', sidebarLabel: 'Réglages', icon: Settings },
+  { to: '/', icon: 'layers-minimalistic', end: true, label: 'nav.library', title: 'title.library' },
+  { to: '/queue', icon: 'playlist-minimalistic', label: 'nav.queue', title: 'title.queue' },
+  { to: '/shared', icon: 'plain', label: 'nav.shared', title: 'title.shared' },
+  { to: '/stats', icon: 'radar-2', label: 'nav.stats', sideLabel: 'title.stats', title: 'title.stats' },
 ]
 
-/** Admin-only entry: desktop sidebar (mobile reaches it from the settings screen). */
-export const ADMIN_ENTRY: NavEntry = {
-  to: '/admin',
-  label: 'Administration',
-  sidebarLabel: 'Administration',
-  icon: ShieldCheck,
+export const SETTINGS_ENTRY: NavEntry = {
+  to: '/settings',
+  icon: 'settings',
+  label: 'nav.settings',
+  title: 'title.settings',
 }
 
-export function titleFor(pathname: string): string {
-  const entry = [...NAV, ADMIN_ENTRY].find((n) => (n.end ? pathname === n.to : pathname.startsWith(n.to)))
-  return entry ? (entry.title ?? entry.label) : 'Vigie'
+/** Admin-only entry: sidebar and rail (a phone reaches it from the settings screen). */
+export const ADMIN_ENTRY: NavEntry = {
+  to: '/admin',
+  icon: 'users-group-rounded',
+  label: 'nav.admin',
+  title: 'title.admin',
+}
+
+export function entryFor(pathname: string): NavEntry | undefined {
+  return [...NAV, SETTINGS_ENTRY, ADMIN_ENTRY].find((n) =>
+    n.end ? pathname === n.to : pathname.startsWith(n.to),
+  )
+}
+
+/** Library and "shared with me" are the item lists; they carry the toolbar on desktop. */
+export function isLibraryPath(pathname: string): boolean {
+  return pathname === '/' || pathname.startsWith('/shared')
 }

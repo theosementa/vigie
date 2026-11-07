@@ -11,12 +11,19 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ApiError, setUnauthorizedHandler } from '@/lib/api'
 import { errorMessage } from '@/lib/errors'
+import { useT } from '@/lib/i18n'
+import { clearApiCache } from '@/lib/session'
 import { useMe } from '@/features/auth/useAuth'
 import { useTimezoneSync } from '@/features/auth/useTimezoneSync'
+import { AddItemProvider } from '@/features/items/AddItem'
 import { ItemDialogsProvider } from '@/features/items/ItemDialogsProvider'
+import { useLocaleFromUser } from '@/hooks/useLocale'
+import { useThemeColorSync, useThemeFromUser } from '@/hooks/useTheme'
+import { Icon } from '@/components/Icon'
+import { Button } from '@/components/ui/button'
 
-const ResponsiveShell = lazy(() =>
-  import('@/components/layout/ResponsiveShell').then((m) => ({ default: m.ResponsiveShell })),
+const AppShell = lazy(() =>
+  import('@/components/layout/AppShell').then((m) => ({ default: m.AppShell })),
 )
 const LoginPage = lazy(() =>
   import('@/features/auth/LoginPage').then((m) => ({ default: m.LoginPage })),
@@ -59,26 +66,49 @@ const queryClient = new QueryClient({
 })
 
 function FullScreenLoader() {
+  const t = useT()
   return (
     <div
       role="status"
-      aria-label="Chargement"
+      aria-label={t('common.loading')}
       className="flex min-h-dvh items-center justify-center"
     >
-      <span className="size-6 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-primary" />
+      <span className="size-6 animate-spin rounded-full border-2 border-line border-t-accent-ink" />
     </div>
   )
 }
 
-/** Shell routes: wait for /auth/me, send logged-out users to /login. */
+/** The server is unreachable and no session is cached: ask to retry, never claim the user is logged out. */
+function OfflineScreen({ onRetry }: { onRetry: () => void }) {
+  const t = useT()
+  return (
+    <div role="alert" className="flex min-h-dvh flex-col items-center justify-center gap-3 px-6 text-center">
+      <Icon name="cloud-cross" className="size-10 text-muted-foreground" />
+      <h1 className="text-xl font-medium">{t('offline.title')}</h1>
+      <p className="max-w-sm text-sm text-muted-foreground">{t('offline.body')}</p>
+      <Button onClick={onRetry}>{t('common.retry')}</Button>
+    </div>
+  )
+}
+
+/** Language and theme follow the account once /me is loaded. */
+function usePreferencesFromUser() {
+  useLocaleFromUser()
+  useThemeFromUser()
+}
+
+/** Shell routes: wait for /auth/me, send logged-out users to /login (a 401), not on a network failure. */
 function RequireAuth() {
-  const { data: me, isPending } = useMe()
+  const { data: me, isPending, isError, refetch } = useMe()
   useTimezoneSync(me)
+  usePreferencesFromUser()
   if (isPending) return <FullScreenLoader />
-  if (!me) return <Navigate to="/login" replace />
+  if (!me) return isError ? <OfflineScreen onRetry={() => void refetch()} /> : <Navigate to="/login" replace />
   return (
     <ItemDialogsProvider>
-      <Outlet />
+      <AddItemProvider>
+        <Outlet />
+      </AddItemProvider>
     </ItemDialogsProvider>
   )
 }
@@ -105,6 +135,7 @@ function UnauthorizedRedirect() {
   useEffect(() => {
     setUnauthorizedHandler(() => {
       qc.clear()
+      void clearApiCache()
       navigate('/login', { replace: true })
     })
     return () => setUnauthorizedHandler(null)
@@ -113,6 +144,7 @@ function UnauthorizedRedirect() {
 }
 
 export default function App() {
+  useThemeColorSync()
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -126,7 +158,7 @@ export default function App() {
               </Route>
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route element={<RequireAuth />}>
-                <Route element={<ResponsiveShell />}>
+                <Route element={<AppShell />}>
                   <Route index element={<LibraryPage />} />
                   <Route path="queue" element={<QueuePage />} />
                   <Route path="shared" element={<LibraryPage sharedOnly />} />

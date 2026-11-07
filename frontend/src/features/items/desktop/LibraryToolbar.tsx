@@ -1,4 +1,4 @@
-import { AddItem } from '../AddItem'
+import { AddItemButton } from '../AddItem'
 import { SearchField } from '../SearchField'
 import { StatusSegmented } from '../StatusSegmented'
 import { TypeFilter } from '../TypeFilter'
@@ -13,7 +13,7 @@ export function LibraryToolbar() {
       <StatusSegmented value={filters.status} onChange={(status) => update({ status })} />
       <TypeFilter value={filters.type} onChange={(type) => update({ type })} />
       <div className="ml-auto">
-        <AddItem />
+        <AddItemButton />
       </div>
     </>
   )

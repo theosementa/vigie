@@ -1,5 +1,5 @@
-import { Check, ListEnd, ListMinus, RotateCcw, Trash2 } from 'lucide-react'
 import type { Item } from '@/lib/api'
+import { Icon } from '@/components/Icon'
 import { cn } from '@/lib/utils'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemCard } from './ItemCard'
@@ -24,23 +24,23 @@ function SwipeableCard({
     <SwipeableRow
       right={{
         label: seen ? 'À voir' : 'Vu',
-        icon: seen ? <RotateCcw /> : <Check />,
-        className: 'bg-emerald-500',
+        icon: seen ? <Icon name="restart" /> : <Icon name="check-circle" />,
+        className: 'bg-accent text-on-accent',
         onTrigger: () => setStatus.mutate({ id: item.id, status: seen ? 'to_watch' : 'seen' }),
         // Swipe further to add / remove the video from the watch queue.
         extended: queue.available
           ? {
               label: queue.queued ? 'Retirer de la file' : 'File d’attente',
-              icon: queue.queued ? <ListMinus /> : <ListEnd />,
-              className: 'bg-sky-500',
+              icon: queue.queued ? <Icon name="list-minus-minimalistic" /> : <Icon name="list-plus-minimalistic" />,
+              className: 'bg-text text-bg',
               onTrigger: queue.toggle,
             }
           : undefined,
       }}
       left={{
         label: 'Supprimer',
-        icon: <Trash2 />,
-        className: 'bg-red-500',
+        icon: <Icon name="trash-bin-minimalistic" />,
+        className: 'bg-over text-bg',
         onTrigger: () => dialogs.confirmDelete(item),
       }}
     >

@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Icon } from '@/components/Icon'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { StatsPeriod } from '@/lib/api'
 
@@ -41,7 +41,7 @@ export function PeriodNav({
       </Tabs>
       <div className="flex items-center justify-between gap-2">
         <Button variant="outline" size="icon-lg" aria-label="Période précédente" onClick={() => onOffset(offset - 1)}>
-          <ChevronLeft />
+          <Icon name="alt-arrow-left" />
         </Button>
         <div className="min-w-0 text-center" aria-live="polite">
           <p className="truncate text-lg font-semibold capitalize">{label ?? '…'}</p>
@@ -54,7 +54,7 @@ export function PeriodNav({
           disabled={offset >= 0}
           onClick={() => onOffset(Math.min(offset + 1, 0))}
         >
-          <ChevronRight />
+          <Icon name="alt-arrow-right" />
         </Button>
       </div>
     </div>

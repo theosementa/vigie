@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  ApiError,
   api,
   type ChangePasswordInput,
   type LoginInput,
@@ -8,23 +9,32 @@ import {
   type UpdateMeInput,
   type User,
 } from '@/lib/api'
+import { clearApiCache } from '@/lib/session'
+import { useT } from '@/lib/i18n'
 import { statsKey } from '@/features/stats/queries'
 
 export const meKey = ['auth', 'me'] as const
 
-/** Current user (null when logged out). */
+/**
+ * Current user: `null` when logged out (a 401). Any other failure (server or network down) is an
+ * error, not a logout: the cached user stays in `data` with `isError` set, and the shell shows an
+ * offline notice instead of sending the user to /login.
+ */
 export function useMe() {
   return useQuery<User | null>({
     queryKey: meKey,
     queryFn: async () => {
       try {
         return await api.auth.me()
-      } catch {
-        return null
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 401) return null
+        throw e
       }
     },
     staleTime: 5 * 60_000,
     retry: false,
+    // Offline is what this query must report, not wait out.
+    networkMode: 'always',
   })
 }
 
@@ -46,8 +56,9 @@ export function useRegister() {
 
 export function useUpdateMe() {
   const qc = useQueryClient()
+  const t = useT()
   return useMutation({
-    meta: { errorMessage: 'Modification non enregistrée. Réessaie.' },
+    meta: { errorMessage: t('error.save_failed') },
     mutationFn: (input: UpdateMeInput) => api.auth.updateMe(input),
     onSuccess: (user) => {
       qc.setQueryData(meKey, user)
@@ -64,6 +75,7 @@ export function useLogout() {
     onSuccess: () => {
       qc.setQueryData(meKey, null)
       qc.removeQueries({ predicate: (q) => q.queryKey[0] !== 'auth' })
+      void clearApiCache()
     },
   })
 }
@@ -74,6 +86,7 @@ function useClearSession() {
   return () => {
     qc.clear()
     qc.setQueryData(meKey, null)
+    void clearApiCache()
   }
 }
 

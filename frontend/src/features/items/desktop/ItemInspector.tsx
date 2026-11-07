@@ -1,5 +1,5 @@
-import { X } from 'lucide-react'
 import type { Item } from '@/lib/api'
+import { Icon } from '@/components/Icon'
 import { Button } from '@/components/ui/button'
 import { ItemDetail } from '../ItemDetail'
 
@@ -13,7 +13,7 @@ export function ItemInspector({ item, onClose }: { item: Item; onClose: () => vo
       <div className="flex h-12 shrink-0 items-center justify-between border-b px-4">
         <h2 className="text-sm font-semibold">Détail</h2>
         <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Fermer le détail">
-          <X />
+          <Icon name="close" />
         </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
