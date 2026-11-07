@@ -16,14 +16,18 @@ import {
   useLogout,
   useLogoutAll,
   useMe,
+  useRevokeSession,
+  useSessions,
   useUpdateMe,
 } from '@/features/auth/useAuth'
 import { errorMessage } from '@/lib/errors'
+import { formatAgo } from '@/lib/format'
 import { browserTimeZone, timeZoneOptions } from '@/lib/timezone'
 import type { Locale, Theme, User } from '@/lib/api'
 import { useT, type MessageKey, type TFunction } from '@/lib/i18n'
 import { useLocalePreference } from '@/hooks/useLocale'
 import { useTheme } from '@/hooks/useTheme'
+import { useMobileLayout, type MobileLayout } from '@/lib/mobileLayout'
 import type { IconBase } from '@/components/Icon'
 
 const sectionClass = 'panel'
@@ -104,10 +108,16 @@ const LOCALES: { value: Locale; label: MessageKey }[] = [
 ]
 
 /** Theme (Sombre / Clair / Système) and language: applied at once, saved on the account. */
+const LAYOUTS: { value: MobileLayout; label: MessageKey }[] = [
+  { value: 'list', label: 'layout.list' },
+  { value: 'grid', label: 'layout.grid' },
+]
+
 function AppearanceSection() {
   const t = useT()
   const { theme, setTheme } = useTheme()
   const { preference, setPreference } = useLocalePreference()
+  const [layout, setLayout] = useMobileLayout()
   return (
     <section className={sectionClass}>
       <h2 className={headingClass}>{t('settings.appearance')}</h2>
@@ -128,6 +138,17 @@ function AppearanceSection() {
       <div role="group" aria-labelledby="locale-label" className="seg full mt-2">
         {LOCALES.map((o) => (
           <button key={o.value} type="button" aria-pressed={preference === o.value} onClick={() => setPreference(o.value)}>
+            {t(o.label)}
+          </button>
+        ))}
+      </div>
+      <h3 className="h-label mt-5">{t('settings.preferences')}</h3>
+      <p id="layout-label" className="mt-2 text-sm font-medium">
+        {t('layout.label')}
+      </p>
+      <div role="group" aria-labelledby="layout-label" className="seg full mt-2">
+        {LAYOUTS.map((o) => (
+          <button key={o.value} type="button" aria-pressed={layout === o.value} onClick={() => setLayout(o.value)}>
             {t(o.label)}
           </button>
         ))}
@@ -284,6 +305,45 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   )
 }
 
+/** Every device signed in to the account: this one first, the others can be signed out. */
+function DeviceList() {
+  const t = useT()
+  const { data: devices, isError } = useSessions()
+  const revoke = useRevokeSession()
+  if (isError) return <p className="mt-2 text-sm text-muted-foreground">{t('settings.devices.error')}</p>
+  if (!devices) return null
+  const sorted = [...devices].sort((a, b) => Number(b.current) - Number(a.current))
+  return (
+    <ul className="mt-3 divide-y divide-border" aria-label={t('settings.devices')}>
+      {sorted.map((d) => (
+        <li key={d.id} className="flex items-center gap-3 py-2.5">
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-2 text-sm font-medium">
+              <span className="truncate">{d.device}</span>
+              {d.current && <span className="badge">{t('settings.devices.current')}</span>}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {t('settings.devices.last_seen', { when: formatAgo(d.last_seen_at) })}
+              {d.ip && ` · ${d.ip}`}
+            </p>
+          </div>
+          {!d.current && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={revoke.isPending}
+              aria-label={t('settings.devices.revoke_label', { device: d.device })}
+              onClick={() => revoke.mutate(d.id)}
+            >
+              {t('settings.devices.revoke')}
+            </Button>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function SessionSection() {
   const t = useT()
   const logout = useLogout()
@@ -294,6 +354,8 @@ function SessionSection() {
   return (
     <section className={sectionClass}>
       <h2 className={headingClass}>{t('settings.sessions')}</h2>
+      <p className="mt-2 text-sm font-medium">{t('settings.devices')}</p>
+      <DeviceList />
       <div className="mt-3 space-y-2">
         <Button
           variant="outline"

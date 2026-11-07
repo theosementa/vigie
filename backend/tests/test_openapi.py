@@ -26,6 +26,8 @@ def test_every_success_response_is_typed():
         for code, resp in successes.items():
             if code == "204":
                 assert "content" not in resp, (method, path)
+            elif "text/event-stream" in resp.get("content", {}):
+                continue  # the live-updates stream: documented in API.md, not JSON
             else:
                 schema = resp.get("content", {}).get("application/json", {}).get("schema")
                 assert schema, (method, path)  # not an untyped body

@@ -55,7 +55,9 @@ export default defineConfig({
         runtimeCaching: [
           {
             // Never cache /api/auth/*: a stale /me would survive a logout.
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth/'),
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/') &&
+              !url.pathname.startsWith('/api/auth/') &&
+              url.pathname !== '/api/stream', // the live stream is never cached or proxied by the worker
             handler: 'NetworkFirst',
             options: {
               cacheName: API_CACHE_NAME,

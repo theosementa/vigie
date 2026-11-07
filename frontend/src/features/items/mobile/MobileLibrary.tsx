@@ -6,12 +6,14 @@ import { useTags } from '../queries'
 import { ScopePanel } from '../ScopePanel'
 import { SearchField } from '../SearchField'
 import { useSearchOpen } from '../searchOpen'
+import { useMobileLayout } from '@/lib/mobileLayout'
 import type { Library } from '../useLibrary'
 
 export function MobileLibrary({ lib }: { lib: Library }) {
   const { data: tags = [] } = useTags()
   const { filters, update, selected, refetch, sharedOnly } = lib
   const searchOpen = useSearchOpen()
+  const [layout] = useMobileLayout()
   const { pull, refreshing } = usePullToRefresh(refetch, selected === null)
   return (
     <div className="lib">
@@ -34,7 +36,7 @@ export function MobileLibrary({ lib }: { lib: Library }) {
       )}
       <LibraryChips filters={filters} tags={tags} onChange={update} withCount={!sharedOnly} />
       {!sharedOnly && <ScopePanel />}
-      <LibraryContent lib={lib} variant="list" />
+      <LibraryContent lib={lib} variant={layout === 'grid' ? 'cards' : 'list'} />
     </div>
   )
 }

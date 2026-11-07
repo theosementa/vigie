@@ -22,12 +22,18 @@ class Theme(StrEnum):
     LIGHT = "light"
 
 
+class MobileLayout(StrEnum):
+    LIST = "list"
+    GRID = "grid"
+
+
 class User(Base):
     __tablename__ = "users"
     __table_args__ = (
         CheckConstraint("role IN ('admin', 'user')", name="ck_users_role"),
         CheckConstraint("locale IN ('auto', 'en', 'fr')", name="ck_users_locale"),
         CheckConstraint("theme IN ('system', 'dark', 'light')", name="ck_users_theme"),
+        CheckConstraint("mobile_layout IN ('list', 'grid')", name="ck_users_mobile_layout"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -46,5 +52,8 @@ class User(Base):
     )
     theme: Mapped[str] = mapped_column(
         String(10), server_default=text("'system'"), default=Theme.SYSTEM
+    )
+    mobile_layout: Mapped[str] = mapped_column(
+        String(10), server_default=text("'list'"), default=MobileLayout.LIST
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

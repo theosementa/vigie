@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useRealtime } from '@/features/realtime/useRealtime'
 import { Icon } from '@/components/Icon'
 import { useMe } from '@/features/auth/useAuth'
 import { CaptureBar } from '@/features/items/CaptureBar'
@@ -101,6 +102,7 @@ function PageHeader() {
 /** One shell, three designs (blueprint 04): tab bar < 768 px, icon rail 768-1023 px, sidebar >= 1024 px. */
 export function AppShell() {
   const { pathname } = useLocation()
+  useRealtime()
   return (
     <div className="app">
       <Sidebar />

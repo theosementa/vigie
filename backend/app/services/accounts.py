@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.errors import api_error
 from app.core.security import new_reset_token
-from app.models import InstanceSettings, PasswordReset, User
+from app.models import InstanceSettings, PasswordReset, User, UserSession
+from app.services import realtime
 
 RESET_TOKEN_TTL = timedelta(hours=1)
 _REGISTRATION_LOCK = 4_242_001  # pg advisory lock serialising signups (first-admin race)
@@ -51,8 +52,12 @@ async def delete_account(session: AsyncSession, user: User) -> None:
                 "last_admin",
                 "You are the only admin: promote or remove the other accounts first.",
             )
+    session_ids = list(
+        (await session.scalars(select(UserSession.id).where(UserSession.user_id == user.id))).all()
+    )
     await session.execute(delete(User).where(User.id == user.id))
     await session.commit()
+    realtime.revoke(session_ids)  # close that user's open live streams
 
 
 async def create_reset_link(

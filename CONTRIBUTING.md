@@ -44,6 +44,10 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml exec web-dev node
 
 CI runs all of these on every push and pull request, plus the Docker image builds.
 
+## Live updates
+
+Everything that changes data must reach the user's other open devices. This is automatic for any `POST`/`PUT`/`PATCH`/`DELETE` under `/api` (the realtime middleware publishes topics derived from the URL, see `app/core/realtime.py`); a new route family needs one line in its `_TOPICS` table, and a write that affects *another* user (like sharing) must publish to them explicitly. The front end refetches by topic in `features/realtime/useRealtime.ts`. The stream is in-memory: keep the API on a single process, or replace `app/services/realtime.py` with Postgres `LISTEN/NOTIFY`.
+
 ## Motion and smoothness
 
 Every open/close, resize and reorder in the UI must stay smooth, with no visible glitch. This is a quality bar, not a nice-to-have.

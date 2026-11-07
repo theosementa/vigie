@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Item, User
 from app.schemas.share import ShareOut
+from app.services import realtime
 from app.services.events import record_event
 
 
@@ -12,6 +13,7 @@ async def share_item(
     session: AsyncSession, sender: User, item: Item, emails: list[str], message: str | None
 ) -> ShareOut:
     shared: list[str] = []
+    recipient_ids: list[uuid.UUID] = []
     not_found: list[str] = []
     already_had: list[str] = []
 
@@ -69,6 +71,9 @@ async def share_item(
             other_user_id=sender.id,
         )
         shared.append(email)
+        recipient_ids.append(recipient.id)
 
     await session.commit()
+    for recipient_id in recipient_ids:
+        realtime.publish(recipient_id, ["items", "stats", "tags"])
     return ShareOut(shared=shared, not_found=not_found, already_had=already_had)

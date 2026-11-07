@@ -19,14 +19,18 @@ def _cookie(c) -> str:
     return c.cookies[settings.cookie_name]
 
 
-async def test_token_carries_sub_and_ver(alice):
+async def test_token_carries_sub_ver_and_session_id(alice):
     payload = jwt.decode(_cookie(alice), settings.secret_key, algorithms=["HS256"])
     assert payload["sub"] == alice.user["id"] and payload["ver"] == 0
+    rows = await sql("SELECT id FROM sessions")
+    assert [str(r.id) for r in rows] == [payload["sid"]]
 
 
 async def test_token_with_other_version_or_no_version_is_rejected(alice):
+    sid = jwt.decode(_cookie(alice), settings.secret_key, algorithms=["HS256"])["sid"]
+
     def forge(**over):
-        claims = {"sub": alice.user["id"], "ver": 0, "exp": time.time() + 600, **over}
+        claims = {"sub": alice.user["id"], "ver": 0, "sid": sid, "exp": time.time() + 600, **over}
         claims = {k: v for k, v in claims.items() if v is not None}
         return jwt.encode(claims, settings.secret_key, algorithm="HS256")
 

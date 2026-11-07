@@ -492,6 +492,14 @@
         "title": "LoginIn",
         "type": "object"
       },
+      "MobileLayout": {
+        "enum": [
+          "list",
+          "grid"
+        ],
+        "title": "MobileLayout",
+        "type": "string"
+      },
       "PasswordChangeIn": {
         "properties": {
           "current_password": {
@@ -719,6 +727,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/Locale"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mobile_layout": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MobileLayout"
               },
               {
                 "type": "null"
@@ -1049,6 +1067,55 @@
           "fetched_at"
         ],
         "title": "ResourceOut",
+        "type": "object"
+      },
+      "SessionOut": {
+        "description": "A signed-in device.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current": {
+            "title": "Current",
+            "type": "boolean"
+          },
+          "device": {
+            "title": "Device",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "device",
+          "ip",
+          "created_at",
+          "last_seen_at",
+          "current"
+        ],
+        "title": "SessionOut",
         "type": "object"
       },
       "SettingsOut": {
@@ -1549,6 +1616,9 @@
           "locale": {
             "$ref": "#/components/schemas/Locale"
           },
+          "mobile_layout": {
+            "$ref": "#/components/schemas/MobileLayout"
+          },
           "role": {
             "enum": [
               "admin",
@@ -1574,6 +1644,7 @@
           "timezone",
           "locale",
           "theme",
+          "mobile_layout",
           "created_at"
         ],
         "title": "UserOut",
@@ -2436,6 +2507,87 @@
           }
         },
         "summary": "Reset Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/sessions": {
+      "get": {
+        "operationId": "list_sessions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionOut"
+                  },
+                  "title": "Response List Sessions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "List Sessions",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/sessions/{session_id}": {
+      "delete": {
+        "operationId": "revoke_session",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Session",
         "tags": [
           "auth"
         ]
@@ -3561,6 +3713,34 @@
         "summary": "Get Stats Timeseries",
         "tags": [
           "stats"
+        ]
+      }
+    },
+    "/api/stream": {
+      "get": {
+        "description": "Server-Sent Events: a `sync` event ({\"topics\": [...]}) when something changed on another\ndevice, and `revoked` when this device was signed out. Authenticated by the session cookie.",
+        "operationId": "stream",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {}
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Stream",
+        "tags": [
+          "stream"
         ]
       }
     },

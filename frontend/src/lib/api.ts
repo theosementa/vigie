@@ -16,6 +16,7 @@ export type User = Schemas['UserOut']
 export type UserRole = User['role']
 export type Locale = Schemas['Locale']
 export type Theme = Schemas['Theme']
+export type MobileLayout = Schemas['MobileLayout']
 export type UserRef = Schemas['UserRef']
 export type RegistrationMode = Schemas['SettingsOut']['registration_mode']
 
@@ -46,6 +47,7 @@ export type LoginInput = Schemas['LoginIn']
 export type UpdateMeInput = Schemas['ProfileUpdate']
 export type ChangePasswordInput = Schemas['PasswordChangeIn']
 export type ResetPasswordInput = Schemas['ResetIn']
+export type Device = Schemas['SessionOut']
 
 // ---------- Administration ----------
 
@@ -94,6 +96,9 @@ export const api = {
     deleteMe: (password: string) => ok(client.DELETE('/api/auth/me', { body: { password } })),
     me: () => ok(client.GET('/api/auth/me'), skip),
     updateMe: (input: UpdateMeInput) => ok(client.PATCH('/api/auth/me', { body: input })),
+    sessions: () => ok(client.GET('/api/auth/sessions')),
+    revokeSession: (id: string) =>
+      ok(client.DELETE('/api/auth/sessions/{session_id}', { params: { path: { session_id: id } } })),
   },
   resources: {
     preview: (url: string, signal?: AbortSignal) =>

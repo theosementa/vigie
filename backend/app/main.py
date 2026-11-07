@@ -3,9 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 
-from app.api.routes import admin, auth, items, queue, resources, stats, tags
+from app.api.routes import admin, auth, items, queue, resources, stats, stream, tags
 from app.core.config import check_secret_key, settings
 from app.core.errors import ErrorResponse
+from app.core.realtime import RealtimeMiddleware
 
 api = APIRouter(prefix="/api", responses={401: {"model": ErrorResponse}})
 
@@ -22,6 +23,7 @@ api.include_router(items.router)
 api.include_router(queue.router)
 api.include_router(tags.router)
 api.include_router(stats.router)
+api.include_router(stream.router)
 
 
 @asynccontextmanager
@@ -40,3 +42,4 @@ app = FastAPI(
     generate_unique_id_function=lambda route: route.name,
 )
 app.include_router(api)
+app.add_middleware(RealtimeMiddleware)

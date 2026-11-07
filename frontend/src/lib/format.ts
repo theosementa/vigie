@@ -85,6 +85,17 @@ export function formatRelativeDay(iso: string, locale: Locale = getLocale()): st
   return new Intl.RelativeTimeFormat(intlLocale(locale), { numeric: 'auto' }).format(Math.min(days, 0), 'day')
 }
 
+/** ISO datetime -> "just now", "5 minutes ago", "2 hours ago", "3 days ago". */
+export function formatAgo(iso: string, locale: Locale = getLocale()): string {
+  const rtf = new Intl.RelativeTimeFormat(intlLocale(locale), { numeric: 'auto' })
+  const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000)
+  const abs = Math.abs(seconds)
+  if (abs < 60) return rtf.format(0, 'second')
+  if (abs < 3600) return rtf.format(Math.round(seconds / 60), 'minute')
+  if (abs < 86_400) return rtf.format(Math.round(seconds / 3600), 'hour')
+  return rtf.format(Math.round(seconds / 86_400), 'day')
+}
+
 /** True when the ISO datetime falls on the user's current calendar day. */
 export function isToday(iso: string): boolean {
   return new Date(iso).toDateString() === new Date().toDateString()

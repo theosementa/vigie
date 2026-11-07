@@ -41,6 +41,10 @@ export const fr: Record<keyof typeof en, string> = {
 
   // Thème et langue
   'settings.appearance': 'Apparence',
+  'settings.preferences': 'Préférences',
+  'layout.label': 'Affichage sur mobile',
+  'layout.list': 'Liste',
+  'layout.grid': 'Grille',
   'theme.label': 'Thème',
   'theme.dark': 'Sombre',
   'theme.light': 'Clair',
@@ -394,6 +398,12 @@ export const fr: Record<keyof typeof en, string> = {
   'settings.password.failed': 'Modification impossible. Réessaie.',
   'settings.password.submit': 'Changer le mot de passe',
   'settings.sessions': 'Sessions',
+  'settings.devices': 'Appareils connectés',
+  'settings.devices.current': 'Cet appareil',
+  'settings.devices.last_seen': 'Actif {when}',
+  'settings.devices.revoke': 'Déconnecter',
+  'settings.devices.revoke_label': 'Déconnecter {device}',
+  'settings.devices.error': 'Impossible de charger tes appareils.',
   'settings.logout': 'Se déconnecter',
   'settings.logout_all': 'Me déconnecter partout',
   'settings.logout_all.body': 'Tous tes appareils, y compris celui-ci, seront déconnectés. Tu devras te reconnecter.',

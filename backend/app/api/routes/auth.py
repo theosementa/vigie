@@ -1,15 +1,22 @@
+import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Request, Response, status
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 
+from app.core.config import settings
 from app.core.cookies import clear_session_cookie, set_session_cookie
 from app.core.deps import CurrentUser, SessionDep
 from app.core.errors import api_error
 from app.core.ratelimit import HOUR, MINUTE, enforce, ip_limit, user_limit
-from app.core.security import hash_password, hash_token, verify_password
-from app.models import Invitation, PasswordReset, User
+from app.core.security import (
+    decode_access_token,
+    hash_password,
+    hash_token,
+    verify_password,
+)
+from app.models import Invitation, PasswordReset, User, UserSession
 from app.schemas.auth import (
     LoginIn,
     PasswordChangeIn,
@@ -17,10 +24,13 @@ from app.schemas.auth import (
     ProfileUpdate,
     RegisterIn,
     ResetIn,
+    SessionOut,
     UserOut,
     is_special_use_email,
 )
+from app.services import realtime
 from app.services.accounts import delete_account, get_instance_settings, lock_registration
+from app.services.sessions import revoke_sessions, start_session
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -86,7 +96,7 @@ async def register(
     except IntegrityError:
         await session.rollback()
         raise _email_taken() from None
-    set_session_cookie(request, response, user)
+    await start_session(request, response, session, user)
     return user
 
 
@@ -100,12 +110,23 @@ async def login(body: LoginIn, request: Request, response: Response, session: Se
     valid = verify_password(body.password, user.password_hash if user else _DUMMY_HASH)
     if user is None or not valid:
         raise api_error(401, "invalid_credentials", "Invalid email or password")
-    set_session_cookie(request, response, user)
+    await start_session(request, response, session, user)
     return user
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(request: Request, response: Response) -> None:
+async def logout(request: Request, response: Response, session: SessionDep) -> None:
+    token = request.cookies.get(settings.cookie_name)
+    decoded = decode_access_token(token) if token else None
+    if decoded is not None:
+        try:
+            sid = uuid.UUID(decoded[2])
+        except ValueError:
+            sid = None
+        if sid is not None:
+            await session.execute(delete(UserSession).where(UserSession.id == sid))
+            await session.commit()
+            realtime.revoke([sid])
     clear_session_cookie(request, response)
 
 
@@ -115,6 +136,7 @@ async def logout_all(
 ) -> None:
     user.token_version += 1
     await session.commit()
+    await revoke_sessions(session, user.id)
     clear_session_cookie(request, response)
 
 
@@ -135,7 +157,9 @@ async def change_password(
     user.password_hash = hash_password(body.new_password)
     user.token_version += 1  # every other session is revoked
     await session.commit()
-    set_session_cookie(request, response, user)
+    current: uuid.UUID = request.state.session_id
+    await revoke_sessions(session, user.id, keep=current)
+    set_session_cookie(request, response, user, current)  # the caller stays signed in
 
 
 @router.post(
@@ -159,6 +183,7 @@ async def reset_password(body: ResetIn, session: SessionDep) -> None:
         .values(password_hash=hash_password(body.password), token_version=User.token_version + 1)
     )
     await session.commit()
+    await revoke_sessions(session, reset.user_id)
 
 
 @router.get("/me", response_model=UserOut)
@@ -179,8 +204,51 @@ async def update_me(body: ProfileUpdate, user: CurrentUser, session: SessionDep)
         user.locale = body.locale
     if "theme" in fields and body.theme is not None:
         user.theme = body.theme
+    if "mobile_layout" in fields and body.mobile_layout is not None:
+        user.mobile_layout = body.mobile_layout
     await session.commit()
     return user
+
+
+@router.get("/sessions", response_model=list[SessionOut])
+async def list_sessions(
+    request: Request, user: CurrentUser, session: SessionDep
+) -> list[SessionOut]:
+    current: uuid.UUID = request.state.session_id
+    rows = await session.scalars(
+        select(UserSession)
+        .where(UserSession.user_id == user.id)
+        .order_by(UserSession.last_seen_at.desc())
+    )
+    return [
+        SessionOut(
+            id=r.id,
+            device=r.device,
+            ip=r.ip,
+            created_at=r.created_at,
+            last_seen_at=r.last_seen_at,
+            current=r.id == current,
+        )
+        for r in rows
+    ]
+
+
+@router.delete("/sessions/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_session(
+    session_id: uuid.UUID,
+    request: Request,
+    response: Response,
+    user: CurrentUser,
+    session: SessionDep,
+) -> None:
+    target = await session.get(UserSession, session_id)
+    if target is None or target.user_id != user.id:
+        raise api_error(404, "not_found", "Device not found")
+    await session.delete(target)
+    await session.commit()
+    realtime.revoke([session_id])
+    if session_id == request.state.session_id:
+        clear_session_cookie(request, response)
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

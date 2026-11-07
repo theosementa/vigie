@@ -21,27 +21,30 @@ def verify_password(password: str, hashed: str) -> bool:
         return False
 
 
-def create_access_token(user_id: str, token_version: int) -> str:
+def create_access_token(user_id: str, token_version: int, session_id: str) -> str:
     now = datetime.now(UTC)
     payload = {
         "sub": user_id,
         "ver": token_version,
+        "sid": session_id,
         "iat": now,
         "exp": now + timedelta(days=settings.jwt_expire_days),
     }
     return jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
 
 
-def decode_access_token(token: str) -> tuple[str, int] | None:
-    """Returns (user id, token version), or None for an invalid / expired / legacy token."""
+def decode_access_token(token: str) -> tuple[str, int, str] | None:
+    """Returns (user id, token version, session id); None if invalid, expired or legacy."""
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
     except jwt.PyJWTError:
         return None
-    sub, ver = payload.get("sub"), payload.get("ver")
+    sub, ver, sid = payload.get("sub"), payload.get("ver"), payload.get("sid")
     if not isinstance(sub, str) or not isinstance(ver, int) or isinstance(ver, bool):
         return None
-    return sub, ver
+    if not isinstance(sid, str):
+        return None  # issued before devices were tracked
+    return sub, ver, sid
 
 
 def new_reset_token() -> tuple[str, str]:

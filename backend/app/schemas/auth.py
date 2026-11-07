@@ -8,7 +8,7 @@ from zoneinfo import available_timezones
 from email_validator import EmailNotValidError, validate_email
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
-from app.models.user import Locale, Theme
+from app.models.user import Locale, MobileLayout, Theme
 
 # Not-so-private names (RFC 6761 / 8375 and homelab habits). Accepted in `invite` and `closed`
 # instances (homelabs), refused in `open` ones, where the address could never be reached.
@@ -84,6 +84,7 @@ class ProfileUpdate(BaseModel):
     timezone: str | None = Field(default=None, max_length=64)
     locale: Locale | None = None
     theme: Theme | None = None
+    mobile_layout: MobileLayout | None = None
 
     @field_validator("timezone")
     @classmethod
@@ -126,7 +127,19 @@ class UserOut(BaseModel):
     timezone: str
     locale: Locale
     theme: Theme
+    mobile_layout: MobileLayout
     created_at: datetime
+
+
+class SessionOut(BaseModel):
+    """A signed-in device."""
+
+    id: uuid.UUID
+    device: str
+    ip: str | None
+    created_at: datetime
+    last_seen_at: datetime
+    current: bool
 
 
 class UserRef(BaseModel):

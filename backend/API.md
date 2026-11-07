@@ -83,7 +83,7 @@ link valid 1 hour, e.g. `docker compose exec api vigie reset-password alice@exam
 
 ```jsonc
 // ItemType = "article" | "video"      ItemStatus = "to_watch" | "seen"
-User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "created_at": "..." }
+User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "created_at": "..." }
 Tag      = { "id": "uuid", "name": "python" }
 Resource = {
   "id": "uuid", "url": "https://example.com/post",          // normalized
@@ -137,16 +137,16 @@ Response: `User` + session cookie. `401 invalid_credentials` for an unknown emai
 alike (a dummy hash is verified for unknown emails so timing does not differ). `429`.
 
 ### `POST /api/auth/logout` -> 204
-Clears the cookie. Works with or without a session.
+Signs out this device only (deletes its session) and clears the cookie. Works with or without a session.
 
 ### `POST /api/auth/logout-all` -> 204
-Bumps `token_version` (every session of the user, including this one, is revoked) and clears the cookie.
+Bumps `token_version` and deletes every session of the user (every device, including this one), and clears the cookie.
 
 ### `POST /api/auth/password` -> 204
 ```json
 { "current_password": "...", "new_password": "min 8 chars" }
 ```
-Bumps `token_version` (other sessions are revoked) and re-issues the caller's cookie.
+Bumps `token_version`, deletes the user's other sessions (devices) and re-issues the caller's cookie.
 `403 wrong_password`, `422`, `429`.
 
 ### `POST /api/auth/reset` -> 204 (no session needed)
@@ -162,11 +162,25 @@ expired (1 h) or already used. Tokens are random, stored hashed (SHA-256), singl
 
 ### `PATCH /api/auth/me` -> 200 `User`
 ```json
-{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark" }
+{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark", "mobile_layout": "grid" }
 ```
 All fields optional (omitted = unchanged). `422` for an empty / over-long name or a timezone that is not a
-known IANA name (`zoneinfo`). `locale` (`auto` | `en` | `fr`, default `auto`) and `theme` (`system` | `dark` | `light`, default `system`) are
+known IANA name (`zoneinfo`). `locale` (`auto` | `en` | `fr`, default `auto`) and `theme` (`system` | `dark` | `light`, default `system`) and
+`mobile_layout` (`list` | `grid`, default `list`: how the library shows on a phone) are
 stored on the account; any other value is a `422`. The timezone drives "day", "week" and streaks in the statistics.
+
+### `GET /api/auth/sessions` -> 200 `Session[]`
+The devices signed in to the account, most recently active first.
+```json
+[{ "id": "uuid", "device": "Safari · iPhone", "ip": "203.0.113.4" | null, "created_at": "...", "last_seen_at": "...", "current": true }]
+```
+`device` is derived from the User-Agent at sign-in. `last_seen_at` is refreshed at most every 5 minutes.
+Each login or registration creates a session; the cookie's JWT carries its id (`sid`), so a token without a live
+session is a `401`.
+
+### `DELETE /api/auth/sessions/{id}` -> 204
+Signs that device out at once (its live stream gets `revoked`). `404` if it is not one of yours.
+Revoking the current session also clears the cookie.
 
 ### `DELETE /api/auth/me` -> 204
 ```json
@@ -175,6 +189,27 @@ stored on the account; any other value is a `422`. The timezone drives "day", "w
 Immediate and irreversible: the user's items, tags, events and sessions are deleted. Invitations they
 created stay (`created_by` becomes null); items they shared to others stay with `shared_by` null.
 `403 wrong_password`; `409 last_admin` if they are the only admin and other accounts exist.
+
+## Live updates
+
+### `GET /api/stream` -> 200 `text/event-stream`
+Server-Sent Events, authenticated by the session cookie (`401` without one). One connection per open
+device; the client keeps it while signed in. Events carry no data, only what to refetch:
+
+```
+event: ready     data: {}                              (connected)
+event: sync      data: {"topics": ["items","queue"]}   (something changed on another device)
+event: revoked   data: {}                              (this device was signed out; the stream then closes)
+: ping                                                  (comment, every 20 s: keeps proxies from closing it)
+```
+Topics: `items`, `queue`, `tags`, `stats`, `me`, `sessions`, or `*` (refetch everything, sent when a slow
+client's backlog was dropped). A `sync` is sent to **all** of the user's open streams after any successful
+`POST`/`PUT`/`PATCH`/`DELETE` (the originating device included), and to the recipients of a share. Events
+are not replayed: after a reconnect the client refetches everything.
+
+The hub is in memory (`app/services/realtime.py`), which is right for the single uvicorn process the image
+runs. Behind a reverse proxy the stream must not be buffered (`X-Accel-Buffering: no` is set; with Caddy
+`flush_interval -1`) and idle timeouts must exceed 20 s.
 
 ## Admin
 

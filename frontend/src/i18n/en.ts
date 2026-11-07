@@ -39,6 +39,10 @@ export const en = {
 
   // Theme and language
   'settings.appearance': 'Appearance',
+  'settings.preferences': 'Preferences',
+  'layout.label': 'Mobile display',
+  'layout.list': 'List',
+  'layout.grid': 'Grid',
   'theme.label': 'Theme',
   'theme.dark': 'Dark',
   'theme.light': 'Light',
@@ -392,6 +396,12 @@ export const en = {
   'settings.password.failed': 'Can’t change the password. Try again.',
   'settings.password.submit': 'Change password',
   'settings.sessions': 'Sessions',
+  'settings.devices': 'Signed-in devices',
+  'settings.devices.current': 'This device',
+  'settings.devices.last_seen': 'Active {when}',
+  'settings.devices.revoke': 'Sign out',
+  'settings.devices.revoke_label': 'Sign out {device}',
+  'settings.devices.error': 'Could not load your devices.',
   'settings.logout': 'Sign out',
   'settings.logout_all': 'Sign out everywhere',
   'settings.logout_all.body': 'All your devices, including this one, will be signed out. You’ll have to sign in again.',

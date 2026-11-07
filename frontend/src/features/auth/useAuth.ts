@@ -14,6 +14,7 @@ import { useT } from '@/lib/i18n'
 import { statsKey } from '@/features/stats/queries'
 
 export const meKey = ['auth', 'me'] as const
+export const sessionsKey = ['auth', 'sessions'] as const
 
 /**
  * Current user: `null` when logged out (a 401). Any other failure (server or network down) is an
@@ -81,13 +82,26 @@ export function useLogout() {
 }
 
 /** Drop every cached query: the session is gone (logout everywhere, account deleted). */
-function useClearSession() {
+export function useClearSession() {
   const qc = useQueryClient()
   return () => {
     qc.clear()
     qc.setQueryData(meKey, null)
     void clearApiCache()
   }
+}
+
+/** The devices signed in to this account (refreshed live when one signs in or out). */
+export function useSessions() {
+  return useQuery({ queryKey: sessionsKey, queryFn: () => api.auth.sessions(), staleTime: 60_000 })
+}
+
+export function useRevokeSession() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.auth.revokeSession(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: sessionsKey }),
+  })
 }
 
 export function useLogoutAll() {

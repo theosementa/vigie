@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import Request, Response
 
 from app.core.config import settings
@@ -12,10 +14,12 @@ def _secure(request: Request) -> bool:
     return settings.cookie_secure == "true"
 
 
-def set_session_cookie(request: Request, response: Response, user: User) -> None:
+def set_session_cookie(
+    request: Request, response: Response, user: User, session_id: uuid.UUID
+) -> None:
     response.set_cookie(
         settings.cookie_name,
-        create_access_token(str(user.id), user.token_version),
+        create_access_token(str(user.id), user.token_version, str(session_id)),
         max_age=settings.jwt_expire_days * 86400,
         httponly=True,
         samesite="lax",

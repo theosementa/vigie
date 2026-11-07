@@ -232,6 +232,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sessions */
+        get: operations["list_sessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/sessions/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke Session */
+        delete: operations["revoke_session"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -419,6 +453,27 @@ export interface paths {
         };
         /** Get Stats Timeseries */
         get: operations["get_stats_timeseries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stream
+         * @description Server-Sent Events: a `sync` event ({"topics": [...]}) when something changed on another
+         *     device, and `revoked` when this device was signed out. Authenticated by the session cookie.
+         */
+        get: operations["stream"];
         put?: never;
         post?: never;
         delete?: never;
@@ -624,6 +679,11 @@ export interface components {
             /** Password */
             password: string;
         };
+        /**
+         * MobileLayout
+         * @enum {string}
+         */
+        MobileLayout: "list" | "grid";
         /** PasswordChangeIn */
         PasswordChangeIn: {
             /** Current Password */
@@ -685,6 +745,7 @@ export interface components {
             /** Last Name */
             last_name?: string | null;
             locale?: components["schemas"]["Locale"] | null;
+            mobile_layout?: components["schemas"]["MobileLayout"] | null;
             theme?: components["schemas"]["Theme"] | null;
             /** Timezone */
             timezone?: string | null;
@@ -784,6 +845,33 @@ export interface components {
             type: "article" | "video" | "website" | "repo";
             /** Url */
             url: string;
+        };
+        /**
+         * SessionOut
+         * @description A signed-in device.
+         */
+        SessionOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Current */
+            current: boolean;
+            /** Device */
+            device: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Ip */
+            ip: string | null;
+            /**
+             * Last Seen At
+             * Format: date-time
+             */
+            last_seen_at: string;
         };
         /** SettingsOut */
         SettingsOut: {
@@ -990,6 +1078,7 @@ export interface components {
             /** Last Name */
             last_name: string;
             locale: components["schemas"]["Locale"];
+            mobile_layout: components["schemas"]["MobileLayout"];
             /**
              * Role
              * @enum {string}
@@ -1695,6 +1784,73 @@ export interface operations {
                 "application/json": components["schemas"]["ResetIn"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    revoke_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             204: {
@@ -2481,6 +2637,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
