@@ -1,0 +1,52 @@
+name: Promote to production
+# "Run workflow" button (Actions tab): fast-forwards `main` to `preprod`, then starts the production
+# deploy. Refuses when CI has not passed on the preprod commit, or when `main` has commits that
+# `preprod` does not (merge main into preprod first).
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: promote
+  cancel-in-progress: false
+
+permissions:
+  contents: write     # push main
+  actions: write      # start the deploy (a push made with GITHUB_TOKEN does not trigger it)
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check preprod can be promoted
+        run: |
+          set -euo pipefail
+          git fetch origin main preprod
+          SHA=$(git rev-parse origin/preprod)
+          if [ "$SHA" = "$(git rev-parse origin/main)" ]; then
+            echo "::notice::main is already at preprod ($SHA); nothing to promote"
+            exit 0
+          fi
+          git merge-base --is-ancestor origin/main origin/preprod \
+            || { echo "::error::main has commits that preprod does not: merge main into preprod first"; exit 1; }
+          ok=$(gh run list --workflow ci.yml --commit "$SHA" --json conclusion --jq '[.[] | select(.conclusion == "success")] | length')
+          [ "$ok" -gt 0 ] || { echo "::error::no successful CI run on preprod ($SHA)"; exit 1; }
+          echo "PROMOTE_SHA=$SHA" >> "$GITHUB_ENV"
+
+      - name: Fast-forward main to preprod
+        if: env.PROMOTE_SHA != ''
+        run: |
+          set -euo pipefail
+          git push origin "$PROMOTE_SHA:refs/heads/main"
+          echo "### Promoted to production" >> "$GITHUB_STEP_SUMMARY"
+          git log --oneline origin/main.."$PROMOTE_SHA" >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Start the production deploy
+        if: env.PROMOTE_SHA != ''
+        run: gh workflow run deploy.yml --ref main
