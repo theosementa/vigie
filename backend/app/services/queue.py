@@ -1,4 +1,4 @@
-"""Watch queue: an ordered list of the user's video items (`items.queue_position`).
+"""Watch queue: an ordered list of the user's items (any type) (`items.queue_position`).
 
 Positions are 0-based and contiguous per user; every mutation here leaves them compacted.
 The queue is small, so it is loaded, reordered in Python and renumbered.
@@ -11,11 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import set_committed_value
 
 from app.models import Item
-
-
-def is_video(item: Item) -> bool:
-    """Effective type (per-user override first, like COALESCE(type_override, resource.type))."""
-    return (item.type_override or item.resource.type) == "video"
 
 
 async def load_queue(session: AsyncSession, user_id: uuid.UUID) -> list[Item]:
@@ -57,8 +52,6 @@ async def add_to_queue(session: AsyncSession, item: Item, position: int | None =
     """Queue `item` (at the end by default).
 
     If already queued, it only moves when `position` is given.
-
-    The caller checks that the item is a video.
     """
     queue = await load_queue(session, item.user_id)
     if item in queue:

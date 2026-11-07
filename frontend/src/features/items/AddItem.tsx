@@ -131,7 +131,7 @@ function CaptureForm({
   const save = () => {
     if (!data) return
     setSaveError(null)
-    const queued = effectiveType === 'video' && queue
+    const queued = queue
     create.mutate(
       {
         url: data.url,
@@ -244,12 +244,10 @@ function CaptureForm({
                   </button>
                 ))}
               </div>
-              {effectiveType === 'video' && (
-                <label className="check">
-                  <input type="checkbox" checked={queue} onChange={(e) => setQueue(e.target.checked)} />
-                  {t('item.queue.add')}
-                </label>
-              )}
+              <label className="check">
+                <input type="checkbox" checked={queue} onChange={(e) => setQueue(e.target.checked)} />
+                {t('item.queue.add')}
+              </label>
               <div className="grid gap-1.5">
                 <label htmlFor="capture-tags" className="h-label">
                   {t('item.tags')}

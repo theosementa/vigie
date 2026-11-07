@@ -229,8 +229,7 @@ Pass `next_cursor` back as `cursor` for the next page. `422` for a malformed cur
 { "url": "https://example.com/post", "type": "article", "status": "to_watch",
   "notes": "optional", "tags": ["python", "talk"], "queue": false }
 ```
-Only `url` is required. `queue: true` appends the new item to the end of the [watch queue](#queue) when its
-effective type is `video` (ignored otherwise, and for `status: "seen"`). `type` overrides the auto-detected type for this user only. Tags are created on
+Only `url` is required. `queue: true` appends the new item to the end of the [watch queue](#queue) (any type; ignored for `status: "seen"`). `type` overrides the auto-detected type for this user only. Tags are created on
 demand (per user, case-insensitive unique). `409 already_in_library` (with `item_id`) when the user already has this URL. `422` for an invalid URL
 (only http/https) or one longer than 2048 chars. Resources are unique on `url_hash`, the SHA-256 of the
 normalised URL. No DB transaction is held while the page is fetched.
@@ -243,8 +242,7 @@ Any subset of:
 { "status": "seen", "notes": "text or empty string to clear", "tags": ["python"], "type": "video" }
 ```
 `tags` replaces the full tag list. Moving to `seen` sets `seen_at`; back to `to_watch` resets it to `null`.
-Only an actual status change is journaled (see [Events](#events)). Moving an item to `seen`, or changing its
-type to something other than `video`, removes it from the watch queue (positions are compacted).
+Only an actual status change is journaled (see [Events](#events)). Moving an item to `seen` removes it from the watch queue (positions are compacted).
 
 ### `DELETE /api/items/{id}` -> 204
 Also removes the item from the watch queue (positions are compacted).
@@ -279,8 +277,8 @@ has the resource, nothing is created, `shared_by` is filled in if it was empty, 
 
 ## Queue
 
-An ordered "watch next" list of the user's videos, independent from the `to_watch`/`seen` status. A queued
-item is one of the user's items whose effective type is `video` and whose `queue_position` is not `null`.
+An ordered "watch next" list of the user's items (any type), independent from the `to_watch`/`seen` status. A queued
+item is one of the user's items whose `queue_position` is not `null`.
 Positions are 0-based and contiguous per user; they are compacted after every add, move and removal.
 Out-of-range positions are clamped (`< 0` -> front, past the end -> end). Another user's item answers
 `404 {"detail": "Item not found"}`. Queue operations are not journaled (no events, no stats impact).
@@ -296,7 +294,7 @@ Ordered by `queue_position` ascending, not paginated.
 { "item_id": "uuid", "position": 0 }
 ```
 `position` is optional (`null`/omitted = end of the queue). Idempotent: if the item is already queued it is
-left in place, or moved when `position` is given. `422` if the item is not a video, `404` if it is not yours.
+left in place, or moved when `position` is given. `404` if it is not yours.
 
 ### `PATCH /api/queue/{item_id}` -> 200 `Item`
 ```json

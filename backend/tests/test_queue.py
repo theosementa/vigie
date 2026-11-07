@@ -82,19 +82,12 @@ async def test_add_is_idempotent_and_moves_when_position_given(alice):
     assert await queue_ids(alice) == [b, c, a]
 
 
-async def test_add_rejects_non_video(alice):
+async def test_any_type_can_be_queued(alice):
     article = await add(alice, "https://example.com/post")
-    r = await alice.post("/api/queue", json={"item_id": article["id"]})
-    assert r.status_code == 422
-    assert await queue_ids(alice) == []
-
-
-async def test_effective_type_override_is_used(alice):
-    as_video = await add(alice, "https://example.com/talk", type="video")
-    assert (await enqueue(alice, as_video["id"]))["queue_position"] == 0
+    assert (await enqueue(alice, article["id"]))["queue_position"] == 0
     as_article = await add(alice, yt(1), type="article")
-    r = await alice.post("/api/queue", json={"item_id": as_article["id"]})
-    assert r.status_code == 422
+    assert (await enqueue(alice, as_article["id"]))["queue_position"] == 1
+    assert await queue_ids(alice) == [article["id"], as_article["id"]]
 
 
 async def test_add_unknown_item_and_invalid_body(alice):
@@ -210,13 +203,13 @@ async def test_deleting_item_removes_and_compacts(alice):
     assert await queue_ids(alice) == [a, c]
 
 
-async def test_changing_type_away_from_video_dequeues(alice):
+async def test_changing_type_keeps_queue_position(alice):
     a, b = await make_videos(alice, 2)
     await enqueue(alice, a)
     await enqueue(alice, b)
     r = await alice.patch(f"/api/items/{a}", json={"type": "article"})
-    assert r.json()["queue_position"] is None
-    assert await queue_ids(alice) == [b]
+    assert r.json()["queue_position"] == 0
+    assert await queue_ids(alice) == [a, b]
 
 
 async def test_other_item_edits_keep_queue_position(alice):
@@ -237,14 +230,12 @@ async def test_create_with_queue_flag(alice):
     assert await queue_ids(alice) == [first["id"], second["id"]]
 
 
-async def test_create_with_queue_flag_ignored_for_non_video(alice):
+async def test_create_with_queue_flag_any_type_but_not_seen(alice):
     article = await add(alice, "https://example.com/post", queue=True)
-    assert article["queue_position"] is None
-    overridden = await add(alice, "https://example.com/talk", type="video", queue=True)
-    assert overridden["queue_position"] == 0
+    assert article["queue_position"] == 0
     seen = await add(alice, yt(1), status="seen", queue=True)
     assert seen["queue_position"] is None
-    assert await queue_ids(alice) == [overridden["id"]]
+    assert await queue_ids(alice) == [article["id"]]
 
 
 async def test_list_items_queued_filter(alice):

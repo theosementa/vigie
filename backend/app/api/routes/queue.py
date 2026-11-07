@@ -35,8 +35,6 @@ async def get_queue(user: CurrentUser, session: SessionDep) -> QueueOut:
 @router.post("", response_model=ItemOut)
 async def add_to_queue(body: QueueAdd, user: CurrentUser, session: SessionDep) -> ItemOut:
     item = await _get_owned(session, user.id, body.item_id)
-    if not queue_service.is_video(item):
-        raise HTTPException(422, "Only videos can be queued")
     await queue_service.add_to_queue(session, item, body.position)
     await session.commit()
     await session.refresh(item)

@@ -32,7 +32,7 @@ from app.services.items import (
     resolve_tags,
 )
 from app.services.metadata import fetch_metadata
-from app.services.queue import is_video, next_position, remove_from_queue
+from app.services.queue import next_position, remove_from_queue
 from app.services.share import share_item
 from app.services.url import InvalidUrlError, normalize_url
 
@@ -173,8 +173,7 @@ async def create_item(body: ItemCreate, user: CurrentUser, session: SessionDep) 
     _set_status(item, "to_watch")
     if body.status == "seen":
         _set_status(item, "seen")
-    effective_type = item.type_override or resource.type
-    if body.queue and item.status != "seen" and effective_type == "video":
+    if body.queue and item.status != "seen":
         item.queue_position = await next_position(session, user.id)
     session.add(item)
     record_event(session, user_id=user.id, item_id=item.id, resource_id=resource.id, kind="added")
@@ -233,8 +232,6 @@ async def update_item(
         item.notes = body.notes or None
     if "type" in fields and body.type:
         item.type_override = None if body.type == item.resource.type else body.type
-        if not is_video(item):
-            await remove_from_queue(session, item)
     if "tags" in fields and body.tags is not None:
         item.tags = await resolve_tags(session, user.id, body.tags)
     await session.commit()
