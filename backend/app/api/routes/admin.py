@@ -17,6 +17,8 @@ from app.schemas.admin import (
     SettingsOut,
     SettingsUpdate,
 )
+from app.schemas.analytics import ANALYTICS_DAYS, AnalyticsOut
+from app.services import analytics as analytics_service
 from app.services.accounts import (
     create_reset_link,
     delete_account,
@@ -48,6 +50,16 @@ async def update_admin_settings(
     row.updated_at = datetime.now(UTC)
     await session.commit()
     return row
+
+
+@router.get("/analytics", response_model=AnalyticsOut)
+async def get_admin_analytics(
+    admin: AdminUser, session: SessionDep, days: int = 30
+) -> AnalyticsOut:
+    """Counters for this instance only; never any library content. `days`: 7, 30 or 90."""
+    if days not in ANALYTICS_DAYS:
+        raise api_error(422, "invalid_days", "days must be 7, 30 or 90.")
+    return await analytics_service.instance_analytics(session, admin.timezone, days)
 
 
 @router.get("/invitations", response_model=list[InvitationOut])

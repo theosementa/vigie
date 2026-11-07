@@ -222,6 +222,7 @@ never see library content.
 - `GET /api/admin/invitations` -> `[{ "id", "email", "created_by", "created_at", "used_at" }]` (`used_at` set = account created)
 - `POST /api/admin/invitations` `{ "email" }` -> `201` new, or `200` with the existing invitation (idempotent)
 - `DELETE /api/admin/invitations/{id}` -> 204 (`404 invitation_not_found`)
+- `GET /api/admin/analytics?days=7|30|90` (default 30; other values `422 invalid_days`) -> counters for this instance only, never library content: `{ "days", "timezone", "start", "end", "totals": { "accounts", "admins", "items", "unseen_items", "queued_items", "shared_items", "pending_invitations" }, "active": { "day", "week", "month" } (accounts with a device seen in the last 24 h / 7 / 30 days), "window": { "new_accounts", "items_added", "items_seen", "shares" }, "series": [{ "day", "new_accounts", "items_added", "items_seen", "active_accounts" }] }` (one point per day, zero-filled, days in the admin's time zone)
 - `GET /api/admin/users` -> `[{ "id", "first_name", "last_name", "email", "role", "created_at", "item_count" }]`
 - `DELETE /api/admin/users/{id}` -> 204, same rules as self-deletion; `400 cannot_delete_self`, `404 user_not_found`
 - `POST /api/admin/users/{id}/reset-link` -> `{ "url": "https://.../reset-password?token=...", "expires_at" }`;

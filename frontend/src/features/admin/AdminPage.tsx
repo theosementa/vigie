@@ -27,6 +27,7 @@ import {
   useResetLink,
   useSetRegistrationMode,
 } from './queries'
+import { AnalyticsSection } from './AnalyticsSection'
 
 const sectionClass = 'panel'
 const headingClass = 'h-label'
@@ -279,6 +280,7 @@ export function AdminPage() {
   const { data: me } = useMe()
   return (
     <div className="lib form-page mx-auto max-w-2xl">
+      <AnalyticsSection />
       <RegistrationSection />
       <InvitationsSection />
       {me && <UsersSection meId={me.id} />}

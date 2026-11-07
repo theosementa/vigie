@@ -5,6 +5,7 @@ from tests.conftest import make_client, set_mode, sql
 ADMIN_ROUTES = [
     ("GET", "/api/admin/settings", None),
     ("PATCH", "/api/admin/settings", {"registration_mode": "open"}),
+    ("GET", "/api/admin/analytics", None),
     ("GET", "/api/admin/invitations", None),
     ("POST", "/api/admin/invitations", {"email": "x@example.com"}),
     ("DELETE", f"/api/admin/invitations/{uuid.uuid4()}", None),
@@ -127,3 +128,26 @@ async def test_reset_link_falls_back_to_request_base_url(alice, bob):
 async def test_reset_link_unknown_user(alice):
     r = await alice.post(f"/api/admin/users/{uuid.uuid4()}/reset-link")
     assert r.status_code == 404
+
+
+async def test_analytics_counts_and_exposes_no_content(alice, bob):
+    await bob.post("/api/items", json={"url": "https://example.com/secret-a"})
+    await bob.post("/api/items", json={"url": "https://example.com/secret-b", "status": "seen"})
+    r = await alice.get("/api/admin/analytics?days=7")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["days"] == 7 and len(body["series"]) == 7
+    assert body["totals"]["accounts"] == 2 and body["totals"]["admins"] == 1
+    assert body["totals"]["items"] == 2 and body["totals"]["unseen_items"] == 1
+    assert body["window"]["new_accounts"] == 2
+    assert body["window"]["items_added"] == 2 and body["window"]["items_seen"] == 1
+    today = body["series"][-1]
+    assert today["day"] == body["end"]
+    assert today["items_added"] == 2 and today["active_accounts"] == 1
+    assert body["active"] == {"day": 2, "week": 2, "month": 2}
+    assert "secret" not in r.text
+
+
+async def test_analytics_rejects_unknown_window_and_non_admin(alice, bob):
+    assert (await alice.get("/api/admin/analytics?days=5")).status_code == 422
+    assert (await bob.get("/api/admin/analytics")).status_code == 404

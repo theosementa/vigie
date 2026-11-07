@@ -50,6 +50,186 @@
         "title": "AdminUserOut",
         "type": "object"
       },
+      "AnalyticsActive": {
+        "description": "Distinct accounts with a signed-in device seen in the last day / week / month.",
+        "properties": {
+          "day": {
+            "title": "Day",
+            "type": "integer"
+          },
+          "month": {
+            "title": "Month",
+            "type": "integer"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "day",
+          "week",
+          "month"
+        ],
+        "title": "AnalyticsActive",
+        "type": "object"
+      },
+      "AnalyticsOut": {
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/AnalyticsActive"
+          },
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/AnalyticsPoint"
+            },
+            "title": "Series",
+            "type": "array"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/AnalyticsTotals"
+          },
+          "window": {
+            "$ref": "#/components/schemas/AnalyticsWindow"
+          }
+        },
+        "required": [
+          "days",
+          "timezone",
+          "start",
+          "end",
+          "totals",
+          "active",
+          "window",
+          "series"
+        ],
+        "title": "AnalyticsOut",
+        "type": "object"
+      },
+      "AnalyticsPoint": {
+        "properties": {
+          "active_accounts": {
+            "title": "Active Accounts",
+            "type": "integer"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "items_added": {
+            "title": "Items Added",
+            "type": "integer"
+          },
+          "items_seen": {
+            "title": "Items Seen",
+            "type": "integer"
+          },
+          "new_accounts": {
+            "title": "New Accounts",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "day",
+          "new_accounts",
+          "items_added",
+          "items_seen",
+          "active_accounts"
+        ],
+        "title": "AnalyticsPoint",
+        "type": "object"
+      },
+      "AnalyticsTotals": {
+        "properties": {
+          "accounts": {
+            "title": "Accounts",
+            "type": "integer"
+          },
+          "admins": {
+            "title": "Admins",
+            "type": "integer"
+          },
+          "items": {
+            "title": "Items",
+            "type": "integer"
+          },
+          "pending_invitations": {
+            "title": "Pending Invitations",
+            "type": "integer"
+          },
+          "queued_items": {
+            "title": "Queued Items",
+            "type": "integer"
+          },
+          "shared_items": {
+            "title": "Shared Items",
+            "type": "integer"
+          },
+          "unseen_items": {
+            "title": "Unseen Items",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "accounts",
+          "admins",
+          "items",
+          "unseen_items",
+          "queued_items",
+          "shared_items",
+          "pending_invitations"
+        ],
+        "title": "AnalyticsTotals",
+        "type": "object"
+      },
+      "AnalyticsWindow": {
+        "description": "Activity summed over the requested window.",
+        "properties": {
+          "items_added": {
+            "title": "Items Added",
+            "type": "integer"
+          },
+          "items_seen": {
+            "title": "Items Seen",
+            "type": "integer"
+          },
+          "new_accounts": {
+            "title": "New Accounts",
+            "type": "integer"
+          },
+          "shares": {
+            "title": "Shares",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "new_accounts",
+          "items_added",
+          "items_seen",
+          "shares"
+        ],
+        "title": "AnalyticsWindow",
+        "type": "object"
+      },
       "ErrorDetail": {
         "additionalProperties": true,
         "description": "The `detail` of an error raised by the API. Some errors add fields (e.g. `item_id`).",
@@ -1727,6 +1907,70 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/admin/analytics": {
+      "get": {
+        "description": "Counters for this instance only; never any library content. `days`: 7, 30 or 90.",
+        "operationId": "get_admin_analytics",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "title": "Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Admin Analytics",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/invitations": {
       "get": {
         "operationId": "list_admin_invitations",

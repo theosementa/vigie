@@ -1,10 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, type RegistrationMode } from '@/lib/api'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { api, type AnalyticsDays, type RegistrationMode } from '@/lib/api'
 
 export const adminKey = ['admin'] as const
 const settingsKey = [...adminKey, 'settings'] as const
 const invitationsKey = [...adminKey, 'invitations'] as const
 const usersKey = [...adminKey, 'users'] as const
+
+export function useAdminAnalytics(days: AnalyticsDays) {
+  return useQuery({
+    queryKey: [...adminKey, 'analytics', days] as const,
+    queryFn: () => api.admin.analytics(days),
+    // Switching the window keeps the previous numbers on screen until the new ones land.
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  })
+}
 
 export function useAdminSettings() {
   return useQuery({ queryKey: settingsKey, queryFn: () => api.admin.getSettings() })

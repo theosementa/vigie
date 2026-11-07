@@ -55,6 +55,8 @@ export type AdminSettings = Schemas['SettingsOut']
 export type Invitation = Schemas['InvitationOut']
 export type AdminUser = Schemas['AdminUserOut']
 export type ResetLink = Schemas['ResetLinkOut']
+export type AdminAnalytics = Schemas['AnalyticsOut']
+export type AnalyticsDays = 7 | 30 | 90
 
 // ---------- Statistics ----------
 
@@ -137,6 +139,8 @@ export const api = {
     invite: (email: string) => ok(client.POST('/api/admin/invitations', { body: { email } })),
     removeInvitation: (id: string) =>
       ok(client.DELETE('/api/admin/invitations/{invitation_id}', { params: { path: { invitation_id: id } } })),
+    analytics: (days: AnalyticsDays) =>
+      ok(client.GET('/api/admin/analytics', { params: { query: { days } } })),
     users: () => ok(client.GET('/api/admin/users')),
     removeUser: (id: string) =>
       ok(client.DELETE('/api/admin/users/{user_id}', { params: { path: { user_id: id } } })),

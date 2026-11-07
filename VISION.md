@@ -58,7 +58,7 @@ Esprit : **un écran de veille, pas un fil d'actualité** : ce qui entre est cho
 - **Sessions révocables** : `users.token_version` incrémenté au changement de mot de passe ou par « Me déconnecter partout » ; un JWT d'une version antérieure est refusé.
 - **Mot de passe oublié** : par e-mail si `SMTP_*` est configuré (lien à usage unique, 1 h) ; sinon un admin génère un lien de réinitialisation depuis l'administration, ou en CLI (`docker compose exec api vigie reset-password <email>`).
 - **Jetons d'API personnels** (pour raccourcis iOS, extension, scripts) : nommés, affichés une seule fois, stockés hachés, révocables, portée `capture` (ajouter) ou `full`.
-- **Administration** (admin seulement) : mode d'inscription, liste des invités (ajouter / retirer une adresse, voir si elle a créé son compte), liste des comptes (nom, e-mail, date, nombre d'items), suppression d'un compte, lien de réinitialisation. Aucun accès au contenu des bibliothèques.
+- **Administration** (admin seulement) : mode d'inscription, liste des invités (ajouter / retirer une adresse, voir si elle a créé son compte), liste des comptes (nom, e-mail, date, nombre d'items), suppression d'un compte, lien de réinitialisation, **activité de l'instance** (comptes actifs sur 24 h / 7 j / 30 j, inscriptions, items ajoutés / vus, partages, courbe par jour sur 7 / 30 / 90 jours : des compteurs calculés dans la base de l'instance, rien n'est envoyé ailleurs). Aucun accès au contenu des bibliothèques.
 - **Domaines e-mail** : les domaines à usage spécial (`.local`, `.lan`, `.home.arpa`, `.test`) sont acceptés quand `REGISTRATION=invite` ou `closed`, pour les homelabs.
 
 ## 5. Modules

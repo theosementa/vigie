@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/admin/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Admin Analytics
+         * @description Counters for this instance only; never any library content. `days`: 7, 30 or 90.
+         */
+        get: operations["get_admin_analytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/invitations": {
         parameters: {
             query?: never;
@@ -528,6 +548,87 @@ export interface components {
              * @enum {string}
              */
             role: "admin" | "user";
+        };
+        /**
+         * AnalyticsActive
+         * @description Distinct accounts with a signed-in device seen in the last day / week / month.
+         */
+        AnalyticsActive: {
+            /** Day */
+            day: number;
+            /** Month */
+            month: number;
+            /** Week */
+            week: number;
+        };
+        /** AnalyticsOut */
+        AnalyticsOut: {
+            active: components["schemas"]["AnalyticsActive"];
+            /** Days */
+            days: number;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Series */
+            series: components["schemas"]["AnalyticsPoint"][];
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /** Timezone */
+            timezone: string;
+            totals: components["schemas"]["AnalyticsTotals"];
+            window: components["schemas"]["AnalyticsWindow"];
+        };
+        /** AnalyticsPoint */
+        AnalyticsPoint: {
+            /** Active Accounts */
+            active_accounts: number;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Items Added */
+            items_added: number;
+            /** Items Seen */
+            items_seen: number;
+            /** New Accounts */
+            new_accounts: number;
+        };
+        /** AnalyticsTotals */
+        AnalyticsTotals: {
+            /** Accounts */
+            accounts: number;
+            /** Admins */
+            admins: number;
+            /** Items */
+            items: number;
+            /** Pending Invitations */
+            pending_invitations: number;
+            /** Queued Items */
+            queued_items: number;
+            /** Shared Items */
+            shared_items: number;
+            /** Unseen Items */
+            unseen_items: number;
+        };
+        /**
+         * AnalyticsWindow
+         * @description Activity summed over the requested window.
+         */
+        AnalyticsWindow: {
+            /** Items Added */
+            items_added: number;
+            /** Items Seen */
+            items_seen: number;
+            /** New Accounts */
+            new_accounts: number;
+            /** Shares */
+            shares: number;
         };
         /**
          * ErrorDetail
@@ -1124,6 +1225,55 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_admin_analytics: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_admin_invitations: {
         parameters: {
             query?: never;
