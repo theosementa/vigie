@@ -1,6 +1,6 @@
 # VISION — Vigie
 
-> PWA de veille open source (AGPL-3.0) · auto-hébergeable en une commande · instance publique `vigie.theosementa.fr` → port `8101`, en mode `invite`
+> PWA de veille open source (AGPL-3.0) · auto-hébergeable en une commande · instance publique en mode `invite`
 
 ## 1. Pitch
 
@@ -53,7 +53,7 @@ Esprit : **un écran de veille, pas un fil d'actualité** : ce qui entre est cho
 | `closed` | Plus aucune inscription |
 
 - **Changer de mode ne touche jamais aux comptes existants** : passer de `open` à `invite` ou `closed` bloque seulement les nouvelles inscriptions.
-- **Instance publique** : démarre en `invite`, Théo seul admin ; il passe en `open` quand il veut, et revient en `invite` si besoin.
+- **Instance publique** : démarre en `invite`, son propriétaire seul admin ; il passe en `open` quand il veut, et revient en `invite` si besoin.
 
 - **Sessions révocables** : `users.token_version` incrémenté au changement de mot de passe ou par « Me déconnecter partout » ; un JWT d'une version antérieure est refusé.
 - **Mot de passe oublié** : par e-mail si `SMTP_*` est configuré (lien à usage unique, 1 h) ; sinon un admin génère un lien de réinitialisation depuis l'administration, ou en CLI (`docker compose exec api vigie reset-password <email>`).
@@ -189,7 +189,7 @@ Pas de notifications push au MVP. Des pastilles dans la navigation :
 | E-mail | SMTP optionnel (`SMTP_*`) : vérification, réinitialisation, invitations. Sans SMTP, tout fonctionne par liens générés par l'admin |
 | Infra | Docker Compose : `web` (**Caddy** : SPA, proxy `/api`, HTTPS automatique si `VIGIE_DOMAIN` est défini, en-têtes de sécurité), `api` (non-root), `db` (non exposée). Images publiées sur `ghcr.io` |
 | Qualité | `pytest` (Postgres réel), `ruff check` + `ruff format`, `tsc -b`, ESLint ; GitHub Actions sur chaque PR, Dependabot |
-| Déploiement de l'instance publique | Runner self-hosted homelab (`homelab-deploy`), Cloudflare → `vigie.theosementa.fr` |
+| Déploiement de l'instance publique | Runner GitHub self-hosted sur le serveur de l'instance, derrière un tunnel Cloudflare |
 
 **Écarts au blueprint, et pourquoi** : PostgreSQL réel en tests (et non SQLite) car la recherche (`pg_trgm`), les agrégats par fuseau et `SKIP LOCKED` sont propres à Postgres ; **Tailwind conservé** (choix de Théo, déjà en place dans le code) : les tokens de la DA alimentent son thème, aucune couleur ni taille en dur hors tokens ; i18n et code d'erreur côté API au lieu de textes français côté back, car l'interface est bilingue ; images publiées sur `ghcr.io` pour que l'auto-hébergement ne demande pas de build.
 
@@ -253,13 +253,13 @@ Le code actuel (MVP fonctionnel : bibliothèque, file, partage, stats) est **rep
 
 ## 13. Questions ouvertes
 
-1. **Capacité de l'instance publique** : le homelab tient-il quelques milliers de comptes (CPU des récupérations, bande passante du proxy d'images) ? On le mesure pendant la phase `invite` avant d'ouvrir.
+1. **Capacité de l'instance publique** : le serveur tient-il quelques milliers de comptes (CPU des récupérations, bande passante du proxy d'images) ? On le mesure pendant la phase `invite` avant d'ouvrir.
 
 ### Tranché
 
-- Nom : **Vigie** (choisi avec la DA), sous-domaine `vigie.theosementa.fr`, dépôt `vigie`.
-- Port de l'instance publique : `8101`, mode `invite`, Théo seul admin.
-- Pré-production : `vigie-pp.theosementa.fr` → port `8102`, base de données et volumes à part (projet compose `vigie-pp`), liste blanche `ALLOWED_EMAILS` (Théo seul, d'autres adresses s'ajoutent dans le `.env` du serveur). La branche `preprod` s'y déploie, `main` va en production : une feature passe d'abord par `preprod`, puis on fusionne dans `main` une fois validée.
+- Nom : **Vigie** (choisi avec la DA), dépôt `vigie`.
+- Instance publique : port `8101` par défaut, mode `invite`, son propriétaire seul admin.
+- Pré-production : port `8102` par défaut, base de données et volumes à part (projet compose `vigie-pp`), liste blanche `ALLOWED_EMAILS` (le propriétaire seul, d'autres adresses s'ajoutent dans le `.env` du serveur). La branche `preprod` s'y déploie, `main` va en production : une feature passe d'abord par `preprod`, puis on fusionne dans `main` une fois validée.
 - Partage : contacts créés à l'ouverture d'un partage ou par lien de contact ; prénom et nom demandés à l'inscription, avec la raison affichée.
 - Traductions : dictionnaires dans le dépôt ; une plateforme communautaire seulement quand d'autres langues seront demandées.
 - Stats après suppression : tags et source ne sont pas figés dans l'événement ; la base est affichée.

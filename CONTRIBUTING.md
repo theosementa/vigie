@@ -59,12 +59,14 @@ Every open/close, resize and reorder in the UI must stay smooth, with no visible
 
 ## Environments
 
-| Branch | Environment | URL | Host port |
-|---|---|---|---|
-| `main` | production | https://vigie.theosementa.fr | 8101 |
-| `preprod` | pre-production | https://vigie-pp.theosementa.fr | 8102 |
+| Branch | Environment | Host port (default) |
+|---|---|---|
+| `main` | production | 8101 (`HTTP_PORT` repository variable) |
+| `preprod` | pre-production | 8102 (`HTTP_PORT_PREPROD` repository variable) |
 
-A feature always lands on `preprod` first (`.github/workflows/deploy.yml` deploys it). Once validated, promote it with the **Promote to production** workflow (Actions tab, "Run workflow"): it fast-forwards `main` to `preprod` when CI passed on that commit, then starts the production deploy. Both run on the same homelab from separate folders, compose projects (`vigie`, `vigie-pp`) and databases. Preprod is limited by `ALLOWED_EMAILS` in its server-side `.env` (`.env.preprod.example` is the template, copied on the first deploy); add an address there and run `docker compose up -d` in the preprod folder to let someone in.
+A feature always lands on `preprod` first (`.github/workflows/deploy.yml` deploys it). Once validated, promote it with the **Promote to production** workflow (Actions tab, "Run workflow"): it fast-forwards `main` to `preprod` when CI passed on that commit, then starts the production deploy. Both run on the same server from separate folders, compose projects (`vigie`, `vigie-pp`) and databases. Preprod is limited by `ALLOWED_EMAILS` in its server-side `.env` (`.env.preprod.example` is the template, copied on the first deploy); add an address there and run `docker compose up -d` in the preprod folder to let someone in.
+
+Instance specifics stay out of the repository, in GitHub repository variables read by `deploy.yml`: `DEPLOY_DIR` / `DEPLOY_DIR_PREPROD` (server folders), `HTTP_PORT` / `HTTP_PORT_PREPROD`, `SITE_URL` / `SITE_URL_PREPROD` (link in the deploy notification), `PREPROD_ALLOWED_EMAILS` and `PREPROD_PUBLIC_URL` (written into the preprod `.env` on its first deploy).
 
 ## Commits and pull requests
 

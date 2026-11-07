@@ -1,6 +1,7 @@
 name: Deploy
-# main    -> production      https://vigie.theosementa.fr      (host port 8101)
-# preprod -> pre-production  https://vigie-pp.theosementa.fr   (host port 8102)
+# main    -> production      (host port 8101 by default)
+# preprod -> pre-production  (host port 8102 by default)
+# Instance specifics (folders, ports, URLs) come from repository variables, see CONTRIBUTING.md.
 # A feature goes to `preprod` first; once validated, `preprod` is merged into `main`.
 on:
   push:
@@ -24,9 +25,11 @@ jobs:
       DEPLOY_DIR: ${{ github.ref_name == 'main' && (vars.DEPLOY_DIR || '~/projects/vigie') || (vars.DEPLOY_DIR_PREPROD || '~/projects/vigie-pp') }}
       # Separate compose projects: containers and volumes (database) are never shared.
       COMPOSE_PROJECT_NAME: ${{ github.ref_name == 'main' && 'vigie' || 'vigie-pp' }}
-      HTTP_PORT: ${{ github.ref_name == 'main' && '8101' || '8102' }}
+      HTTP_PORT: ${{ github.ref_name == 'main' && (vars.HTTP_PORT || '8101') || (vars.HTTP_PORT_PREPROD || '8102') }}
       PROJECT: ${{ github.ref_name == 'main' && 'Vigie' || 'Vigie (preprod)' }}
-      SITE_URL: ${{ github.ref_name == 'main' && 'https://vigie.theosementa.fr' || 'https://vigie-pp.theosementa.fr' }}
+      SITE_URL: ${{ github.ref_name == 'main' && vars.SITE_URL || vars.SITE_URL_PREPROD }}   # optional, link in the Discord message
+      PP_ALLOWED_EMAILS: ${{ vars.PREPROD_ALLOWED_EMAILS }}
+      PP_PUBLIC_URL: ${{ vars.PREPROD_PUBLIC_URL }}
       REPO_URL: https://github.com/${{ github.repository }}.git
       GH_TOKEN: ${{ github.token }}
       # COMPOSE_FILE: docker-compose.prod.yml   # uncomment if not docker-compose.yml
@@ -50,6 +53,8 @@ jobs:
               # First preprod deploy: start from the template and generate the secrets.
               cp .env.preprod.example .env
               sed -i "s|^SECRET_KEY=.*|SECRET_KEY=$(openssl rand -hex 32)|; s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 24)|" .env
+              [ -z "$PP_ALLOWED_EMAILS" ] || sed -i "s|^ALLOWED_EMAILS=.*|ALLOWED_EMAILS=$PP_ALLOWED_EMAILS|" .env
+              [ -z "$PP_PUBLIC_URL" ] || sed -i "s|^PUBLIC_URL=.*|PUBLIC_URL=$PP_PUBLIC_URL|" .env
               echo "Created $DIR/.env from .env.preprod.example"
             else
               echo "::error::$DIR/.env missing"; exit 1
@@ -91,7 +96,8 @@ jobs:
           [ -n "$DISCORD_WEBHOOK_URL" ] || { echo "::warning::secret DISCORD_WEBHOOK_URL missing"; exit 0; }
           SECS=$(( $(date +%s) - DEPLOY_START ))
           DURATION="$((SECS / 60))m $((SECS % 60))s"
-          if [ "$STATUS" = success ]; then TITLE="✅ $PROJECT deployed"; COLOR=3066993; SITE="$SITE_URL"
+          if [ "$STATUS" = success ] && [ -n "$SITE_URL" ]; then TITLE="✅ $PROJECT deployed"; COLOR=3066993; SITE="$SITE_URL"
+          elif [ "$STATUS" = success ]; then TITLE="✅ $PROJECT deployed"; COLOR=3066993; SITE="$RUN_URL"
           else TITLE="❌ $PROJECT deploy $STATUS"; COLOR=15158332; SITE="$RUN_URL"; fi
           curl -fsS -H 'Content-Type: application/json' -X POST "$DISCORD_WEBHOOK_URL" -d "$(printf '%s' \
             '{"embeds":[{"title":"'"$TITLE"'","color":'"$COLOR"',"fields":[' \

@@ -4,7 +4,7 @@ Read [`CONTRIBUTING.md`](CONTRIBUTING.md) first (specs, dev mode, tests, commits
 
 ## Environments: preprod first, production on request
 
-Every feature and every bug fix is done on the `preprod` branch, never directly on `main`: commit, push to `preprod` (it deploys to https://vigie-pp.theosementa.fr) and let the user check it there.
+Every feature and every bug fix is done on the `preprod` branch, never directly on `main`: commit, push to `preprod` (it deploys to the pre-production instance) and let the user check it there.
 
 Production only gets it afterwards, in one of two ways:
 - the user clicks **Promote to production** in GitHub (Actions tab, "Run workflow");
