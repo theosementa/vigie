@@ -210,7 +210,18 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
         <ItemThumb resource={resource} className="detail-th" />
       </div>
       <div className="grid gap-2">
-        <h2 className="detail-t">{resource.title || siteOf(resource)}</h2>
+        <div className="flex items-start gap-1.5">
+          <h2 className="detail-t min-w-0 flex-1">{resource.title || siteOf(resource)}</h2>
+          <button
+            type="button"
+            className="btn btn-2 size-8 shrink-0 p-0"
+            aria-label={t('item.rename')}
+            title={t('item.rename')}
+            onClick={() => dialogs.rename(item)}
+          >
+            <Icon name="pen" small />
+          </button>
+        </div>
         <div className="site">
           {resource.favicon_url && (
             <img src={resource.favicon_url} alt="" referrerPolicy="no-referrer" loading="lazy" />

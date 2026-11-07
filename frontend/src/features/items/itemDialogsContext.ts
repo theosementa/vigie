@@ -4,6 +4,8 @@ import type { Item } from '@/lib/api'
 export interface ItemDialogsApi {
   /** Open the share dialog for an item. */
   share: (item: Item) => void
+  /** Open the rename dialog for an item. */
+  rename: (item: Item) => void
   /** Ask for confirmation, then delete. `onDeleted` runs after success. */
   confirmDelete: (item: Item, onDeleted?: () => void) => void
 }

@@ -4,6 +4,7 @@ import type { Item } from '@/lib/api'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useT } from '@/lib/i18n'
 import { ItemDialogsContext, type ItemDialogsApi } from './itemDialogsContext'
+import { RenameDialog } from './RenameDialog'
 import { ShareDialog } from './ShareDialog'
 import { useDeleteItem } from './queries'
 import { useLibraryFilters } from './useLibraryFilters'
@@ -12,6 +13,7 @@ import { useLibraryFilters } from './useLibraryFilters'
 export function ItemDialogsProvider({ children }: { children: ReactNode }) {
   const t = useT()
   const [shareTarget, setShareTarget] = useState<Item | null>(null)
+  const [renameTarget, setRenameTarget] = useState<Item | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ item: Item; onDeleted?: () => void } | null>(
     null,
   )
@@ -21,6 +23,7 @@ export function ItemDialogsProvider({ children }: { children: ReactNode }) {
   const api: ItemDialogsApi = useMemo(
     () => ({
       share: setShareTarget,
+      rename: setRenameTarget,
       confirmDelete: (item, onDeleted) => setDeleteTarget({ item, onDeleted }),
     }),
     [],
@@ -44,6 +47,7 @@ export function ItemDialogsProvider({ children }: { children: ReactNode }) {
     <ItemDialogsContext.Provider value={api}>
       {children}
       <ShareDialog item={shareTarget} onClose={() => setShareTarget(null)} />
+      <RenameDialog item={renameTarget} onClose={() => setRenameTarget(null)} />
       <ConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(o) => !o && setDeleteTarget(null)}

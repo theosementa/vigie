@@ -276,8 +276,9 @@ normalised URL. No DB transaction is held while the page is fetched.
 ### `PATCH /api/items/{id}` -> 200 `Item`
 Any subset of:
 ```json
-{ "status": "seen", "notes": "text or empty string to clear", "tags": ["python"], "type": "video" }
+{ "status": "seen", "title": "My own title", "notes": "text or empty string to clear", "tags": ["python"], "type": "video" }
 ```
+`title` renames the item for this user only (max 500 chars): `resource.title` then returns it, search matches it, and a metadata refresh keeps it. An empty string or `null` restores the page's own title.
 `tags` replaces the full tag list. Moving to `seen` sets `seen_at`; back to `to_watch` resets it to `null`.
 Only an actual status change is journaled (see [Events](#events)). Moving an item to `seen` removes it from the watch queue (positions are compacted).
 

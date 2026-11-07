@@ -32,6 +32,8 @@ def item_to_out(item: Item) -> ItemOut:
     )
     if item.type_override:  # effective type for this user
         out.resource.type = item.type_override  # type: ignore[assignment]
+    if item.title_override:  # custom title for this user
+        out.resource.title = item.title_override
     return out
 
 

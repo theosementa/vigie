@@ -109,6 +109,7 @@ async def list_items(
         stmt = stmt.where(
             or_(
                 Resource.title.ilike(pattern, escape="\\"),
+                Item.title_override.ilike(pattern, escape="\\"),
                 Resource.description.ilike(pattern, escape="\\"),
                 Resource.site_name.ilike(pattern, escape="\\"),
                 Item.notes.ilike(pattern, escape="\\"),
@@ -230,6 +231,9 @@ async def update_item(
             )
     if "notes" in fields:
         item.notes = body.notes or None
+    if "title" in fields:
+        title = " ".join((body.title or "").split())
+        item.title_override = None if not title or title == item.resource.title else title
     if "type" in fields and body.type:
         item.type_override = None if body.type == item.resource.type else body.type
     if "tags" in fields and body.tags is not None:

@@ -40,6 +40,8 @@ class Item(Base):
     status: Mapped[str] = mapped_column(String(20), default="to_watch")
     # per-user override of resources.type (the resource itself is shared between users)
     type_override: Mapped[str | None] = mapped_column(String(20))
+    # per-user rename of resources.title (null = the page's own title)
+    title_override: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
     shared_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL")

@@ -24,6 +24,8 @@ class ItemCreate(BaseModel):
 class ItemUpdate(BaseModel):
     type: ItemType | None = None
     status: ItemStatus | None = None
+    # a custom title for this user; empty or null restores the page's own title
+    title: str | None = Field(default=None, max_length=500)
     notes: str | None = Field(default=None, max_length=10000)
     tags: list[str] | None = Field(default=None, max_length=30)
 

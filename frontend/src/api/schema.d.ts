@@ -765,6 +765,8 @@ export interface components {
             status?: ("to_watch" | "seen") | null;
             /** Tags */
             tags?: string[] | null;
+            /** Title */
+            title?: string | null;
             /** Type */
             type?: ("article" | "video" | "website" | "repo") | null;
         };

@@ -34,6 +34,8 @@ async def preview_resource(body: PreviewIn, user: CurrentUser, session: SessionD
             # the caller's effective type, like items do
             if existing.type_override:
                 data.type = existing.type_override  # type: ignore[assignment]
+            if existing.title_override:
+                data.title = existing.title_override
     else:
         await session.commit()  # no transaction (or connection) held during the fetch
         meta = await fetch_metadata(url)

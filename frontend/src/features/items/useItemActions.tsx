@@ -35,7 +35,8 @@ export function useItemActions(item: Item, onOpenDetail: () => void): Action[] {
         ]
       : []),
     { key: 'share', label: t('item.share'), icon: <Icon name="share" />, run: () => dialogs.share(item) },
-    { key: 'edit', label: t('item.details'), icon: <Icon name="pen" />, run: onOpenDetail },
+    { key: 'rename', label: t('item.rename'), icon: <Icon name="pen" />, run: () => dialogs.rename(item) },
+    { key: 'edit', label: t('item.details'), icon: <Icon name="info-circle" />, run: onOpenDetail },
     {
       key: 'delete',
       label: t('common.delete'),

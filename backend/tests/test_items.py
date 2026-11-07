@@ -145,6 +145,24 @@ async def test_type_filter_uses_user_override(alice):
     assert r.json()["items"] == []
 
 
+async def test_rename_item_is_per_user_and_reversible(alice):
+    item = await add(alice, "https://example.com/a")
+    original = item["resource"]["title"]
+    r = await alice.patch(f"/api/items/{item['id']}", json={"title": "  My   own title "})
+    assert r.json()["resource"]["title"] == "My own title"
+    r = await alice.get("/api/items", params={"q": "own title"})
+    assert [i["id"] for i in r.json()["items"]] == [item["id"]]
+    # a refresh keeps the custom title
+    r = await alice.post(f"/api/items/{item['id']}/refresh")
+    assert r.json()["item"]["resource"]["title"] == "My own title"
+    # an empty title restores the page's own
+    r = await alice.patch(f"/api/items/{item['id']}", json={"title": ""})
+    assert r.json()["resource"]["title"] == original
+    assert (
+        await alice.patch(f"/api/items/{item['id']}", json={"title": "x" * 501})
+    ).status_code == 422
+
+
 async def test_pagination_cursor(alice):
     created = [await add(alice, f"https://example.com/{n}") for n in range(5)]
     expected = [i["id"] for i in reversed(created)]

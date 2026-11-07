@@ -50,6 +50,7 @@ async def share_item(
                 resource_id=item.resource_id,
                 status="to_watch",
                 type_override=item.type_override,
+                title_override=item.title_override,
                 shared_by_user_id=sender.id,
                 share_message=message,
             )
