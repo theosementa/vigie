@@ -5,12 +5,13 @@ from fastapi import APIRouter, FastAPI
 
 from app.api.routes import admin, auth, items, queue, resources, stats, tags
 from app.core.config import check_secret_key, settings
+from app.core.errors import ErrorResponse
 
-api = APIRouter(prefix="/api")
+api = APIRouter(prefix="/api", responses={401: {"model": ErrorResponse}})
 
 
 @api.get("/health", tags=["health"])
-async def health() -> dict[str, str]:
+async def get_health() -> dict[str, str]:
     return {"status": "ok"}
 
 
@@ -30,6 +31,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="Vigie API", docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=lifespan
+    title="Vigie API",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
+    lifespan=lifespan,
+    # operation ids are the route function names (unique, descriptive): the front end's
+    # generated client exposes them
+    generate_unique_id_function=lambda route: route.name,
 )
 app.include_router(api)

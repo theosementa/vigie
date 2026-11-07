@@ -35,6 +35,18 @@ stats range errors). Another user's item always answers `404`, identical to a no
 | `user_not_found` | 404 | Admin: unknown user id |
 | `invitation_not_found` | 404 | Admin: unknown invitation id |
 
+## OpenAPI and codegen
+
+`/api/openapi.json` is the contract. `operationId` is the route function name (`list_items`, `create_item`,
+`get_stats_summary`, ...), unique across the API. Every route declares its response model (or is a body-less
+`204`); enums are string unions. Raised errors are documented on the routes as `ErrorResponse`
+(`{ "detail": ErrorDetail }`, `ErrorDetail = { "code", "message", ...extras }`); `422` stays FastAPI's
+validation error. To export the document without a database or `SECRET_KEY`:
+
+```
+cd backend && uv run python -m app.openapi_export > ../frontend/src/api/openapi.json
+```
+
 ## Rate limits
 
 In-process sliding windows keyed by client IP (`request.client.host`: behind Caddy, uvicorn's proxy
@@ -71,7 +83,7 @@ link valid 1 hour, e.g. `docker compose exec api vigie reset-password alice@exam
 
 ```jsonc
 // ItemType = "article" | "video"      ItemStatus = "to_watch" | "seen"
-User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "created_at": "..." }
+User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "created_at": "..." }
 Tag      = { "id": "uuid", "name": "python" }
 Resource = {
   "id": "uuid", "url": "https://example.com/post",          // normalized
@@ -150,10 +162,11 @@ expired (1 h) or already used. Tokens are random, stored hashed (SHA-256), singl
 
 ### `PATCH /api/auth/me` -> 200 `User`
 ```json
-{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York" }
+{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark" }
 ```
 All fields optional (omitted = unchanged). `422` for an empty / over-long name or a timezone that is not a
-known IANA name (`zoneinfo`). The timezone drives "day", "week" and streaks in the statistics.
+known IANA name (`zoneinfo`). `locale` (`auto` | `en` | `fr`, default `auto`) and `theme` (`system` | `dark` | `light`, default `system`) are
+stored on the account; any other value is a `422`. The timezone drives "day", "week" and streaks in the statistics.
 
 ### `DELETE /api/auth/me` -> 204
 ```json
@@ -235,6 +248,15 @@ type to something other than `video`, removes it from the watch queue (positions
 
 ### `DELETE /api/items/{id}` -> 204
 Also removes the item from the watch queue (positions are compacted).
+
+### `GET /api/items/{id}/events` -> 200
+The item's journal, oldest first (404 if not yours or unknown).
+```json
+[ { "kind": "added" | "seen" | "unseen" | "deleted" | "shared", "occurred_at": "...",
+    "other_user": { "first_name": "Bob", "last_name": "Tester" } | null } ]
+```
+`other_user` is set on `shared` (who it was shared with) and on an `added` caused by a share (who shared it),
+`null` otherwise or when that account is gone.
 
 ### `POST /api/items/{id}/refresh` -> 200
 ```json

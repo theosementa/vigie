@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 
 from app.core.deps import AdminUser, SessionDep, require_admin
-from app.core.errors import api_error
+from app.core.errors import ErrorResponse, api_error
 from app.models import InstanceSettings, Invitation, Item, User
 from app.schemas.admin import (
     AdminUserOut,
@@ -24,16 +24,21 @@ from app.services.accounts import (
 )
 
 # Non-admins get a 404 on every route here, so the section stays hidden.
-router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
+router = APIRouter(
+    prefix="/admin",
+    tags=["admin"],
+    dependencies=[Depends(require_admin)],
+    responses={404: {"model": ErrorResponse}},
+)
 
 
 @router.get("/settings", response_model=SettingsOut)
-async def get_settings(session: SessionDep) -> InstanceSettings:
+async def get_admin_settings(session: SessionDep) -> InstanceSettings:
     return await get_instance_settings(session)
 
 
 @router.patch("/settings", response_model=SettingsOut)
-async def update_settings(
+async def update_admin_settings(
     body: SettingsUpdate, admin: AdminUser, session: SessionDep
 ) -> InstanceSettings:
     row = await get_instance_settings(session)
@@ -45,13 +50,13 @@ async def update_settings(
 
 
 @router.get("/invitations", response_model=list[InvitationOut])
-async def list_invitations(session: SessionDep) -> list[Invitation]:
+async def list_admin_invitations(session: SessionDep) -> list[Invitation]:
     rows = await session.scalars(select(Invitation).order_by(Invitation.created_at.desc()))
     return list(rows)
 
 
 @router.post("/invitations", response_model=InvitationOut)
-async def create_invitation(
+async def create_admin_invitation(
     body: InvitationIn, response: Response, admin: AdminUser, session: SessionDep
 ) -> Invitation:
     """Idempotent: inviting an address twice returns the existing invitation (200)."""
@@ -69,7 +74,7 @@ async def create_invitation(
 
 
 @router.delete("/invitations/{invitation_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_invitation(invitation_id: uuid.UUID, session: SessionDep) -> None:
+async def delete_admin_invitation(invitation_id: uuid.UUID, session: SessionDep) -> None:
     invitation = await session.get(Invitation, invitation_id)
     if invitation is None:
         raise api_error(404, "invitation_not_found", "Invitation not found")
@@ -78,7 +83,7 @@ async def delete_invitation(invitation_id: uuid.UUID, session: SessionDep) -> No
 
 
 @router.get("/users", response_model=list[AdminUserOut])
-async def list_users(session: SessionDep) -> list[AdminUserOut]:
+async def list_admin_users(session: SessionDep) -> list[AdminUserOut]:
     count = func.count(Item.id)
     rows = await session.execute(
         select(User, count)
@@ -108,7 +113,7 @@ async def _get_user(session: SessionDep, user_id: uuid.UUID) -> User:
 
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(user_id: uuid.UUID, admin: AdminUser, session: SessionDep) -> None:
+async def delete_admin_user(user_id: uuid.UUID, admin: AdminUser, session: SessionDep) -> None:
     if user_id == admin.id:
         raise api_error(
             400, "cannot_delete_self", "Delete your own account from your profile settings."
@@ -117,7 +122,9 @@ async def delete_user(user_id: uuid.UUID, admin: AdminUser, session: SessionDep)
 
 
 @router.post("/users/{user_id}/reset-link", response_model=ResetLinkOut)
-async def reset_link(user_id: uuid.UUID, request: Request, session: SessionDep) -> ResetLinkOut:
+async def create_admin_reset_link(
+    user_id: uuid.UUID, request: Request, session: SessionDep
+) -> ResetLinkOut:
     user = await _get_user(session, user_id)
     url, expires_at = await create_reset_link(session, user.id, public_base_url(request))
     return ResetLinkOut(url=url, expires_at=expires_at)

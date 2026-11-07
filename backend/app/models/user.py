@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from enum import StrEnum
 
 from sqlalchemy import CheckConstraint, DateTime, Integer, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -9,9 +10,25 @@ from app.db import Base
 ROLES = ("admin", "user")
 
 
+class Locale(StrEnum):
+    AUTO = "auto"
+    EN = "en"
+    FR = "fr"
+
+
+class Theme(StrEnum):
+    SYSTEM = "system"
+    DARK = "dark"
+    LIGHT = "light"
+
+
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = (CheckConstraint("role IN ('admin', 'user')", name="ck_users_role"),)
+    __table_args__ = (
+        CheckConstraint("role IN ('admin', 'user')", name="ck_users_role"),
+        CheckConstraint("locale IN ('auto', 'en', 'fr')", name="ck_users_locale"),
+        CheckConstraint("theme IN ('system', 'dark', 'light')", name="ck_users_theme"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
@@ -23,4 +40,11 @@ class User(Base):
     token_version: Mapped[int] = mapped_column(Integer, server_default=text("0"), default=0)
     # IANA name, used to bucket statistics by local day/week
     timezone: Mapped[str] = mapped_column(String(64), server_default=text("'UTC'"), default="UTC")
+    # interface preferences, kept on the account so they follow the user across devices
+    locale: Mapped[str] = mapped_column(
+        String(10), server_default=text("'auto'"), default=Locale.AUTO
+    )
+    theme: Mapped[str] = mapped_column(
+        String(10), server_default=text("'system'"), default=Theme.SYSTEM
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

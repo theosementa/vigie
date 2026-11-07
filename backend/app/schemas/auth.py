@@ -8,10 +8,13 @@ from zoneinfo import available_timezones
 from email_validator import EmailNotValidError, validate_email
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
+from app.models.user import Locale, Theme
+
 # Not-so-private names (RFC 6761 / 8375 and homelab habits). Accepted in `invite` and `closed`
 # instances (homelabs), refused in `open` ones, where the address could never be reached.
 SPECIAL_USE_SUFFIXES = (".local", ".lan", ".home.arpa", ".test", ".internal")
 
+Role = Literal["admin", "user"]
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
 
 
@@ -79,6 +82,8 @@ class ProfileUpdate(BaseModel):
     first_name: Name | None = None
     last_name: Name | None = None
     timezone: str | None = Field(default=None, max_length=64)
+    locale: Locale | None = None
+    theme: Theme | None = None
 
     @field_validator("timezone")
     @classmethod
@@ -117,8 +122,10 @@ class UserOut(BaseModel):
     email: str
     first_name: str
     last_name: str
-    role: Literal["admin", "user"]
+    role: Role
     timezone: str
+    locale: Locale
+    theme: Theme
     created_at: datetime
 
 

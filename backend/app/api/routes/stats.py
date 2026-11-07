@@ -10,7 +10,7 @@ router = APIRouter(prefix="/stats", tags=["stats"])
 
 
 @router.get("/summary", response_model=SummaryOut)
-async def get_summary(
+async def get_stats_summary(
     user: CurrentUser,
     session: SessionDep,
     period: Period = "week",
@@ -20,7 +20,7 @@ async def get_summary(
 
 
 @router.get("/timeseries", response_model=TimeseriesOut, response_model_exclude_none=True)
-async def get_timeseries(
+async def get_stats_timeseries(
     user: CurrentUser,
     session: SessionDep,
     metric: Metric,

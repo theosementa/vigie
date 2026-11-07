@@ -7,10 +7,19 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, SessionDep
-from app.core.errors import api_error
+from app.core.errors import ErrorResponse, api_error
 from app.core.ratelimit import DAY, MINUTE, enforce, user_limit
-from app.models import Item, ItemTag, Resource, Tag
-from app.schemas.item import ItemCreate, ItemList, ItemOut, ItemStatus, ItemUpdate, RefreshOut
+from app.models import Item, ItemEvent, ItemTag, Resource, Tag, User
+from app.schemas.item import (
+    ItemCreate,
+    ItemEventOut,
+    ItemList,
+    ItemOut,
+    ItemStatus,
+    ItemUpdate,
+    PersonName,
+    RefreshOut,
+)
 from app.schemas.resource import ItemType
 from app.schemas.share import ShareIn, ShareOut
 from app.services.events import record_event
@@ -27,7 +36,7 @@ from app.services.queue import is_video, next_position, remove_from_queue
 from app.services.share import share_item
 from app.services.url import InvalidUrlError, normalize_url
 
-router = APIRouter(prefix="/items", tags=["items"])
+router = APIRouter(prefix="/items", tags=["items"], responses={404: {"model": ErrorResponse}})
 
 
 def _escape_like(value: str) -> str:
@@ -131,6 +140,7 @@ async def list_items(
     "",
     response_model=ItemOut,
     status_code=status.HTTP_201_CREATED,
+    responses={409: {"model": ErrorResponse}},
     dependencies=[Depends(user_limit("item_create", 60, MINUTE))],
 )
 async def create_item(body: ItemCreate, user: CurrentUser, session: SessionDep) -> ItemOut:
@@ -267,8 +277,30 @@ async def refresh_item(item_id: uuid.UUID, user: CurrentUser, session: SessionDe
     return RefreshOut(refreshed=True, item=item_to_out(item))
 
 
+@router.get("/{item_id}/events", response_model=list[ItemEventOut])
+async def list_item_events(
+    item_id: uuid.UUID, user: CurrentUser, session: SessionDep
+) -> list[ItemEventOut]:
+    """The item's journal, oldest first."""
+    await _get_owned(session, user.id, item_id)
+    rows = await session.execute(
+        select(ItemEvent, User.first_name, User.last_name)
+        .outerjoin(User, User.id == ItemEvent.other_user_id)
+        .where(ItemEvent.user_id == user.id, ItemEvent.item_id == item_id)
+        .order_by(ItemEvent.occurred_at, ItemEvent.id)
+    )
+    return [
+        ItemEventOut(
+            kind=event.kind,
+            occurred_at=event.occurred_at,
+            other_user=PersonName(first_name=first, last_name=last) if first is not None else None,
+        )
+        for event, first, last in rows
+    ]
+
+
 @router.post("/{item_id}/share", response_model=ShareOut)
-async def share(
+async def share_item_by_email(
     item_id: uuid.UUID, body: ShareIn, user: CurrentUser, session: SessionDep
 ) -> ShareOut:
     item = await _get_owned(session, user.id, item_id)

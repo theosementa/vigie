@@ -5,12 +5,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, SessionDep
+from app.core.errors import ErrorResponse
 from app.models import Item
 from app.schemas.item import ItemOut, QueueAdd, QueueMove, QueueOut
 from app.services import queue as queue_service
 from app.services.items import item_to_out
 
-router = APIRouter(prefix="/queue", tags=["queue"])
+router = APIRouter(prefix="/queue", tags=["queue"], responses={404: {"model": ErrorResponse}})
 
 
 async def _get_owned(session: AsyncSession, user_id: uuid.UUID, item_id: uuid.UUID) -> Item:
@@ -55,7 +56,7 @@ async def move_in_queue(
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_from_queue(item_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> Response:
+async def remove_queue_item(item_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> Response:
     item = await _get_owned(session, user.id, item_id)
     await queue_service.remove_from_queue(session, item)
     await session.commit()

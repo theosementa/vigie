@@ -162,7 +162,7 @@ async def reset_password(body: ResetIn, session: SessionDep) -> None:
 
 
 @router.get("/me", response_model=UserOut)
-async def me(user: CurrentUser) -> User:
+async def get_me(user: CurrentUser) -> User:
     return user
 
 
@@ -175,6 +175,10 @@ async def update_me(body: ProfileUpdate, user: CurrentUser, session: SessionDep)
         user.last_name = body.last_name
     if "timezone" in fields and body.timezone is not None:
         user.timezone = body.timezone
+    if "locale" in fields and body.locale is not None:
+        user.locale = body.locale
+    if "theme" in fields and body.theme is not None:
+        user.theme = body.theme
     await session.commit()
     return user
 

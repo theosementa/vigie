@@ -16,7 +16,7 @@ router = APIRouter(prefix="/resources", tags=["resources"])
     response_model=PreviewOut,
     dependencies=[Depends(user_limit("preview", 60, MINUTE))],
 )
-async def preview(body: PreviewIn, user: CurrentUser, session: SessionDep) -> PreviewOut:
+async def preview_resource(body: PreviewIn, user: CurrentUser, session: SessionDep) -> PreviewOut:
     try:
         url = normalize_url(body.url)
     except InvalidUrlError as exc:

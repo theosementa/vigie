@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -64,3 +65,24 @@ class QueueMove(BaseModel):
 
 class QueueOut(BaseModel):
     items: list[ItemOut]
+
+
+class EventKind(StrEnum):
+    ADDED = "added"
+    SEEN = "seen"
+    UNSEEN = "unseen"
+    DELETED = "deleted"
+    SHARED = "shared"
+
+
+class PersonName(BaseModel):
+    first_name: str
+    last_name: str
+
+
+class ItemEventOut(BaseModel):
+    kind: EventKind
+    occurred_at: datetime
+    # `shared`: who it was shared with; `added` through a share: who shared it. Null otherwise
+    # or when that account no longer exists.
+    other_user: PersonName | None = None
