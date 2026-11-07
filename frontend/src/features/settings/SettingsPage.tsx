@@ -321,6 +321,42 @@ function SessionSection() {
   )
 }
 
+const BUILD_NUMBER: string = import.meta.env.VITE_BUILD_NUMBER || 'dev'
+
+/** Unregisters the service worker and empties its caches, then reloads on the latest build. */
+async function resetAppCache() {
+  try {
+    const registrations = await navigator.serviceWorker?.getRegistrations()
+    await Promise.all((registrations ?? []).map((r) => r.unregister()))
+    await Promise.all((await caches.keys()).map((k) => caches.delete(k)))
+  } finally {
+    window.location.reload()
+  }
+}
+
+function AboutSection() {
+  const t = useT()
+  const [pending, setPending] = useState(false)
+  return (
+    <section className={sectionClass}>
+      <h2 className={headingClass}>{t('settings.about')}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{t('settings.about.build', { build: BUILD_NUMBER })}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{t('settings.about.reset.hint')}</p>
+      <Button
+        variant="outline"
+        className="mt-3 h-10 w-full rounded-[10px]"
+        disabled={pending}
+        onClick={() => {
+          setPending(true)
+          void resetAppCache()
+        }}
+      >
+        {t('settings.about.reset')}
+      </Button>
+    </section>
+  )
+}
+
 function DangerZone() {
   const t = useT()
   const [open, setOpen] = useState(false)
@@ -346,6 +382,7 @@ export function SettingsPage() {
       {me && <TimezoneSection timezone={me.timezone} />}
       <PasswordSection />
       <SessionSection />
+      <AboutSection />
       {me?.role === 'admin' && (
         <Link
           to="/admin"

@@ -20,8 +20,12 @@
 	# Swagger UI (/api/docs) loads its assets from jsDelivr and runs an inline
 	# script, so that one page gets a looser policy than the app.
 	@docs path /api/docs*
-	@notdocs not path /api/docs*
+	@notdocs not path /api/docs* /sw.js
+	# The service worker re-fetches cross-origin thumbnails (runtime cache `images`): its own CSP
+	# (the one served with sw.js) must allow https in connect-src, or every og:image is blocked.
+	@sw path /sw.js
 	header @notdocs Content-Security-Policy "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+	header @sw Content-Security-Policy "default-src 'self'; img-src 'self' https: data:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'"
 	header @docs Content-Security-Policy "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 
 	header {

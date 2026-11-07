@@ -39,6 +39,8 @@ jobs:
           git log -1 --oneline
 
       - name: Build and restart the stack
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}   # shown in the app settings, same as the Discord #build
         run: |
           set -euo pipefail
           cd "${DEPLOY_DIR/#\~/$HOME}"

@@ -4,6 +4,9 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+# Build number shown in the settings (CI passes the GitHub run number).
+ARG BUILD_NUMBER=dev
+ENV VITE_BUILD_NUMBER=$BUILD_NUMBER
 RUN npm run build
 
 FROM caddy:2.10.2-alpine
