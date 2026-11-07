@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#34c759"/>
+      <stop offset="1" stop-color="#0f8f9e"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#g)"/>
+  <g fill="none" stroke="#fff" stroke-linecap="round">
+    <circle cx="256" cy="256" r="180" stroke-width="12" stroke-opacity=".95"/>
+    <circle cx="256" cy="256" r="118" stroke-width="9" stroke-opacity=".6"/>
+    <circle cx="256" cy="256" r="56" stroke-width="8" stroke-opacity=".6"/>
+  </g>
+  <path d="M256 256L384.2 129.6A180 180 0 0 0 371.7 118.1Z" fill="#fff" fill-opacity="0.580"/>
+  <path d="M256 256L372.7 118.9A180 180 0 0 0 359.2 108.6Z" fill="#fff" fill-opacity="0.529"/>
+  <path d="M256 256L360.3 109.3A180 180 0 0 0 346.0 100.1Z" fill="#fff" fill-opacity="0.480"/>
+  <path d="M256 256L347.1 100.7A180 180 0 0 0 332.1 92.9Z" fill="#fff" fill-opacity="0.433"/>
+  <path d="M256 256L333.2 93.4A180 180 0 0 0 317.6 86.9Z" fill="#fff" fill-opacity="0.387"/>
+  <path d="M256 256L318.7 87.3A180 180 0 0 0 302.6 82.1Z" fill="#fff" fill-opacity="0.344"/>
+  <path d="M256 256L303.8 82.5A180 180 0 0 0 287.3 78.7Z" fill="#fff" fill-opacity="0.302"/>
+  <path d="M256 256L288.5 79.0A180 180 0 0 0 271.7 76.7Z" fill="#fff" fill-opacity="0.262"/>
+  <path d="M256 256L272.9 76.8A180 180 0 0 0 256.0 76.0Z" fill="#fff" fill-opacity="0.224"/>
+  <path d="M256 256L257.3 76.0A180 180 0 0 0 240.3 76.7Z" fill="#fff" fill-opacity="0.189"/>
+  <path d="M256 256L241.6 76.6A180 180 0 0 0 224.7 78.7Z" fill="#fff" fill-opacity="0.156"/>
+  <path d="M256 256L226.0 78.5A180 180 0 0 0 209.4 82.1Z" fill="#fff" fill-opacity="0.126"/>
+  <path d="M256 256L210.6 81.8A180 180 0 0 0 194.4 86.9Z" fill="#fff" fill-opacity="0.099"/>
+  <path d="M256 256L195.6 86.4A180 180 0 0 0 179.9 92.9Z" fill="#fff" fill-opacity="0.075"/>
+  <path d="M256 256L181.1 92.3A180 180 0 0 0 166.0 100.1Z" fill="#fff" fill-opacity="0.054"/>
+  <path d="M256 256L167.1 99.5A180 180 0 0 0 152.8 108.6Z" fill="#fff" fill-opacity="0.039"/>
+  <line x1="256" y1="256" x2="383.3" y2="128.7" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="14" fill="#fff"/>
+  <circle cx="171" cy="190" r="17" fill="#fff"/>
+  <circle cx="318" cy="362" r="13" fill="#fff" fill-opacity=".85"/>
+</svg>

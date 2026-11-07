@@ -1,0 +1,266 @@
+# radar API contract
+
+Base path: `/api`. JSON only. Fields are `snake_case`, ids are UUID strings, datetimes are ISO 8601 with
+timezone (`2026-11-05T08:00:00.123456Z` style offsets).
+
+Auth is a JWT stored in an httpOnly cookie `radar_session` (SameSite=Lax, `Secure` when
+`COOKIE_SECURE=true`). The browser sends it automatically (same origin, no CORS). Every route except
+`/health`, `/auth/register` and `/auth/login` returns `401 {"detail": "Not authenticated"}` without a valid
+session. Interactive docs: `/api/docs`.
+
+Errors: `{"detail": "message"}`. Schema validation errors (missing/invalid fields) are `422` with FastAPI's
+`detail: [{"loc", "msg", "type"}]` array, but an invalid URL (`"Invalid URL"`-style message) or an invalid
+cursor is a `422` with a plain string `detail`. The duplicate `POST /items` `409` uses an object `detail`.
+Another user's item always answers `404 {"detail": "Item not found"}`, identical to a non-existent id.
+
+## Types
+
+```jsonc
+// ItemType = "article" | "video"      ItemStatus = "to_watch" | "seen"
+User     = { "id": "uuid", "email": "a@b.com", "display_name": "Alice", "timezone": "Europe/Paris", "created_at": "..." }
+Tag      = { "id": "uuid", "name": "python" }
+Resource = {
+  "id": "uuid", "url": "https://example.com/post",          // normalized
+  "type": "article",                                         // effective type for the current user
+  "title": "...", "description": "..."|null, "image_url": "..."|null,
+  "site_name": "..."|null, "favicon_url": "..."|null, "author": "..."|null,
+  "duration_seconds": 212|null,          // videos
+  "reading_time_minutes": 4|null,        // articles
+  "published_at": "..."|null, "fetched_at": "..."
+}
+Item = {
+  "id": "uuid", "status": "to_watch", "notes": "..."|null,
+  "tags": [Tag],
+  "shared_by": { "id": "uuid", "display_name": "Alice", "email": "alice@example.com" } | null,
+  "share_message": "..."|null,
+  "created_at": "...", "updated_at": "...", "seen_at": "..."|null,
+  "queue_position": 0|null,             // 0-based rank in the watch queue, null = not queued
+  "resource": Resource
+}
+```
+
+URL normalization (server side, on every URL it receives): scheme/host lowercased, default port dropped,
+`utm_*`/`fbclid`/`gclid` params removed, fragment removed, trailing slash removed, `youtu.be`,
+`m.youtube.com`, `/shorts/`, `/embed/` mapped to `https://www.youtube.com/watch?v=ID`. A missing scheme
+defaults to `https://`.
+
+## Health
+
+`GET /api/health` -> `200 {"status": "ok"}` (no auth)
+
+## Auth
+
+### `POST /api/auth/register` -> 201
+```json
+{ "email": "alice@example.com", "password": "min 8 chars", "display_name": "Alice",
+  "timezone": "Europe/Paris" }
+```
+`display_name` optional (defaults to the email local part). `timezone` optional, an IANA name (defaults to
+`"UTC"`; the web app sends the browser's). Email is lowercased. Sets the session cookie.
+Response: `User`. Errors: `409` email already registered, `422` invalid input (including an unknown timezone).
+
+### `POST /api/auth/login` -> 200
+```json
+{ "email": "alice@example.com", "password": "..." }
+```
+Response: `User` + session cookie. `401 {"detail": "Invalid email or password"}`.
+
+### `POST /api/auth/logout` -> 204
+Clears the cookie. Works with or without a session.
+
+### `GET /api/auth/me` -> 200 `User`, or `401` when there is no session.
+
+### `PATCH /api/auth/me` -> 200 `User`
+```json
+{ "display_name": "Alicia", "timezone": "America/New_York" }
+```
+Both fields optional (omitted = unchanged). `422` for an empty `display_name` or a timezone that is not a
+known IANA name (`zoneinfo`). The timezone drives "day", "week" and streaks in the statistics.
+
+## Resources
+
+### `POST /api/resources/preview` -> 200
+Fetches metadata without saving anything (used by the add form).
+```json
+{ "url": "https://youtu.be/dQw4w9WgXcQ" }
+```
+```json
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "type": "video",
+  "title": "Never Gonna Give You Up", "description": null,
+  "image_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg", "site_name": "YouTube",
+  "favicon_url": "https://www.youtube.com/favicon.ico", "author": "Rick Astley",
+  "duration_seconds": 212, "reading_time_minutes": null, "published_at": null,
+  "existing_item_id": null
+}
+```
+`existing_item_id` is the current user's item id if this URL is already in their library, else `null`.
+Metadata failures never error: the title falls back to the hostname. `422` for an invalid URL.
+
+## Items
+
+### `GET /api/items`
+Query params (all optional): `status` (`to_watch|seen`), `type` (`article|video`), `tag` (tag name,
+case-insensitive, or tag id), `q` (substring search on title, description, site name and your notes),
+`shared` (`true` = only items shared with me, `false` = only my own), `queued` (`true` = only items in the
+watch queue, `false` = only items not in it), `cursor`, `limit` (1-100, default 20).
+Sorted by `created_at` desc.
+```json
+{ "items": [Item], "next_cursor": "opaque-string-or-null" }
+```
+Pass `next_cursor` back as `cursor` for the next page. `422` for a malformed cursor.
+
+### `POST /api/items` -> 201 `Item`
+```json
+{ "url": "https://example.com/post", "type": "article", "status": "to_watch",
+  "notes": "optional", "tags": ["python", "talk"], "queue": false }
+```
+Only `url` is required. `queue: true` appends the new item to the end of the [watch queue](#queue) when its
+effective type is `video` (ignored otherwise, and for `status: "seen"`). `type` overrides the auto-detected type for this user only. Tags are created on
+demand (per user, case-insensitive unique). `409 {"detail": {"message": "Already in your library",
+"item_id": "uuid"}}` when the user already has this URL. `422` for an invalid URL (only http/https).
+
+### `GET /api/items/{id}` -> 200 `Item` (404 if not yours)
+
+### `PATCH /api/items/{id}` -> 200 `Item`
+Any subset of:
+```json
+{ "status": "seen", "notes": "text or empty string to clear", "tags": ["python"], "type": "video" }
+```
+`tags` replaces the full tag list. Moving to `seen` sets `seen_at`; back to `to_watch` resets it to `null`.
+Only an actual status change is journaled (see [Events](#events)). Moving an item to `seen`, or changing its
+type to something other than `video`, removes it from the watch queue (positions are compacted).
+
+### `DELETE /api/items/{id}` -> 204
+Also removes the item from the watch queue (positions are compacted).
+
+### `POST /api/items/{id}/refresh` -> 200 `Item`
+Re-fetches the metadata. If the re-fetch fails, existing data is kept.
+
+### `POST /api/items/{id}/share` -> 200
+```json
+{ "emails": ["bob@example.com", "ghost@example.com"], "message": "optional" }
+```
+```json
+{ "shared": ["bob@example.com"], "not_found": ["ghost@example.com"], "already_had": [] }
+```
+Recipients are matched by exact email (case-insensitive, deduplicated). A new `to_watch` item is created for
+each recipient with `shared_by` and `share_message` set (notes/tags are not copied). If the recipient already
+has the resource, nothing is created, `shared_by` is filled in if it was empty, and the email is listed in
+`already_had` (your own email also lands there).
+
+## Queue
+
+An ordered "watch next" list of the user's videos, independent from the `to_watch`/`seen` status. A queued
+item is one of the user's items whose effective type is `video` and whose `queue_position` is not `null`.
+Positions are 0-based and contiguous per user; they are compacted after every add, move and removal.
+Out-of-range positions are clamped (`< 0` -> front, past the end -> end). Another user's item answers
+`404 {"detail": "Item not found"}`. Queue operations are not journaled (no events, no stats impact).
+
+### `GET /api/queue` -> 200
+```json
+{ "items": [Item] }
+```
+Ordered by `queue_position` ascending, not paginated.
+
+### `POST /api/queue` -> 200 `Item`
+```json
+{ "item_id": "uuid", "position": 0 }
+```
+`position` is optional (`null`/omitted = end of the queue). Idempotent: if the item is already queued it is
+left in place, or moved when `position` is given. `422` if the item is not a video, `404` if it is not yours.
+
+### `PATCH /api/queue/{item_id}` -> 200 `Item`
+```json
+{ "position": 2 }
+```
+Moves a queued item (clamped). `404` if the item does not exist or is not in the queue.
+
+### `DELETE /api/queue/{item_id}` -> 204
+Removes the item from the queue and compacts the positions (the item stays in the library). `204` even if
+the item was not queued; `404` only if it is not yours / does not exist.
+
+## Tags
+
+### `GET /api/tags` -> 200
+Only tags attached to at least one of the user's items, sorted by name.
+```json
+[ { "id": "uuid", "name": "python", "item_count": 3 } ]
+```
+
+## Stats
+
+All statistics are computed for the current user only, in the user's timezone (`User.timezone`): days are
+local days and weeks start on **Monday**. Dates in requests and responses are local `YYYY-MM-DD` strings.
+The effective type of an item is `COALESCE(items.type_override, resources.type)`.
+
+### `GET /api/stats/summary?period=week|month|year&offset=0`
+`period` defaults to `week`. `offset` is `<= 0` (min -1000): `0` = the current period, `-1` = the previous one,
+and so on; a positive offset is a `422`.
+```jsonc
+{
+  "period": "week", "offset": 0, "timezone": "Europe/Paris",
+  "start": "2026-03-16", "end": "2026-03-23",        // local dates, `end` is exclusive
+  "current":  Block,
+  "previous": Block,                                  // the period right before [start, end)
+  "top_tags":    [ { "name": "python", "count": 4 } ],            // max 5, items seen in the period
+  "top_sources": [ { "site_name": "youtube.com", "count": 3 } ],  // max 5, items seen in the period
+  "shares": {
+    "sent": 3, "received": 2,                         // in the period
+    "by_user": [ { "user_id": "uuid", "display_name": "Alice", "count": 2 } ]  // who shared with me
+  },
+  "streak": { "current": 3, "best": 12 },
+  "videos_without_duration": 1                        // seen videos of the period with no duration
+}
+// Block = { "articles_read": 2, "videos_seen": 1, "items_added": 3, "watch_seconds": 600,
+//           "reading_minutes": 8 }
+```
+No deltas are returned: the client compares `current` with `previous`.
+
+- `articles_read`, `videos_seen`, `watch_seconds` (sum of `duration_seconds` of seen videos),
+  `reading_minutes` (sum of `reading_time_minutes` of seen articles), `top_tags`, `top_sources` and
+  `videos_without_duration` come from the items currently `seen`, bucketed by `seen_at`. They follow the
+  library: an item moved back to `to_watch` or deleted no longer counts.
+- `items_added` counts `added` events (including items received through a share). `shares.sent` counts
+  `shared` events, `shares.received` counts `added` events created by a share.
+- `streak`: consecutive local days with at least one item marked seen, from the event journal (it survives
+  deletions). A day where more items were un-seen than seen does not count. `current` is non-zero only if the
+  last active day is today or yesterday (local).
+
+### `GET /api/stats/timeseries?metric=seen|added|watch_time|backlog&granularity=day|week|month&from=&to=`
+`from` and `to` are local dates, both inclusive. `422` if `from > to` or the range spans more than 400
+buckets.
+```json
+{ "metric": "seen", "granularity": "day", "timezone": "UTC",
+  "points": [ { "bucket": "2026-03-10", "value": 3, "articles": 2, "videos": 1 } ] }
+```
+`bucket` is the local start date of the bucket (a Monday for `week`, the 1st for `month`). The first bucket
+is the one containing `from` and the last the one containing `to`, so with `week`/`month` the first bucket can
+start before `from`. Every bucket in the range is present (zero-filled).
+
+| metric | `value` | source |
+|---|---|---|
+| `seen` | items seen in the bucket; also `articles` and `videos` (only for this metric) | seen items by `seen_at` |
+| `added` | items added in the bucket | `added` events |
+| `watch_time` | seconds of seen videos | seen items by `seen_at` |
+| `backlog` | number of `to_watch` items at the **end** of the bucket | cumulative sum of the events |
+
+`backlog` accounting: `added` +1, `unseen` +1, `seen` -1, `deleted` -1 unless the item was seen
+(`was_seen`). Events before `from` are part of the starting balance.
+
+## Events
+
+Every change of the library is journaled in the `item_events` table in the same transaction (internal, not
+exposed directly; it feeds `/stats`). Events are kept when the item is deleted.
+
+| kind | emitted when | `other_user_id` | `was_seen` |
+|---|---|---|---|
+| `added` | `POST /items`; or a recipient gets an item through a share | the sharer (share only) | |
+| `seen` | `POST /items` with `status: seen`, or a `to_watch` -> `seen` change | | |
+| `unseen` | `seen` -> `to_watch` change | | |
+| `deleted` | `DELETE /items/{id}` | | whether the item was `seen` |
+| `shared` | the sender, once per recipient who actually got a new item | the recipient | |
+
+Only real transitions emit events (setting the status it already has, editing notes/tags/type, `already_had`
+shares, rejected duplicates emit nothing). Rows created before this feature are backfilled by migration `0002`
+from `created_at`, `seen_at` and `shared_by_user_id`.

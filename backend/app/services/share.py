@@ -1,0 +1,74 @@
+import uuid
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import Item, User
+from app.schemas.share import ShareOut
+from app.services.events import record_event
+
+
+async def share_item(
+    session: AsyncSession, sender: User, item: Item, emails: list[str], message: str | None
+) -> ShareOut:
+    shared: list[str] = []
+    not_found: list[str] = []
+    already_had: list[str] = []
+
+    seen_emails: set[str] = set()
+    for raw in emails:
+        email = raw.strip().lower()
+        if not email or email in seen_emails:
+            continue
+        seen_emails.add(email)
+
+        recipient = await session.scalar(select(User).where(User.email == email))
+        if recipient is None:
+            not_found.append(email)
+            continue
+        if recipient.id == sender.id:
+            already_had.append(email)
+            continue
+
+        existing = await session.scalar(
+            select(Item).where(Item.user_id == recipient.id, Item.resource_id == item.resource_id)
+        )
+        if existing is not None:
+            if existing.shared_by_user_id is None:
+                existing.shared_by_user_id = sender.id
+                existing.share_message = message
+            already_had.append(email)
+            continue
+
+        new_id = uuid.uuid4()
+        session.add(
+            Item(
+                id=new_id,
+                user_id=recipient.id,
+                resource_id=item.resource_id,
+                status="to_watch",
+                type_override=item.type_override,
+                shared_by_user_id=sender.id,
+                share_message=message,
+            )
+        )
+        record_event(
+            session,
+            user_id=sender.id,
+            item_id=item.id,
+            resource_id=item.resource_id,
+            kind="shared",
+            other_user_id=recipient.id,
+        )
+        record_event(
+            session,
+            user_id=recipient.id,
+            item_id=new_id,
+            resource_id=item.resource_id,
+            kind="added",
+            other_user_id=sender.id,
+        )
+        shared.append(email)
+
+    await session.commit()
+    return ShareOut(shared=shared, not_found=not_found, already_had=already_had)

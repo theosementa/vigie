@@ -1,0 +1,48 @@
+from fastapi import APIRouter, HTTPException
+from sqlalchemy import select
+
+from app.core.deps import CurrentUser, SessionDep
+from app.models import Item, Resource
+from app.schemas.resource import PreviewIn, PreviewOut
+from app.services.metadata import fetch_metadata
+from app.services.url import InvalidUrlError, normalize_url
+
+router = APIRouter(prefix="/resources", tags=["resources"])
+
+
+@router.post("/preview", response_model=PreviewOut)
+async def preview(body: PreviewIn, user: CurrentUser, session: SessionDep) -> PreviewOut:
+    try:
+        url = normalize_url(body.url)
+    except InvalidUrlError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+    resource = await session.scalar(select(Resource).where(Resource.url == url))
+    existing_item_id = None
+    if resource is not None:
+        existing = await session.scalar(
+            select(Item).where(Item.user_id == user.id, Item.resource_id == resource.id)
+        )
+        data = PreviewOut.model_validate(resource, from_attributes=True)
+        if existing is not None:
+            existing_item_id = existing.id
+            # the caller's effective type, like items do
+            if existing.type_override:
+                data.type = existing.type_override  # type: ignore[assignment]
+    else:
+        meta = await fetch_metadata(url)
+        data = PreviewOut(
+            url=url,
+            type=meta.type,  # type: ignore[arg-type]
+            title=meta.title,
+            description=meta.description,
+            image_url=meta.image_url,
+            site_name=meta.site_name,
+            favicon_url=meta.favicon_url,
+            author=meta.author,
+            duration_seconds=meta.duration_seconds,
+            reading_time_minutes=meta.reading_time_minutes,
+            published_at=meta.published_at,
+        )
+    data.existing_item_id = existing_item_id
+    return data
