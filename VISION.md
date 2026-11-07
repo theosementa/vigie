@@ -182,7 +182,7 @@ Pas de notifications push au MVP. Des pastilles dans la navigation :
 
 | Couche | Choix |
 |---|---|
-| Front | React 19 + Vite + TypeScript strict, **PWA** (`vite-plugin-pwa`), TanStack Query, `openapi-fetch` + types générés, React Router, **CSS à tokens** (`tokens.css` + `base.css`), SVG maison pour les graphes, i18n maison (`lib/i18n.ts`, dictionnaires typés `en` / `fr`, `Intl` pour nombres et dates) |
+| Front | React 19 + Vite + TypeScript strict, **PWA** (`vite-plugin-pwa`), TanStack Query, `openapi-fetch` + types générés, React Router, **Tailwind CSS v4** dont le thème (`@theme`) reprend tels quels les tokens de la DA (`tokens.css`), SVG maison pour les graphes, i18n maison (`lib/i18n.ts`, dictionnaires typés `en` / `fr`, `Intl` pour nombres et dates) |
 | Back | Python 3.13 **FastAPI**, SQLAlchemy 2 async (asyncpg), Alembic, Pydantic v2, `pydantic-settings`, `httpx` + `selectolax`, Argon2 (`pwdlib`), PyJWT, géré avec `uv` |
 | Jobs | File de tâches en table Postgres (`jobs`, `SELECT … FOR UPDATE SKIP LOCKED`), boucle dans le lifespan de l'API, désactivable (`JOBS_ENABLED=false`) |
 | BDD | **PostgreSQL 17** (`pg_trgm`) |
@@ -191,7 +191,7 @@ Pas de notifications push au MVP. Des pastilles dans la navigation :
 | Qualité | `pytest` (Postgres réel), `ruff check` + `ruff format`, `tsc -b`, ESLint ; GitHub Actions sur chaque PR, Dependabot |
 | Déploiement de l'instance publique | Runner self-hosted homelab (`homelab-deploy`), Cloudflare → `vigie.theosementa.fr` |
 
-**Écarts au blueprint, et pourquoi** : PostgreSQL réel en tests (et non SQLite) car la recherche (`pg_trgm`), les agrégats par fuseau et `SKIP LOCKED` sont propres à Postgres ; i18n et code d'erreur côté API au lieu de textes français côté back, car l'interface est bilingue ; images publiées sur `ghcr.io` pour que l'auto-hébergement ne demande pas de build.
+**Écarts au blueprint, et pourquoi** : PostgreSQL réel en tests (et non SQLite) car la recherche (`pg_trgm`), les agrégats par fuseau et `SKIP LOCKED` sont propres à Postgres ; **Tailwind conservé** (choix de Théo, déjà en place dans le code) : les tokens de la DA alimentent son thème, aucune couleur ni taille en dur hors tokens ; i18n et code d'erreur côté API au lieu de textes français côté back, car l'interface est bilingue ; images publiées sur `ghcr.io` pour que l'auto-hébergement ne demande pas de build.
 
 ### Modèle de données (esquisse)
 
@@ -239,7 +239,7 @@ Le code actuel (MVP fonctionnel : bibliothèque, file, partage, stats) est **rep
 **Reprise, dans l'ordre de build**
 0. **Historique Git honnête** : commit initial (vision + DA), puis import du code existant tel quel, puis nettoyage (code mort, doublons, docs périmées).
 1. **Socle sûr et auto-hébergeable** : refus des secrets par défaut, compose durci (base non exposée, non-root, images épinglées), Caddy + HTTPS auto, limitation de débit, mode d'inscription modifiable par l'admin + premier admin + liste des invités + prénom / nom, sessions révocables, changement de mot de passe, suppression de compte, garde-fou sur la base de test, correctif réseau-hors-transaction, URL ≤ 2 048 / `url_hash`. LICENSE, README en anglais, CONTRIBUTING, SECURITY, CI.
-2. **Fondations front** : tokens et classes de la DA en CSS pur (sortie de Tailwind et shadcn), shell mobile / rail / sidebar, i18n `en` / `fr`, client `openapi-fetch` généré, thème Sombre / Clair / Système, cache du service worker vidé à la déconnexion. Bibliothèque, capture et détail portés.
+2. **Fondations front** : tokens de la DA branchés sur le thème Tailwind (`@theme`) et composants restylés à la DA, shell mobile / rail / sidebar, i18n `en` / `fr`, client `openapi-fetch` généré, thème Sombre / Clair / Système, cache du service worker vidé à la déconnexion. Bibliothèque, capture et détail portés.
 3. **Modules** : table `UserModule`, File et Partage portés (anti-énumération, contacts et lien de contact, réception), « Actualiser » honnête.
 4. **Statistiques sur le journal** : calculs du §5.4 en fonctions pures testées, objectifs sur le compte, explication + confiance sur chaque chiffre.
 5. **Capture partout** : jetons d'API, bookmarklet, Web Share Target (Android), raccourci iOS documenté.
