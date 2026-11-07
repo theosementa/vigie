@@ -12,6 +12,7 @@ const KNOWN: Partial<Record<MessageKey, true>> = {
   'error.invalid_credentials': true,
   'error.not_invited': true,
   'error.registration_closed': true,
+  'error.email_not_allowed': true,
   'error.email_taken': true,
   'error.email_domain_not_allowed': true,
   'error.wrong_password': true,

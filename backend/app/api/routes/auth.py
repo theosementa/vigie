@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 
-from app.core.config import settings
+from app.core.config import email_allowed, settings
 from app.core.cookies import clear_session_cookie, set_session_cookie
 from app.core.deps import CurrentUser, SessionDep
 from app.core.errors import api_error
@@ -50,6 +50,8 @@ def _email_taken():
 async def register(
     body: RegisterIn, request: Request, response: Response, session: SessionDep
 ) -> User:
+    if not email_allowed(body.email):
+        raise api_error(403, "email_not_allowed", "This address is not allowed on this instance.")
     mode = (await get_instance_settings(session)).registration_mode
     await lock_registration(session)  # serialises signups until commit
     is_first = not await session.scalar(select(func.count()).select_from(User))
@@ -106,6 +108,8 @@ async def register(
 async def login(body: LoginIn, request: Request, response: Response, session: SessionDep) -> User:
     enforce(f"login:email:{body.email}", 5, MINUTE)
     user = await session.scalar(select(User).where(User.email == body.email))
+    if user is not None and not email_allowed(user.email):
+        user = None  # off the allow list: indistinguishable from an unknown address
     # always verify, against a dummy hash for unknown emails: same work, same answer
     valid = verify_password(body.password, user.password_hash if user else _DUMMY_HASH)
     if user is None or not valid:

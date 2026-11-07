@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     cookie_secure: Literal["auto", "true", "false"] = "auto"
     # Initial registration mode of a fresh instance only; afterwards the admin owns it
     registration: Literal["invite", "open", "closed"] = "invite"
+    # Comma-separated e-mail addresses. When set, only these can sign up, sign in or be invited
+    # (a staging instance). Empty = no restriction.
+    allowed_emails: str = ""
     # e.g. https://vigie.example.org, used to build password-reset links
     public_url: str | None = None
     # Metadata fetching
@@ -33,6 +36,12 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def email_allowed(email: str) -> bool:
+    """True when no allow list is configured, or the address is on it (case-insensitive)."""
+    allowed = {e.strip().lower() for e in settings.allowed_emails.split(",") if e.strip()}
+    return not allowed or email.strip().lower() in allowed
 
 
 def check_secret_key(secret: str) -> None:

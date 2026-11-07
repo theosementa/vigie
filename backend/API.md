@@ -24,6 +24,7 @@ stats range errors). Another user's item always answers `404`, identical to a no
 | `wrong_password` | 403 | Current password wrong (password change, account deletion) |
 | `not_invited` | 403 | `invite` mode: the email is not on the invitation list |
 | `registration_closed` | 403 | `closed` mode |
+| `email_not_allowed` | 403 | `ALLOWED_EMAILS` is set and the email is not on it (signup, invitation). Login and existing sessions answer `invalid_credentials` / `not_authenticated` instead |
 | `email_taken` | 409 | An account already uses this email |
 | `email_domain_not_allowed` | 422 | Special-use domain (`.local`, `.lan`, `.home.arpa`, `.test`, `.internal`) while the instance is `open` |
 | `invalid_reset_token` | 400 | Reset token unknown, expired (1 h) or already used |

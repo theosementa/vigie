@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
+from app.core.config import email_allowed, settings
 from app.core.errors import api_error
 from app.core.security import decode_access_token
 from app.db import get_session
@@ -31,7 +31,7 @@ async def get_current_user(request: Request, session: SessionDep) -> User:
     except ValueError:
         raise _unauthorized() from None
     user = await session.get(User, user_id)
-    if user is None or user.token_version != decoded[1]:
+    if user is None or user.token_version != decoded[1] or not email_allowed(user.email):
         raise _unauthorized()
     device = await session.get(UserSession, session_id)
     if device is None or device.user_id != user.id:

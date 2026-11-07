@@ -79,6 +79,7 @@ Set in `.env` (see [.env.example](.env.example)).
 | `JWT_EXPIRE_DAYS` | `30` | Session lifetime |
 | `COOKIE_SECURE` | `auto` | `auto` (Secure over HTTPS), `true` or `false` |
 | `REGISTRATION` | `invite` | Initial registration mode of a new instance (`invite`, `open`, `closed`) |
+| `ALLOWED_EMAILS` | empty | Comma-separated allow list: when set, only these addresses can sign up, sign in or be invited (staging) |
 | `PUBLIC_URL` | empty | Public base URL, used in password-reset links |
 | `FETCH_TIMEOUT_SECONDS` | `5` | Timeout when fetching a link's metadata |
 | `FETCH_MAX_BYTES` | `2097152` | Maximum size of a fetched page |

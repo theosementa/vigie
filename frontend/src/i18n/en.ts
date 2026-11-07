@@ -64,6 +64,7 @@ export const en = {
   'error.invalid_credentials': 'Wrong email or password.',
   'error.not_invited': 'This address isn’t invited on this instance. Ask its administrator for an invitation.',
   'error.registration_closed': 'Sign-ups are closed on this instance.',
+  'error.email_not_allowed': 'This address isn’t allowed on this instance.',
   'error.email_taken': 'An account already exists with this email address.',
   'error.email_domain_not_allowed': 'This email domain isn’t accepted on an open instance.',
   'error.wrong_password': 'Current password is wrong.',

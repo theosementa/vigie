@@ -259,6 +259,7 @@ Le code actuel (MVP fonctionnel : bibliothèque, file, partage, stats) est **rep
 
 - Nom : **Vigie** (choisi avec la DA), sous-domaine `vigie.theosementa.fr`, dépôt `vigie`.
 - Port de l'instance publique : `8101`, mode `invite`, Théo seul admin.
+- Pré-production : `vigie.pp.theosementa.fr` → port `8102`, base de données et volumes à part (projet compose `vigie-pp`), liste blanche `ALLOWED_EMAILS` (Théo seul, d'autres adresses s'ajoutent dans le `.env` du serveur). La branche `preprod` s'y déploie, `main` va en production : une feature passe d'abord par `preprod`, puis on fusionne dans `main` une fois validée.
 - Partage : contacts créés à l'ouverture d'un partage ou par lien de contact ; prénom et nom demandés à l'inscription, avec la raison affichée.
 - Traductions : dictionnaires dans le dépôt ; une plateforme communautaire seulement quand d'autres langues seront demandées.
 - Stats après suppression : tags et source ne sont pas figés dans l'événement ; la base est affichée.

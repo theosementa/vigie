@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 
+from app.core.config import email_allowed
 from app.core.deps import AdminUser, SessionDep, require_admin
 from app.core.errors import ErrorResponse, api_error
 from app.models import InstanceSettings, Invitation, Item, User
@@ -60,6 +61,8 @@ async def create_admin_invitation(
     body: InvitationIn, response: Response, admin: AdminUser, session: SessionDep
 ) -> Invitation:
     """Idempotent: inviting an address twice returns the existing invitation (200)."""
+    if not email_allowed(body.email):
+        raise api_error(403, "email_not_allowed", "This address is not allowed on this instance.")
     inserted = await session.scalar(
         insert(Invitation)
         .values(id=uuid.uuid4(), email=body.email, created_by=admin.id)

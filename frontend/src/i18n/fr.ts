@@ -66,6 +66,7 @@ export const fr: Record<keyof typeof en, string> = {
   'error.invalid_credentials': 'E‑mail ou mot de passe incorrect.',
   'error.not_invited': 'Cette adresse n’est pas invitée sur cette instance. Demande une invitation à son administrateur.',
   'error.registration_closed': 'Les inscriptions sont fermées sur cette instance.',
+  'error.email_not_allowed': 'Cette adresse n’est pas autorisée sur cette instance.',
   'error.email_taken': 'Un compte existe déjà avec cette adresse e‑mail.',
   'error.email_domain_not_allowed': 'Ce domaine d’e‑mail n’est pas accepté sur une instance ouverte.',
   'error.wrong_password': 'Mot de passe actuel incorrect.',
