@@ -4,6 +4,7 @@ import type { Item, ItemEvent } from '@/lib/api'
 import { formatDateTime, formatDuration, formatMinutesShort, formatDate, fullName } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { youtubeAppTarget } from '@/lib/youtube'
 import { TagInput } from '@/features/tags/TagInput'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemThumb } from './ItemThumb'
@@ -201,6 +202,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
   const queue = useQueueToggle(item)
   const seen = item.status === 'seen'
   const unavailable = isMetadataUnavailable(resource)
+  const appTarget = youtubeAppTarget(resource.url)
 
   return (
     <>
@@ -252,6 +254,17 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           </button>
         )}
       </div>
+
+      {/* Phones and tablets only: the YouTube app has its own Cast / AirPlay button for the TV */}
+      {appTarget && (
+        <div className="grid gap-1">
+          <a className="btn btn-2" href={appTarget}>
+            <Icon name="tv" />
+            {t('item.open_youtube_app')}
+          </a>
+          <div className="sub">{t('item.open_youtube_app.hint')}</div>
+        </div>
+      )}
 
       {item.shared_by && (
         <div className="recv">

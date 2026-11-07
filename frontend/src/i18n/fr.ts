@@ -211,6 +211,8 @@ export const fr: Record<keyof typeof en, string> = {
   'item.details': 'Détails',
   'item.history': 'Historique',
   'item.open_link': 'Ouvrir le lien',
+  'item.open_youtube_app': 'Ouvrir dans l’app YouTube',
+  'item.open_youtube_app.hint': 'Utilise ensuite son bouton Cast ou AirPlay pour la lire sur la TV.',
   'item.share': 'Envoyer à…',
   'item.shared_by': 'Envoyé par {name}',
   'item.seen_on': 'Vu le {date}',

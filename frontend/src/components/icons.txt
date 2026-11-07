@@ -51,6 +51,7 @@ shield-check-linear
 sun-2-linear
 target-linear
 trash-bin-minimalistic-linear
+tv-linear
 users-group-rounded-linear
 layers-minimalistic-bold
 plain-bold

@@ -209,6 +209,8 @@ export const en = {
   'item.details': 'Details',
   'item.history': 'History',
   'item.open_link': 'Open link',
+  'item.open_youtube_app': 'Open in the YouTube app',
+  'item.open_youtube_app.hint': 'Then use its Cast or AirPlay button to play it on the TV.',
   'item.share': 'Send to…',
   'item.shared_by': 'Sent by {name}',
   'item.seen_on': 'Seen on {date}',
