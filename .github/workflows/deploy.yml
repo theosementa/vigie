@@ -1,6 +1,6 @@
 name: Deploy
 # main    -> production      https://vigie.theosementa.fr      (host port 8101)
-# preprod -> pre-production  https://vigie.pp.theosementa.fr   (host port 8102)
+# preprod -> pre-production  https://vigie-pp.theosementa.fr   (host port 8102)
 # A feature goes to `preprod` first; once validated, `preprod` is merged into `main`.
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
       COMPOSE_PROJECT_NAME: ${{ github.ref_name == 'main' && 'vigie' || 'vigie-pp' }}
       HTTP_PORT: ${{ github.ref_name == 'main' && '8101' || '8102' }}
       PROJECT: ${{ github.ref_name == 'main' && 'Vigie' || 'Vigie (preprod)' }}
-      SITE_URL: ${{ github.ref_name == 'main' && 'https://vigie.theosementa.fr' || 'https://vigie.pp.theosementa.fr' }}
+      SITE_URL: ${{ github.ref_name == 'main' && 'https://vigie.theosementa.fr' || 'https://vigie-pp.theosementa.fr' }}
       REPO_URL: https://github.com/${{ github.repository }}.git
       GH_TOKEN: ${{ github.token }}
       # COMPOSE_FILE: docker-compose.prod.yml   # uncomment if not docker-compose.yml

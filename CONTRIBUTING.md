@@ -62,7 +62,7 @@ Every open/close, resize and reorder in the UI must stay smooth, with no visible
 | Branch | Environment | URL | Host port |
 |---|---|---|---|
 | `main` | production | https://vigie.theosementa.fr | 8101 |
-| `preprod` | pre-production | https://vigie.pp.theosementa.fr | 8102 |
+| `preprod` | pre-production | https://vigie-pp.theosementa.fr | 8102 |
 
 A feature always lands on `preprod` first (`.github/workflows/deploy.yml` deploys it). Once validated, merge `preprod` into `main` (fast-forward) and production follows. Both run on the same homelab from separate folders, compose projects (`vigie`, `vigie-pp`) and databases. Preprod is limited by `ALLOWED_EMAILS` in its server-side `.env` (`.env.preprod.example` is the template, copied on the first deploy); add an address there and run `docker compose up -d` in the preprod folder to let someone in.
 
