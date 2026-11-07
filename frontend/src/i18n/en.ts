@@ -43,6 +43,8 @@ export const en = {
   'layout.label': 'Mobile display',
   'layout.list': 'List',
   'layout.grid': 'Grid',
+  'zoom.label': 'Lock zoom',
+  'zoom.help': 'Prevents pinch and double-tap zoom on this device.',
   'theme.label': 'Theme',
   'theme.dark': 'Dark',
   'theme.light': 'Light',

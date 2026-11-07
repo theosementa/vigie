@@ -28,6 +28,7 @@ import { useT, type MessageKey, type TFunction } from '@/lib/i18n'
 import { useLocalePreference } from '@/hooks/useLocale'
 import { useTheme } from '@/hooks/useTheme'
 import { useMobileLayout, type MobileLayout } from '@/lib/mobileLayout'
+import { useZoomLock } from '@/lib/zoomLock'
 import type { IconBase } from '@/components/Icon'
 
 const sectionClass = 'panel'
@@ -118,6 +119,7 @@ function AppearanceSection() {
   const { theme, setTheme } = useTheme()
   const { preference, setPreference } = useLocalePreference()
   const [layout, setLayout] = useMobileLayout()
+  const [zoomLock, setZoomLock] = useZoomLock()
   return (
     <section className={sectionClass}>
       <h2 className={headingClass}>{t('settings.appearance')}</h2>
@@ -152,6 +154,23 @@ function AppearanceSection() {
             {t(o.label)}
           </button>
         ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p id="zoom-label" className="text-sm font-medium">
+            {t('zoom.label')}
+          </p>
+          <p className="text-xs text-muted-foreground">{t('zoom.help')}</p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={zoomLock}
+          aria-labelledby="zoom-label"
+          onClick={() => setZoomLock(!zoomLock)}
+        >
+          <span className={zoomLock ? 'switch on' : 'switch'} />
+        </button>
       </div>
     </section>
   )

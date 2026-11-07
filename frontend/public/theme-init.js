@@ -8,6 +8,15 @@
   } catch (e) {
     /* storage unavailable: follow the system theme */
   }
+  try {
+    // Zoom lock is on by default (index.html); the settings can turn it off.
+    if (localStorage.getItem('vigie-zoom-lock') === '0') {
+      var vp = document.querySelector('meta[name="viewport"]')
+      if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover')
+    }
+  } catch (e) {
+    /* storage unavailable: keep the lock */
+  }
   var lang = 'en'
   try {
     var stored = localStorage.getItem('vigie-locale')

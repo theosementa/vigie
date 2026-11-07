@@ -45,6 +45,8 @@ export const fr: Record<keyof typeof en, string> = {
   'layout.label': 'Affichage sur mobile',
   'layout.list': 'Liste',
   'layout.grid': 'Grille',
+  'zoom.label': 'Bloquer le zoom',
+  'zoom.help': 'Empêche le zoom par pincement et double tap sur cet appareil.',
   'theme.label': 'Thème',
   'theme.dark': 'Sombre',
   'theme.light': 'Clair',
