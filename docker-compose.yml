@@ -52,6 +52,7 @@ services:
       context: ./frontend
       args:
         BUILD_NUMBER: ${BUILD_NUMBER:-dev}
+        APP_ENV: ${APP_ENV:-production}
     restart: unless-stopped
     environment:
       VIGIE_DOMAIN: ${VIGIE_DOMAIN:-:80}

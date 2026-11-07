@@ -19,19 +19,36 @@ const themeColorMeta: Plugin = {
   ],
 }
 
+// Pre-production build (APP_ENV=preprod, see the Dockerfile): the tab says so and shows a yellow warning icon.
+const preprod = process.env.VITE_APP_ENV === 'preprod'
+const appName = preprod ? 'Preprod Vigie' : 'Vigie'
+
+const preprodTab: Plugin = {
+  name: 'vigie-preprod-tab',
+  transformIndexHtml: (html) =>
+    preprod
+      ? html
+          .replace('<title>Vigie</title>', `<title>${appName}</title>`)
+          .replace(/<link rel="icon"[^>]*\/>\s*/g, '')
+          .replace('</title>', '</title>\n    <link rel="icon" type="image/svg+xml" href="/favicon-preprod.svg" />')
+          .replace('name="apple-mobile-web-app-title" content="Vigie"', `name="apple-mobile-web-app-title" content="${appName}"`)
+      : html,
+}
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     themeColorMeta,
+    preprodTab,
     VitePWA({
       strategies: 'generateSW',
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'Vigie',
-        short_name: 'Vigie',
+        name: appName,
+        short_name: appName,
         description: 'Votre veille techno : articles et vidéos à voir, tags, notes et partage.',
         lang: 'fr',
         start_url: '/',

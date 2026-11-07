@@ -65,6 +65,7 @@ jobs:
       - name: Build and restart the stack
         env:
           BUILD_NUMBER: ${{ github.run_number }}   # shown in the app settings, same as the Discord #build
+          APP_ENV: ${{ github.ref_name == 'main' && 'production' || 'preprod' }}   # preprod: "Preprod Vigie" tab with a warning icon
         run: |
           set -euo pipefail
           cd "${DEPLOY_DIR/#\~/$HOME}"

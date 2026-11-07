@@ -7,6 +7,9 @@ COPY . .
 # Build number shown in the settings (CI passes the GitHub run number).
 ARG BUILD_NUMBER=dev
 ENV VITE_BUILD_NUMBER=$BUILD_NUMBER
+# `preprod` renames the tab "Preprod Vigie" and swaps its icon for a yellow warning (see vite.config.ts).
+ARG APP_ENV=production
+ENV VITE_APP_ENV=$APP_ENV
 RUN npm run build
 
 FROM caddy:2.10.2-alpine
