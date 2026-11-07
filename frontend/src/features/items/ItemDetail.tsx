@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check, ExternalLink, ListEnd, ListMinus, RefreshCw, Share2, Trash2, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Item, ResourceType } from '@/lib/api'
-import { formatDate, formatReadingTime, hostname } from '@/lib/format'
+import { formatDate, formatReadingTime, fullName, hostname } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
@@ -159,7 +159,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
         <div className="rounded-xl bg-primary/10 p-3 text-sm">
           <p className="flex items-center gap-1.5 font-medium text-primary">
             <Users className="size-4" />
-            Partagé par {item.shared_by.display_name}
+            Partagé par {fullName(item.shared_by)}
           </p>
           {item.share_message && <p className="mt-1 text-foreground/80">« {item.share_message} »</p>}
         </div>
@@ -232,14 +232,19 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           variant="secondary"
           className="h-10 rounded-xl"
           disabled={refresh.isPending}
-          aria-label="Rafraîchir les métadonnées"
-          title="Rafraîchir les métadonnées"
+          aria-label="Actualiser les métadonnées"
+          title="Actualiser les métadonnées"
           onClick={() =>
-            refresh.mutate(item.id, { onSuccess: () => toast('Métadonnées actualisées') })
+            refresh.mutate(item.id, {
+              onSuccess: (res) =>
+                res.refreshed
+                  ? toast.success('Métadonnées actualisées')
+                  : toast.error('Impossible de récupérer les métadonnées. Réessaie plus tard.'),
+            })
           }
         >
           <RefreshCw className={refresh.isPending ? 'animate-spin' : undefined} />
-          Rafraîchir
+          Actualiser
         </Button>
         <Button
           variant="destructive"

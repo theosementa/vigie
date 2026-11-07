@@ -6,10 +6,12 @@ import { useIsDesktop } from '@/hooks/useIsMobile'
 import { cn } from '@/lib/utils'
 import { LibraryToolbar } from '@/features/items/desktop/LibraryToolbar'
 import { useTags } from '@/features/items/queries'
-import { NAV, titleFor } from './nav'
+import { useMe } from '@/features/auth/useAuth'
+import { ADMIN_ENTRY, NAV, titleFor } from './nav'
 
 function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { data: tags = [] } = useTags()
+  const { data: me } = useMe()
   const { pathname } = useLocation()
   const [params] = useSearchParams()
   const activeTag = pathname === '/' ? params.get('tag') : null
@@ -22,7 +24,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
       )}
     >
       <div className={cn('flex h-14 items-center', collapsed ? 'justify-center' : 'justify-between px-4')}>
-        {!collapsed && <span className="text-base font-semibold">Radar</span>}
+        {!collapsed && <span className="text-base font-semibold">Vigie</span>}
         <Button
           variant="ghost"
           size="icon-sm"
@@ -63,7 +65,8 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
           </div>
         )}
 
-        <div className="mt-auto pt-4">
+        <div className="mt-auto space-y-1 pt-4">
+          {me?.role === 'admin' && <SidebarLink entry={ADMIN_ENTRY} collapsed={collapsed} />}
           <SidebarLink entry={NAV.find((n) => n.to === '/settings')!} collapsed={collapsed} />
         </div>
       </nav>

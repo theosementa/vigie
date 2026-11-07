@@ -3,15 +3,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ApiError } from '@/lib/api'
+import { errorMessage } from '@/lib/errors'
 import { browserTimeZone } from '@/lib/timezone'
 import { AuthCard } from './AuthCard'
 import { Field } from './Field'
 import { useRegister } from './useAuth'
 
 const schema = z.object({
-  display_name: z.string().trim().min(1, 'Nom requis').max(60, '60 caractères maximum'),
-  email: z.string().min(1, 'Email requis').email('Email invalide'),
+  first_name: z.string().trim().min(1, 'Prénom requis').max(50, '50 caractères maximum'),
+  last_name: z.string().trim().min(1, 'Nom requis').max(50, '50 caractères maximum'),
+  email: z.string().min(1, 'E‑mail requis').email('E‑mail invalide'),
   password: z.string().min(8, '8 caractères minimum'),
 })
 type Values = z.infer<typeof schema>
@@ -35,10 +36,10 @@ export function RegisterPage() {
   return (
     <AuthCard
       title="Créer un compte"
-      subtitle="Gardez vos articles et vidéos à portée de main."
+      subtitle="Garde tes articles et vidéos à portée de main."
       footer={
         <>
-          Déjà inscrit ?{' '}
+          Déjà inscrit{' '}?{' '}
           <Link to="/login" className="font-medium text-primary">
             Se connecter
           </Link>
@@ -46,16 +47,31 @@ export function RegisterPage() {
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        <Field
-          id="display_name"
-          label="Nom affiché"
-          autoComplete="name"
-          error={errors.display_name?.message}
-          {...register('display_name')}
-        />
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              id="first_name"
+              label="Prénom"
+              autoComplete="given-name"
+              error={errors.first_name?.message}
+              {...register('first_name')}
+            />
+            <Field
+              id="last_name"
+              label="Nom"
+              autoComplete="family-name"
+              error={errors.last_name?.message}
+              {...register('last_name')}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Ton nom s’affiche quand tu envoies un lien à quelqu’un, pour qu’il sache de qui il vient.
+            Il n’est visible par personne d’autre.
+          </p>
+        </div>
         <Field
           id="email"
-          label="Email"
+          label="E‑mail"
           type="email"
           autoComplete="email"
           error={errors.email?.message}
@@ -66,14 +82,13 @@ export function RegisterPage() {
           label="Mot de passe"
           type="password"
           autoComplete="new-password"
+          hint="8 caractères minimum."
           error={errors.password?.message}
           {...register('password')}
         />
         {err && (
           <p role="alert" className="text-sm text-destructive">
-            {err instanceof ApiError && err.status === 409
-              ? 'Un compte existe déjà avec cet email.'
-              : 'Inscription impossible. Réessayez.'}
+            {errorMessage(err, 'Inscription impossible. Réessaie.')}
           </p>
         )}
         <Button

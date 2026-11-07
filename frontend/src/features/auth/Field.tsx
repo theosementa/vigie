@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/label'
 export function Field({
   label,
   error,
+  hint,
   id,
   ...props
-}: { label: string; error?: string } & ComponentProps<typeof Input>) {
+}: { label: string; error?: string; hint?: string } & ComponentProps<typeof Input>) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
@@ -17,6 +18,7 @@ export function Field({
         className="h-11 rounded-xl text-base md:text-sm"
         {...props}
       />
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
       {error && (
         <p role="alert" className="text-xs text-destructive">
           {error}

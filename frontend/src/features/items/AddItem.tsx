@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Check, Plus, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { ApiError, api, type ResourceType } from '@/lib/api'
+import { errorMessage } from '@/lib/errors'
 import { formatReadingTime, hostname } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import {
@@ -120,10 +121,10 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
         onError: (err) => {
           const conflictId = err instanceof ApiError ? err.conflict?.item_id : null
           if (conflictId) {
-            toast('Déjà dans votre bibliothèque')
+            toast('Déjà dans ta bibliothèque')
             openItem(conflictId)
           } else {
-            setSaveError(err instanceof ApiError ? err.message : 'Ajout impossible. Réessayez.')
+            setSaveError(errorMessage(err, 'Ajout impossible. Réessaie.'))
           }
         },
       },
@@ -170,8 +171,8 @@ function AddItemForm({ onClose }: { onClose: () => void }) {
           <div className="flex-1">
             <p>
               {previewError instanceof ApiError && previewError.status === 422
-                ? previewError.message
-                : 'Impossible de récupérer l’aperçu.'}
+                ? 'Cette adresse n’est pas valide.'
+                : errorMessage(previewError, 'Impossible de récupérer l’aperçu.')}
             </p>
             <button type="button" onClick={() => preview.refetch()} className="mt-1 font-medium underline">
               Réessayer

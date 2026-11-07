@@ -35,3 +35,13 @@ export function formatShortDate(iso: string): string {
     ...(sameYear ? {} : { year: 'numeric' }),
   })
 }
+
+/** "Prénom Nom" for any user-shaped object. */
+export function fullName(u: { first_name: string; last_name: string }): string {
+  return `${u.first_name} ${u.last_name}`.trim()
+}
+
+/** Up to two initials, for avatars. */
+export function initials(u: { first_name: string; last_name: string }): string {
+  return `${u.first_name.charAt(0)}${u.last_name.charAt(0)}`.toUpperCase()
+}

@@ -1,5 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, type LoginInput, type RegisterInput, type UpdateMeInput, type User } from '@/lib/api'
+import {
+  api,
+  type ChangePasswordInput,
+  type LoginInput,
+  type RegisterInput,
+  type ResetPasswordInput,
+  type UpdateMeInput,
+  type User,
+} from '@/lib/api'
 import { statsKey } from '@/features/stats/queries'
 
 export const meKey = ['auth', 'me'] as const
@@ -39,7 +47,7 @@ export function useRegister() {
 export function useUpdateMe() {
   const qc = useQueryClient()
   return useMutation({
-    meta: { errorMessage: 'Modification non enregistrée. Réessayez.' },
+    meta: { errorMessage: 'Modification non enregistrée. Réessaie.' },
     mutationFn: (input: UpdateMeInput) => api.auth.updateMe(input),
     onSuccess: (user) => {
       qc.setQueryData(meKey, user)
@@ -57,5 +65,42 @@ export function useLogout() {
       qc.setQueryData(meKey, null)
       qc.removeQueries({ predicate: (q) => q.queryKey[0] !== 'auth' })
     },
+  })
+}
+
+/** Drop every cached query: the session is gone (logout everywhere, account deleted). */
+function useClearSession() {
+  const qc = useQueryClient()
+  return () => {
+    qc.clear()
+    qc.setQueryData(meKey, null)
+  }
+}
+
+export function useLogoutAll() {
+  const clear = useClearSession()
+  return useMutation({
+    mutationFn: () => api.auth.logoutAll(),
+    onSuccess: clear,
+  })
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (input: ChangePasswordInput) => api.auth.changePassword(input),
+  })
+}
+
+export function useDeleteAccount() {
+  const clear = useClearSession()
+  return useMutation({
+    mutationFn: (password: string) => api.auth.deleteMe(password),
+    onSuccess: clear,
+  })
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (input: ResetPasswordInput) => api.auth.resetPassword(input),
   })
 }

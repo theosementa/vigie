@@ -1,21 +1,23 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ApiError } from '@/lib/api'
+import { errorMessage } from '@/lib/errors'
 import { AuthCard } from './AuthCard'
 import { Field } from './Field'
 import { useLogin } from './useAuth'
 
 const schema = z.object({
-  email: z.string().min(1, 'Email requis').email('Email invalide'),
+  email: z.string().min(1, 'E‑mail requis').email('E‑mail invalide'),
   password: z.string().min(1, 'Mot de passe requis'),
 })
 type Values = z.infer<typeof schema>
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const notice = (location.state as { notice?: string } | null)?.notice
   const login = useLogin()
   const {
     register,
@@ -28,11 +30,11 @@ export function LoginPage() {
 
   return (
     <AuthCard
-      title="Radar"
-      subtitle="Connectez-vous pour retrouver votre veille."
+      title="Vigie"
+      subtitle="Connecte-toi pour retrouver ta veille."
       footer={
         <>
-          Pas encore de compte ?{' '}
+          Pas encore de compte{' '}?{' '}
           <Link to="/register" className="font-medium text-primary">
             Créer un compte
           </Link>
@@ -40,9 +42,14 @@ export function LoginPage() {
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        {notice && (
+          <p role="status" className="rounded-xl bg-primary/10 p-3 text-sm text-primary">
+            {notice}
+          </p>
+        )}
         <Field
           id="email"
-          label="Email"
+          label="E‑mail"
           type="email"
           autoComplete="email"
           error={errors.email?.message}
@@ -58,9 +65,7 @@ export function LoginPage() {
         />
         {login.error && (
           <p role="alert" className="text-sm text-destructive">
-            {login.error instanceof ApiError && login.error.status === 401
-              ? 'Email ou mot de passe incorrect.'
-              : 'Connexion impossible. Réessayez.'}
+            {errorMessage(login.error, 'Connexion impossible. Réessaie.')}
           </p>
         )}
         <Button type="submit" className="h-11 w-full rounded-xl text-base" disabled={login.isPending}>

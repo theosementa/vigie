@@ -1,4 +1,5 @@
 import type { StatsSummary } from '@/lib/api'
+import { fullName } from '@/lib/format'
 import { formatCount, plural } from './format'
 import { EmptyNote, StatsCard } from './StatsCard'
 
@@ -23,7 +24,7 @@ export function SharesCard({ shares }: { shares: StatsSummary['shares'] }) {
             <li key={u.user_id}>
               <span className="font-semibold tabular-nums">{formatCount(u.count)}</span>{' '}
               {plural(u.count, 'article partagé', 'articles partagés')} par{' '}
-              <span className="font-medium">{u.display_name}</span>
+              <span className="font-medium">{fullName(u)}</span>
             </li>
           ))}
         </ul>

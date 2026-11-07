@@ -219,9 +219,9 @@ export function useDeleteItem() {
 export function useRefreshItem() {
   const qc = useQueryClient()
   return useMutation({
-    meta: { errorMessage: 'Actualisation des métadonnées impossible.' },
+    meta: { errorMessage: 'Impossible de récupérer les métadonnées. Réessaie plus tard.' },
     mutationFn: (id: string) => api.items.refresh(id),
-    onSuccess: (item) => {
+    onSuccess: ({ item }) => {
       putItem(qc, item)
       qc.invalidateQueries({ queryKey: statsKey })
     },

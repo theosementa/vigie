@@ -2,7 +2,8 @@ import { useState, type KeyboardEvent } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { ApiError, type Item, type ShareResult } from '@/lib/api'
+import type { Item, ShareResult } from '@/lib/api'
+import { errorMessage } from '@/lib/errors'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -84,7 +85,7 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
           else toast('Personne n’a reçu ce lien.')
         },
         onError: (err) =>
-          setError(err instanceof ApiError ? err.message : 'Partage impossible. Réessayez.'),
+          setError(errorMessage(err, 'Partage impossible. Réessaie.')),
       },
     )
   }

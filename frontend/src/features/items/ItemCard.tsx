@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { Check, ListVideo, MoreHorizontal, Users } from 'lucide-react'
 import type { Item } from '@/lib/api'
-import { formatReadingTime, formatShortDate, hostname } from '@/lib/format'
+import { formatReadingTime, formatShortDate, fullName, hostname } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
@@ -77,7 +77,7 @@ function ItemCardBase({ item, selected, onOpen }: ItemCardProps) {
                 {item.shared_by && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                     <Users className="size-3" />
-                    Partagé par {item.shared_by.display_name}
+                    Partagé par {fullName(item.shared_by)}
                   </span>
                 )}
                 {item.tags.map((t) => (

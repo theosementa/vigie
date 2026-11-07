@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ApiError, setUnauthorizedHandler } from '@/lib/api'
+import { errorMessage } from '@/lib/errors'
 import { useMe } from '@/features/auth/useAuth'
 import { useTimezoneSync } from '@/features/auth/useTimezoneSync'
 import { ItemDialogsProvider } from '@/features/items/ItemDialogsProvider'
@@ -30,6 +31,13 @@ const SettingsPage = lazy(() =>
   import('@/features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 )
 
+const AdminPage = lazy(() =>
+  import('@/features/admin/AdminPage').then((m) => ({ default: m.AdminPage })),
+)
+const ResetPasswordPage = lazy(() =>
+  import('@/features/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
+)
+
 const QueuePage = lazy(() =>
   import('@/features/queue/QueuePage').then((m) => ({ default: m.QueuePage })),
 )
@@ -45,7 +53,7 @@ const queryClient = new QueryClient({
     onError: (error, _vars, _ctx, mutation) => {
       const msg = mutation.meta?.errorMessage
       if (typeof msg === 'string' && !(error instanceof ApiError && error.status === 401))
-        toast.error(msg)
+        toast.error(errorMessage(error, msg))
     },
   }),
 })
@@ -83,6 +91,13 @@ function PublicOnly() {
   return <Outlet />
 }
 
+/** Admin-only routes: anyone else goes back to the library. */
+function RequireAdmin() {
+  const { data: me } = useMe()
+  if (me?.role !== 'admin') return <Navigate to="/" replace />
+  return <Outlet />
+}
+
 /** 401 from the API -> drop caches and go to the login page. */
 function UnauthorizedRedirect() {
   const navigate = useNavigate()
@@ -109,6 +124,7 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
               </Route>
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route element={<RequireAuth />}>
                 <Route element={<ResponsiveShell />}>
                   <Route index element={<LibraryPage />} />
@@ -116,6 +132,9 @@ export default function App() {
                   <Route path="shared" element={<LibraryPage sharedOnly />} />
                   <Route path="stats" element={<StatsPage />} />
                   <Route path="settings" element={<SettingsPage />} />
+                  <Route element={<RequireAdmin />}>
+                    <Route path="admin" element={<AdminPage />} />
+                  </Route>
                 </Route>
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />

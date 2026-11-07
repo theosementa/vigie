@@ -5,10 +5,15 @@
 
 // ---------- Types ----------
 
+export type UserRole = 'admin' | 'user'
+export type RegistrationMode = 'invite' | 'open' | 'closed'
+
 export interface User {
   id: string
   email: string
-  display_name: string
+  first_name: string
+  last_name: string
+  role: UserRole
   /** IANA time zone used to bucket statistics (e.g. "Europe/Paris"). */
   timezone: string
   created_at: string
@@ -17,7 +22,8 @@ export interface User {
 /** Minimal user reference exposed on a shared item. */
 export interface UserRef {
   id: string
-  display_name: string
+  first_name: string
+  last_name: string
   email: string
 }
 
@@ -120,13 +126,63 @@ export interface QueueList {
 export interface RegisterInput {
   email: string
   password: string
-  display_name?: string | null
+  first_name: string
+  last_name: string
   timezone?: string
 }
 
 export interface UpdateMeInput {
-  display_name?: string
+  first_name?: string
+  last_name?: string
   timezone?: string
+}
+
+export interface ChangePasswordInput {
+  current_password: string
+  new_password: string
+}
+
+export interface ResetPasswordInput {
+  token: string
+  password: string
+}
+
+export interface RefreshResult {
+  refreshed: boolean
+  reason: string | null
+  item: Item
+}
+
+// ---------- Administration ----------
+
+export interface AdminSettings {
+  registration_mode: RegistrationMode
+  updated_at: string | null
+  updated_by: string | null
+}
+
+export interface Invitation {
+  id: string
+  email: string
+  created_by: string | null
+  created_at: string
+  /** Set once the invited person has created their account. */
+  used_at: string | null
+}
+
+export interface AdminUser {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  role: UserRole
+  created_at: string
+  item_count: number
+}
+
+export interface ResetLink {
+  url: string
+  expires_at: string
 }
 
 export interface LoginInput {
@@ -163,7 +219,7 @@ export interface StatsSummary {
   shares: {
     sent: number
     received: number
-    by_user: { user_id: string; display_name: string; count: number }[]
+    by_user: { user_id: string; first_name: string; last_name: string; count: number }[]
   }
   streak: { current: number; best: number }
   videos_without_duration: number
@@ -207,17 +263,31 @@ export interface ConflictDetail {
 export class ApiError extends Error {
   status: number
   detail: unknown
-  constructor(status: number, message: string, detail?: unknown) {
+  /** Stable backend error code (`detail.code`), or 'network_error' when the server was unreachable. */
+  code: string | null
+  /** `Retry-After` (seconds) on a 429. */
+  retryAfter: number | null
+  constructor(status: number, message: string, detail?: unknown, retryAfter: number | null = null) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.detail = detail
+    this.code = codeFromDetail(detail) ?? (status === 0 ? 'network_error' : null)
+    this.retryAfter = retryAfter
   }
 
   /** Typed conflict payload (duplicate item), or null for any other error. */
   get conflict(): ConflictDetail | null {
     return isConflictDetail(this.detail) ? this.detail : null
   }
+}
+
+function codeFromDetail(d: unknown): string | null {
+  if (typeof d === 'object' && d !== null && !Array.isArray(d) && 'code' in d) {
+    const c = (d as { code: unknown }).code
+    return typeof c === 'string' ? c : null
+  }
+  return null
 }
 
 function isConflictDetail(d: unknown): d is ConflictDetail {
@@ -228,6 +298,8 @@ function isConflictDetail(d: unknown): d is ConflictDetail {
 function messageFromDetail(detail: unknown, status: number): string {
   if (typeof detail === 'string') return detail
   if (isConflictDetail(detail)) return String(detail.message)
+  if (typeof detail === 'object' && detail !== null && !Array.isArray(detail) && 'message' in detail)
+    return String((detail as { message: unknown }).message)
   if (Array.isArray(detail)) {
     const msgs = detail
       .map((d) => (d && typeof d === 'object' && 'msg' in d ? String((d as { msg: unknown }).msg) : null))
@@ -268,13 +340,19 @@ interface RequestOptions {
 
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, params, skipUnauthorized, signal } = opts
-  const res = await fetch(`${API_BASE}${path}${toQuery(params)}`, {
-    method,
-    credentials: 'include',
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    signal,
-  })
+  let res: Response
+  try {
+    res = await fetch(`${API_BASE}${path}${toQuery(params)}`, {
+      method,
+      credentials: 'include',
+      headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal,
+    })
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') throw e
+    throw new ApiError(0, 'Network error')
+  }
 
   if (res.status === 401 && !skipUnauthorized) onUnauthorized?.()
   if (res.status === 204) return undefined as T
@@ -283,7 +361,13 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const data: unknown = text ? safeJson(text) : undefined
   if (!res.ok) {
     const detail = (data as { detail?: unknown } | undefined)?.detail
-    throw new ApiError(res.status, messageFromDetail(detail, res.status), detail)
+    const ra = Number(res.headers.get('Retry-After'))
+    throw new ApiError(
+      res.status,
+      messageFromDetail(detail, res.status),
+      detail,
+      Number.isFinite(ra) && ra > 0 ? ra : null,
+    )
   }
   return data as T
 }
@@ -305,6 +389,13 @@ export const api = {
     login: (input: LoginInput) =>
       request<User>('/auth/login', { method: 'POST', body: input, skipUnauthorized: true }),
     logout: () => request<void>('/auth/logout', { method: 'POST' }),
+    logoutAll: () => request<void>('/auth/logout-all', { method: 'POST' }),
+    changePassword: (input: ChangePasswordInput) =>
+      request<void>('/auth/password', { method: 'POST', body: input }),
+    resetPassword: (input: ResetPasswordInput) =>
+      request<void>('/auth/reset', { method: 'POST', body: input, skipUnauthorized: true }),
+    deleteMe: (password: string) =>
+      request<void>('/auth/me', { method: 'DELETE', body: { password } }),
     me: () => request<User>('/auth/me', { skipUnauthorized: true }),
     updateMe: (input: UpdateMeInput) => request<User>('/auth/me', { method: 'PATCH', body: input }),
   },
@@ -320,7 +411,7 @@ export const api = {
     update: (id: string, input: UpdateItemInput) =>
       request<Item>(`/items/${id}`, { method: 'PATCH', body: input }),
     remove: (id: string) => request<void>(`/items/${id}`, { method: 'DELETE' }),
-    refresh: (id: string) => request<Item>(`/items/${id}/refresh`, { method: 'POST' }),
+    refresh: (id: string) => request<RefreshResult>(`/items/${id}/refresh`, { method: 'POST' }),
     share: (id: string, input: ShareInput) =>
       request<ShareResult>(`/items/${id}/share`, { method: 'POST', body: input }),
   },
@@ -331,6 +422,18 @@ export const api = {
     move: (itemId: string, position: number) =>
       request<Item>(`/queue/${itemId}`, { method: 'PATCH', body: { position } }),
     remove: (itemId: string) => request<void>(`/queue/${itemId}`, { method: 'DELETE' }),
+  },
+  admin: {
+    getSettings: () => request<AdminSettings>('/admin/settings'),
+    setRegistrationMode: (registration_mode: RegistrationMode) =>
+      request<AdminSettings>('/admin/settings', { method: 'PATCH', body: { registration_mode } }),
+    invitations: () => request<Invitation[]>('/admin/invitations'),
+    invite: (email: string) =>
+      request<Invitation>('/admin/invitations', { method: 'POST', body: { email } }),
+    removeInvitation: (id: string) => request<void>(`/admin/invitations/${id}`, { method: 'DELETE' }),
+    users: () => request<AdminUser[]>('/admin/users'),
+    removeUser: (id: string) => request<void>(`/admin/users/${id}`, { method: 'DELETE' }),
+    resetLink: (id: string) => request<ResetLink>(`/admin/users/${id}/reset-link`, { method: 'POST' }),
   },
   tags: {
     list: () => request<TagWithCount[]>('/tags'),

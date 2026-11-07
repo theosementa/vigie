@@ -1,4 +1,4 @@
-import { BookOpen, ChartColumn, ListVideo, Settings, Users, type LucideIcon } from 'lucide-react'
+import { BookOpen, ChartColumn, ListVideo, Settings, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
 
 export interface NavEntry {
   to: string
@@ -25,7 +25,15 @@ export const NAV: NavEntry[] = [
   { to: '/settings', label: 'Réglages', sidebarLabel: 'Réglages', icon: Settings },
 ]
 
+/** Admin-only entry: desktop sidebar (mobile reaches it from the settings screen). */
+export const ADMIN_ENTRY: NavEntry = {
+  to: '/admin',
+  label: 'Administration',
+  sidebarLabel: 'Administration',
+  icon: ShieldCheck,
+}
+
 export function titleFor(pathname: string): string {
-  const entry = NAV.find((n) => (n.end ? pathname === n.to : pathname.startsWith(n.to)))
-  return entry ? (entry.title ?? entry.label) : 'Radar'
+  const entry = [...NAV, ADMIN_ENTRY].find((n) => (n.end ? pathname === n.to : pathname.startsWith(n.to)))
+  return entry ? (entry.title ?? entry.label) : 'Vigie'
 }
