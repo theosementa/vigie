@@ -503,7 +503,7 @@ function CommunitySection() {
       <Button
         className="mt-3 h-10 w-full rounded-[10px]"
         nativeButton={false}
-        render={<a href={`${REPO_URL}/issues/new`} target="_blank" rel="noopener noreferrer" />}
+        render={<a href={`${REPO_URL}/issues/new/choose`} target="_blank" rel="noopener noreferrer" />}
       >
         {t('settings.community.issue')}
       </Button>
