@@ -29,6 +29,7 @@ import { useT, type MessageKey, type TFunction } from '@/lib/i18n'
 import { useLocalePreference } from '@/hooks/useLocale'
 import { useTheme } from '@/hooks/useTheme'
 import { useMobileLayout, type MobileLayout } from '@/lib/mobileLayout'
+import { useAutoCreateContacts } from '@/lib/autoContacts'
 import { useHiddenTypes } from '@/lib/hiddenTypes'
 import { RESOURCE_TYPES, TYPE_ICON } from '@/features/items/metadata'
 import { useZoomLock } from '@/lib/zoomLock'
@@ -204,6 +205,33 @@ function AppearanceSection() {
           onClick={() => setZoomLock(!zoomLock)}
         >
           <span className={zoomLock ? 'switch on' : 'switch'} />
+        </button>
+      </div>
+    </section>
+  )
+}
+
+function ContactsSection() {
+  const t = useT()
+  const [auto, setAuto] = useAutoCreateContacts()
+  return (
+    <section className={sectionClass}>
+      <h2 className={headingClass}>{t('settings.contacts')}</h2>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p id="auto-contacts-label" className="text-sm font-medium">
+            {t('settings.autoContacts')}
+          </p>
+          <p className="text-xs text-muted-foreground">{t('settings.autoContacts.help')}</p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={auto}
+          aria-labelledby="auto-contacts-label"
+          onClick={() => setAuto(!auto)}
+        >
+          <span className={auto ? 'switch on' : 'switch'} />
         </button>
       </div>
     </section>
@@ -567,6 +595,7 @@ export function SettingsPage() {
       {tab === 'general' ? (
         <>
           <AppearanceSection />
+          <ContactsSection />
           <CommunitySection />
           <AboutSection />
           {me?.role === 'admin' && (
