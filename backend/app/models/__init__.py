@@ -6,6 +6,7 @@ from app.models.resource import Resource
 from app.models.session import UserSession
 from app.models.tag import ItemTag, Tag
 from app.models.user import Locale, Theme, User
+from app.models.view import SavedView
 
 __all__ = [
     "Contact",
@@ -17,6 +18,7 @@ __all__ = [
     "Locale",
     "PasswordReset",
     "Resource",
+    "SavedView",
     "ShareLog",
     "Tag",
     "Theme",

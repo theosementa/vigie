@@ -31,6 +31,10 @@ stats range errors). Another user's item always answers `404`, identical to a no
 | `last_admin` | 409 | Deleting the only admin while other accounts exist |
 | `cannot_delete_self` | 400 | Admin route used on one's own account |
 | `already_in_library` | 409 | `POST /items` duplicate; adds `item_id` |
+| `view_empty` | 422 | `POST /views`: no valid filter left in the query |
+| `views_limit` | 409 | `POST /views`: 20 saved views already |
+| `view_name_taken` | 409 | A view of this account already has this name (case-insensitive) |
+| `view_not_found` | 404 | Unknown view id, or another account's |
 | `rate_limited` | 429 | Too many requests; `Retry-After` header (seconds) |
 | `not_found` | 404 | Admin routes called by a non-admin (they look absent) |
 | `user_not_found` | 404 | Admin: unknown user id |
@@ -375,6 +379,42 @@ Newest first; `limit` is 1-100. Pass `next_before` as `before` to get older entr
 entries are items that the account with that address delivered to you; a share sent to your address before
 you had an account never appears. `my_item_id` is your own item for the resource, `null` if you do not have it
 any more. The title and type are the ones you see in your library.
+
+## Saved views
+
+A named set of library filters, stored on the account. A view never stores results: the client re-runs the
+query. Every route is scoped to the caller; another account's id answers `404 view_not_found`. Live-update
+topic: `views`.
+
+The `query` is a canonical library query string: the library URL filters `status` (`to_watch|seen`), `type`
+(`article|video|podcast|website|repo`), `length` (`short|medium|long`), `tag` (name, up to 50 characters) and
+`q` (search, up to 200 characters), sorted by key, URL-encoded (space as `+`), with unknown keys, unknown values
+and defaults (`status=to_watch`, `type=all`) dropped. Example: `length=short&tag=pos&type=video`. Repeated keys
+keep the first value.
+
+### `GET /api/views` -> 200
+```json
+[ { "id": "uuid", "name": "Short videos", "query": "length=short&type=video", "position": 0, "created_at": "..." } ]
+```
+Ordered by `position` (0-based, contiguous).
+
+### `POST /api/views` -> 201 `View`
+```json
+{ "name": "Short videos", "query": "type=video&length=short" }
+```
+`name` is trimmed, 1 to 40 characters, unique per account ignoring case (`409 view_name_taken`). The query is
+canonicalised; `422 view_empty` if nothing is left, `422` over 1,000 characters. At most 20 views
+(`409 views_limit`). The view goes last.
+
+### `PATCH /api/views/{id}` -> 200 `View`
+```json
+{ "name": "Quick videos", "position": 0 }
+```
+Both optional. `position` is clamped to the list; the others shift and positions stay contiguous. The query
+cannot be changed (save a new view instead).
+
+### `DELETE /api/views/{id}` -> 204
+Positions behind it are compacted.
 
 ## Queue
 
