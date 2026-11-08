@@ -1,6 +1,6 @@
 import { Icon } from '@/components/Icon'
 import type { Item } from '@/lib/api'
-import { formatMinutesShort, formatRelativeDay, fullName, isToday } from '@/lib/format'
+import { formatCompact, formatMinutesShort, formatNumber, formatRelativeDay, fullName, isToday } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { isMetadataUnavailable, siteOf } from './metadata'
 import { useRefreshWithToast } from './useRefreshItem'
@@ -35,7 +35,7 @@ export function ItemMeta({ item }: { item: Item }) {
     ? fullName(item.shared_by)
     : resource.type === 'article' && resource.reading_time_minutes != null
       ? formatMinutesShort(resource.reading_time_minutes)
-      : resource.type === 'video'
+      : resource.type === 'video' || resource.type === 'podcast'
         ? resource.author
         : null
   const parts = [
@@ -52,6 +52,15 @@ export function ItemMeta({ item }: { item: Item }) {
         isToday(item.created_at) && <span className="dot" role="img" aria-label={t('item.new')} />
       )}
       <span className="min-w-0 truncate">{parts.join(' · ')}</span>
+      {resource.type === 'repo' && resource.stars != null && (
+        <span
+          className="inline-flex shrink-0 items-center gap-1"
+          title={t('item.stars', { count: formatNumber(resource.stars) })}
+        >
+          <Icon name="star" />
+          {formatCompact(resource.stars)}
+        </span>
+      )}
       {item.queue_position !== null && (
         <span className="inline-flex shrink-0 items-center gap-1" title={t('item.in_queue', { position: item.queue_position + 1 })}>
           <Icon name="playlist-minimalistic" />

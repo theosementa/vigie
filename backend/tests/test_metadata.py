@@ -184,3 +184,66 @@ async def test_repo_and_website_types(url, host, path, expected):
     assert meta.type == expected
     if expected != "article":
         assert meta.reading_time_minutes is None
+
+
+@pytest.mark.usefixtures("public_dns")
+async def test_podcast_duration_from_json_ld():
+    with respx.mock() as mock:
+        route(mock, "podcasts.apple.com", "/us/podcast/x/id1").respond(
+            200, text=html("apple_podcast.html"), headers={"content-type": "text/html"}
+        )
+        meta = await fetch_metadata("https://podcasts.apple.com/us/podcast/x/id1")
+    assert meta.type == "podcast"
+    assert meta.duration_seconds == 41 * 60 + 42
+    assert meta.reading_time_minutes is None
+    assert meta.title == "Introducing METRO"
+
+
+@pytest.mark.usefixtures("public_dns")
+async def test_spotify_episode_is_a_podcast_with_its_duration():
+    with respx.mock() as mock:
+        route(mock, "open.spotify.com", "/episode/abc").respond(
+            200, text=html("spotify_episode.html"), headers={"content-type": "text/html"}
+        )
+        meta = await fetch_metadata("https://open.spotify.com/episode/abc")
+    assert (meta.type, meta.duration_seconds) == ("podcast", 2502)
+
+
+@pytest.mark.usefixtures("public_dns")
+async def test_spotify_track_is_not_a_podcast():
+    with respx.mock() as mock:
+        route(mock, "open.spotify.com", "/track/abc").respond(
+            200, text=html("spotify_track.html"), headers={"content-type": "text/html"}
+        )
+        meta = await fetch_metadata("https://open.spotify.com/track/abc")
+    assert meta.type != "podcast"
+
+
+@pytest.mark.usefixtures("public_dns")
+async def test_repo_gets_its_stars_from_the_host_api():
+    page = (
+        "<html><head><title>owner/repo</title>"
+        '<meta property="og:site_name" content="GitHub"></head></html>'
+    )
+    with respx.mock(assert_all_called=True) as mock:
+        route(mock, "github.com", "/owner/repo").respond(
+            200, text=page, headers={"content-type": "text/html"}
+        )
+        route(mock, "api.github.com", "/repos/owner/repo").respond(
+            200, json={"stargazers_count": 4054}
+        )
+        meta = await fetch_metadata("https://github.com/owner/repo")
+    assert (meta.type, meta.stars) == ("repo", 4054)
+
+
+@pytest.mark.usefixtures("public_dns")
+async def test_repo_without_stars_when_the_api_fails():
+    page = "<html><head><title>owner/repo</title></head></html>"
+    with respx.mock() as mock:
+        route(mock, "github.com", "/owner/repo").respond(
+            200, text=page, headers={"content-type": "text/html"}
+        )
+        route(mock, "api.github.com", "/repos/owner/repo").respond(403)
+        meta = await fetch_metadata("https://github.com/owner/repo")
+    assert (meta.type, meta.stars) == ("repo", None)
+    assert meta.site_name == "GitHub"

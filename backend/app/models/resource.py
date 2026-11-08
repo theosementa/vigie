@@ -22,7 +22,7 @@ class Resource(Base):
     url: Mapped[str] = mapped_column(Text)
     # SHA-256 of the normalised url: unique, so the index size does not depend on the URL length
     url_hash: Mapped[str] = mapped_column(String(64), unique=True)
-    type: Mapped[str] = mapped_column(String(20))  # article | video | website | repo
+    type: Mapped[str] = mapped_column(String(20))  # article | video | podcast | website | repo
     title: Mapped[str] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(Text)
@@ -32,4 +32,7 @@ class Resource(Base):
     duration_seconds: Mapped[int | None] = mapped_column(Integer)
     reading_time_minutes: Mapped[int | None] = mapped_column(Integer)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # repositories only: star count, and when it was last looked up (see services/stars.py)
+    stars: Mapped[int | None] = mapped_column(Integer)
+    stars_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

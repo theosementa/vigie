@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-ItemType = Literal["article", "video", "website", "repo"]
+ItemType = Literal["article", "video", "podcast", "website", "repo"]
 MAX_URL_LENGTH = 2048
 
 
@@ -23,6 +23,7 @@ class ResourceOut(BaseModel):
     duration_seconds: int | None = None
     reading_time_minutes: int | None = None
     published_at: datetime | None = None
+    stars: int | None = None
     fetched_at: datetime
 
 
@@ -42,4 +43,5 @@ class PreviewOut(BaseModel):
     duration_seconds: int | None = None
     reading_time_minutes: int | None = None
     published_at: datetime | None = None
+    stars: int | None = None
     existing_item_id: uuid.UUID | None = None

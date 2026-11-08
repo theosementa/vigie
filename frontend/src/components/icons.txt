@@ -61,3 +61,5 @@ settings-bold
 users-group-rounded-bold
 global-linear
 code-square-linear
+microphone-3-linear
+star-linear

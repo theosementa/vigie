@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Resource } from '@/lib/api'
 import { formatDuration } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { siteInitial } from './metadata'
+import { hasDuration, siteInitial } from './metadata'
 
 export type ThumbResource = Pick<
   Resource,
@@ -11,7 +11,7 @@ export type ThumbResource = Pick<
 
 /**
  * Thumbnail of the DA: the publisher's og:image, or the site-initial monogram on `--surface-2`
- * (also when the image fails to load). Videos carry their duration. Sizes come from the parent
+ * (also when the image fails to load). Videos and podcasts carry their duration. Sizes come from the parent
  * (`.it .th`, `.card .th`, `.preview .th`, `.detail-th`); a seen or unavailable item is dimmed by
  * `.is-seen` / `.is-unknown` on an ancestor.
  */
@@ -20,7 +20,7 @@ export function ItemThumb({ resource, className }: { resource: ThumbResource; cl
     <div className={cn('th', className)}>
       {/* keyed: a new image gets a fresh error state */}
       <ThumbImage key={resource.image_url ?? ''} resource={resource} />
-      {resource.type === 'video' && resource.duration_seconds != null && (
+      {hasDuration(resource.type) && resource.duration_seconds != null && (
         <span className="dur">{formatDuration(resource.duration_seconds)}</span>
       )}
     </div>

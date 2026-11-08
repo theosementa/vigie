@@ -34,6 +34,7 @@ from app.services.items import (
 from app.services.metadata import fetch_metadata
 from app.services.queue import next_position, remove_from_queue
 from app.services.share import share_item
+from app.services.stars import refresh_stale_stars
 from app.services.url import InvalidUrlError, normalize_url
 
 router = APIRouter(prefix="/items", tags=["items"], responses={404: {"model": ErrorResponse}})
@@ -134,6 +135,7 @@ async def list_items(
         rows = rows[:limit]
         last = rows[-1]
         next_cursor = encode_cursor(last.created_at, last.id)
+    await refresh_stale_stars(session, rows)
     return ItemList(items=[item_to_out(i) for i in rows], next_cursor=next_cursor)
 
 

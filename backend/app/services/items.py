@@ -48,6 +48,12 @@ def apply_metadata(resource: Resource, meta: Metadata) -> None:
     resource.duration_seconds = meta.duration_seconds
     resource.reading_time_minutes = meta.reading_time_minutes
     resource.published_at = meta.published_at
+    if meta.stars is not None:
+        resource.stars = meta.stars
+        resource.stars_fetched_at = datetime.now().astimezone()
+    elif meta.type != "repo":
+        resource.stars = None
+        resource.stars_fetched_at = None
     resource.fetched_at = datetime.now().astimezone()
 
 

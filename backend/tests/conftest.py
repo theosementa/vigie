@@ -121,6 +121,11 @@ def _fake_metadata(request, monkeypatch):
     monkeypatch.setattr("app.api.routes.items.fetch_metadata", fake)
     monkeypatch.setattr("app.api.routes.resources.fetch_metadata", fake)
 
+    async def no_stars(url: str, **_: object) -> int | None:
+        return None
+
+    monkeypatch.setattr("app.services.stars.fetch_stars", no_stars)
+
 
 def make_client() -> httpx.AsyncClient:
     return httpx.AsyncClient(

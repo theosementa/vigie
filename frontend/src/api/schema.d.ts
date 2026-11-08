@@ -701,7 +701,7 @@ export interface components {
             /** Tags */
             tags?: string[];
             /** Type */
-            type?: ("article" | "video" | "website" | "repo") | null;
+            type?: ("article" | "video" | "podcast" | "website" | "repo") | null;
             /** Url */
             url: string;
         };
@@ -768,7 +768,7 @@ export interface components {
             /** Title */
             title?: string | null;
             /** Type */
-            type?: ("article" | "video" | "website" | "repo") | null;
+            type?: ("article" | "video" | "podcast" | "website" | "repo") | null;
         };
         /**
          * Locale
@@ -831,13 +831,15 @@ export interface components {
             reading_time_minutes?: number | null;
             /** Site Name */
             site_name?: string | null;
+            /** Stars */
+            stars?: number | null;
             /** Title */
             title: string;
             /**
              * Type
              * @enum {string}
              */
-            type: "article" | "video" | "website" | "repo";
+            type: "article" | "video" | "podcast" | "website" | "repo";
             /** Url */
             url: string;
         };
@@ -846,7 +848,7 @@ export interface components {
             /** First Name */
             first_name?: string | null;
             /** Hidden Types */
-            hidden_types?: ("article" | "video" | "website" | "repo")[] | null;
+            hidden_types?: ("article" | "video" | "podcast" | "website" | "repo")[] | null;
             /** Last Name */
             last_name?: string | null;
             locale?: components["schemas"]["Locale"] | null;
@@ -941,13 +943,15 @@ export interface components {
             reading_time_minutes?: number | null;
             /** Site Name */
             site_name?: string | null;
+            /** Stars */
+            stars?: number | null;
             /** Title */
             title: string;
             /**
              * Type
              * @enum {string}
              */
-            type: "article" | "video" | "website" | "repo";
+            type: "article" | "video" | "podcast" | "website" | "repo";
             /** Url */
             url: string;
         };
@@ -1176,7 +1180,7 @@ export interface components {
             /** First Name */
             first_name: string;
             /** Hidden Types */
-            hidden_types: ("article" | "video" | "website" | "repo")[];
+            hidden_types: ("article" | "video" | "podcast" | "website" | "repo")[];
             /**
              * Id
              * Format: uuid
@@ -2070,7 +2074,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: ("to_watch" | "seen") | null;
-                type?: ("article" | "video" | "website" | "repo") | null;
+                type?: ("article" | "video" | "podcast" | "website" | "repo") | null;
                 tag?: string | null;
                 q?: string | null;
                 shared?: boolean | null;

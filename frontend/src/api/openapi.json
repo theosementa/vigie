@@ -394,6 +394,7 @@
                 "enum": [
                   "article",
                   "video",
+                  "podcast",
                   "website",
                   "repo"
                 ],
@@ -642,6 +643,7 @@
                 "enum": [
                   "article",
                   "video",
+                  "podcast",
                   "website",
                   "repo"
                 ],
@@ -860,6 +862,17 @@
             ],
             "title": "Site Name"
           },
+          "stars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stars"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -868,6 +881,7 @@
             "enum": [
               "article",
               "video",
+              "podcast",
               "website",
               "repo"
             ],
@@ -909,6 +923,7 @@
                   "enum": [
                     "article",
                     "video",
+                    "podcast",
                     "website",
                     "repo"
                   ],
@@ -1252,6 +1267,17 @@
             ],
             "title": "Site Name"
           },
+          "stars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stars"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -1260,6 +1286,7 @@
             "enum": [
               "article",
               "video",
+              "podcast",
               "website",
               "repo"
             ],
@@ -1821,6 +1848,7 @@
               "enum": [
                 "article",
                 "video",
+                "podcast",
                 "website",
                 "repo"
               ],
@@ -2952,6 +2980,7 @@
                   "enum": [
                     "article",
                     "video",
+                    "podcast",
                     "website",
                     "repo"
                   ],

@@ -62,6 +62,11 @@ export function formatNumber(value: number, locale: Locale = getLocale()): strin
   return new Intl.NumberFormat(intlLocale(locale)).format(value)
 }
 
+/** 4054 -> "4.1k" / "4,1 k": star counts, where the exact figure does not matter. */
+export function formatCompact(value: number, locale: Locale = getLocale()): string {
+  return new Intl.NumberFormat(intlLocale(locale), { notation: 'compact', maximumFractionDigits: 1 }).format(value)
+}
+
 /** "First Last" for any user-shaped object. */
 export function fullName(u: { first_name: string; last_name: string }): string {
   return `${u.first_name} ${u.last_name}`.trim()

@@ -25,11 +25,15 @@ export function siteInitial(r: Pick<Resource, 'url' | 'site_name'>): string {
 
 export const isSeen = (item: Pick<Item, 'status'>) => item.status === 'seen'
 
-export const RESOURCE_TYPES: ResourceType[] = ['article', 'video', 'website', 'repo']
+export const RESOURCE_TYPES: ResourceType[] = ['article', 'video', 'podcast', 'website', 'repo']
+
+/** Videos and podcasts are measured in time listened or watched; the rest in reading time. */
+export const hasDuration = (type: ResourceType) => type === 'video' || type === 'podcast'
 
 export const TYPE_ICON: Record<ResourceType, IconBase> = {
   article: 'document-text',
   video: 'videocamera',
+  podcast: 'microphone-3',
   website: 'global',
   repo: 'code-square',
 }

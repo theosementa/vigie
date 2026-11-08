@@ -7,10 +7,10 @@ import { TagInput } from '@/features/tags/TagInput'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { ApiError, api, type ResourcePreview, type ResourceType } from '@/lib/api'
 import { errorMessage } from '@/lib/errors'
-import { formatDuration, formatMinutesShort } from '@/lib/format'
+import { formatCompact, formatDuration, formatMinutesShort } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { TYPE_ICON } from './metadata'
+import { TYPE_ICON, hasDuration } from './metadata'
 import { useResourceTypes } from './useResourceTypes'
 import { AddItemContext, useAddItem } from './addItemContext'
 import { ItemThumb } from './ItemThumb'
@@ -36,13 +36,14 @@ function PreviewSkeleton() {
 
 function Preview({ data, type }: { data: ResourcePreview; type: ResourceType }) {
   const t = useT()
-  const detail =
-    type === 'video'
-      ? data.duration_seconds != null
-        ? formatDuration(data.duration_seconds)
-        : null
-      : type === 'article' && data.reading_time_minutes != null
-        ? formatMinutesShort(data.reading_time_minutes)
+  const detail = hasDuration(type)
+    ? data.duration_seconds != null
+      ? formatDuration(data.duration_seconds)
+      : null
+    : type === 'article' && data.reading_time_minutes != null
+      ? formatMinutesShort(data.reading_time_minutes)
+      : type === 'repo' && data.stars != null
+        ? t('item.stars', { count: formatCompact(data.stars) })
         : null
   const resource = { ...data, type }
   return (

@@ -1,4 +1,4 @@
-"""Metadata extraction (OpenGraph, YouTube oEmbed, reading time). Never raises."""
+"""Metadata extraction (OpenGraph, YouTube, podcasts, repo stars, reading time). Never raises."""
 
 import json
 import logging
@@ -10,6 +10,7 @@ from urllib.parse import quote, urljoin, urlsplit
 
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
+from app.services.stars import fetch_stars, repo_slug
 from app.services.url import FetchError, extract_youtube_id, safe_fetch
 
 log = logging.getLogger(__name__)
@@ -18,6 +19,31 @@ WORDS_PER_MINUTE = 230
 _ISO_DURATION = re.compile(r"^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$")
 _LENGTH_SECONDS = re.compile(r'"lengthSeconds"\s*:\s*"(\d+)"')
 _VIDEO_HOSTS = ("vimeo.com", "dailymotion.com", "twitch.tv")
+# Podcast platforms. Spotify and Deezer also host music, so only their show and episode pages count.
+_PODCAST_HOSTS = (
+    "podcasts.apple.com",
+    "podcasts.google.com",
+    "podcasters.spotify.com",
+    "castbox.fm",
+    "podcastaddict.com",
+    "overcast.fm",
+    "pca.st",
+    "pocketcasts.com",
+    "player.fm",
+    "ausha.co",
+    "acast.com",
+    "podbean.com",
+    "buzzsprout.com",
+    "audioboom.com",
+    "spreaker.com",
+    "podtail.com",
+)
+_PODCAST_PATHS = {
+    "open.spotify.com": ("episode", "show"),
+    "deezer.com": ("episode", "show", "podcast"),
+}
+_REPO_SITES = {"github.com": "GitHub", "gitlab.com": "GitLab", "codeberg.org": "Codeberg"}
+_PODCAST_LD_TYPES = {"PodcastEpisode", "PodcastSeries", "PodcastSeason"}
 
 
 @dataclass
@@ -33,18 +59,47 @@ class Metadata:
     duration_seconds: int | None = None
     reading_time_minutes: int | None = None
     published_at: datetime | None = None
+    stars: int | None = None  # repositories only
     ok: bool = False  # False = fallback only (nothing could be fetched)
 
 
-_REPO_HOSTS = ("github.com", "gitlab.com", "codeberg.org")
-
-
-def _is_repo(url: str) -> bool:
-    """`host/<owner>/<repo>` on GitHub, GitLab or Codeberg; deeper pages are articles."""
+def _is_podcast_url(url: str) -> bool:
     parts = urlsplit(url)
-    if (parts.hostname or "").removeprefix("www.") not in _REPO_HOSTS:
-        return False
-    return len([p for p in parts.path.split("/") if p]) == 2
+    host = (parts.hostname or "").removeprefix("www.")
+    if any(host == h or host.endswith(f".{h}") for h in _PODCAST_HOSTS):
+        return True
+    segments = [s for s in parts.path.split("/") if s]
+    # `/intl-fr/episode/...`, `/fr/show/...`: skip a leading locale segment
+    return host in _PODCAST_PATHS and any(s in _PODCAST_PATHS[host] for s in segments[:2])
+
+
+def _jsonld_nodes(tree: HTMLParser):
+    for node in tree.css('script[type="application/ld+json"]'):
+        try:
+            data = json.loads(node.text())
+        except ValueError:
+            continue
+        stack = [data]
+        while stack:
+            item = stack.pop()
+            if isinstance(item, list):
+                stack.extend(item)
+            elif isinstance(item, dict):
+                yield item
+                stack.extend(v for v in item.values() if isinstance(v, (list, dict)))
+
+
+def _podcast_jsonld(tree: HTMLParser) -> tuple[bool, int | None]:
+    """Whether the page declares a schema.org podcast, and the duration it gives."""
+    found, duration = False, None
+    for item in _jsonld_nodes(tree):
+        kinds = item.get("@type")
+        kinds = {kinds} if isinstance(kinds, str) else set(kinds or [])
+        if kinds & _PODCAST_LD_TYPES:
+            found = True
+            raw = item.get("duration") or item.get("timeRequired")
+            duration = duration or (parse_iso_duration(raw) if isinstance(raw, str) else None)
+    return found, duration
 
 
 def hostname_of(url: str) -> str:
@@ -66,6 +121,10 @@ def parse_iso_duration(value: str | None) -> int | None:
         + math.floor(float(seconds or 0))
     )
     return total or None
+
+
+def _seconds(raw: str | None) -> int | None:
+    return int(raw) if raw and raw.isdigit() and int(raw) > 0 else None
 
 
 def _meta(tree: HTMLParser, *names: str) -> str | None:
@@ -130,20 +189,27 @@ def parse_html(html: str, page_url: str, meta: Metadata) -> None:
 
     og_type = (_meta(tree, "og:type") or "").lower()
     host = hostname_of(page_url)
+    ld_podcast, ld_duration = _podcast_jsonld(tree)
+    if ld_podcast or _is_podcast_url(page_url):
+        meta.type = "podcast"
+        meta.duration_seconds = (
+            ld_duration
+            or parse_iso_duration(_meta(tree, "duration"))
+            or _seconds(_meta(tree, "music:duration", "og:audio:duration"))
+        )
+        return
     if og_type.startswith("video") or any(host.endswith(h) for h in _VIDEO_HOSTS):
         meta.type = "video"
     duration = parse_iso_duration(_meta(tree, "duration", "video:duration"))
     if duration is None:
-        raw = _meta(tree, "og:video:duration", "video:duration")
-        if raw and raw.isdigit():
-            duration = int(raw)
+        duration = _seconds(_meta(tree, "og:video:duration", "video:duration"))
     if duration:
         meta.duration_seconds = duration
         meta.type = "video"
     if meta.type == "article":
-        if _is_repo(page_url):
+        if repo_slug(page_url):
             meta.type = "repo"
-            meta.site_name = meta.site_name or "GitHub"
+            meta.site_name = meta.site_name or _REPO_SITES[hostname_of(page_url)]
         elif urlsplit(page_url).path.strip("/") == "":  # a home page, not a post
             meta.type = "website"
         else:
@@ -211,6 +277,8 @@ async def fetch_metadata(url: str) -> Metadata:
             if "html" in res.content_type or not res.content_type:
                 parse_html(res.text, res.url, meta)
                 meta.ok = True
+                if meta.type == "repo":
+                    meta.stars = await fetch_stars(url)
     except FetchError as exc:
         log.info("metadata fetch failed for %s: %s", url, exc)
     except Exception:  # never block item creation

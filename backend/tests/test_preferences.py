@@ -55,7 +55,7 @@ async def test_hidden_types_default_to_none_and_follow_the_account(alice):
 
 @pytest.mark.parametrize(
     "value",
-    [["podcast"], "repo", ["article", "video", "website", "repo"]],
+    [["newsletter"], "repo", ["article", "video", "podcast", "website", "repo"]],
 )
 async def test_invalid_hidden_types_is_422(alice, value):
     assert (await alice.patch("/api/auth/me", json={"hidden_types": value})).status_code == 422

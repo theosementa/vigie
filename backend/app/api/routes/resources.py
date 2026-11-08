@@ -51,6 +51,7 @@ async def preview_resource(body: PreviewIn, user: CurrentUser, session: SessionD
             duration_seconds=meta.duration_seconds,
             reading_time_minutes=meta.reading_time_minutes,
             published_at=meta.published_at,
+            stars=meta.stars,
         )
     data.existing_item_id = existing_item_id
     return data

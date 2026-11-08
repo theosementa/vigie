@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Icon, type IconBase } from '@/components/Icon'
 import type { Item, ItemEvent } from '@/lib/api'
-import { formatDateTime, formatDuration, formatMinutesShort, formatDate, fullName } from '@/lib/format'
+import { formatCompact, formatDateTime, formatDuration, formatMinutesShort, formatDate, formatNumber, fullName } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { youtubeAppTarget } from '@/lib/youtube'
@@ -9,7 +9,7 @@ import { TagInput } from '@/features/tags/TagInput'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemThumb } from './ItemThumb'
 import { useItemDialogs } from './itemDialogsContext'
-import { TYPE_ICON, isMetadataUnavailable, siteOf } from './metadata'
+import { TYPE_ICON, hasDuration, isMetadataUnavailable, siteOf } from './metadata'
 import { useResourceTypes } from './useResourceTypes'
 import { useItemEvents, useSetItemStatus, useUpdateItem } from './queries'
 import { useRefreshWithToast } from './useRefreshItem'
@@ -123,7 +123,7 @@ function TagsEditor({ item }: { item: Item }) {
 function Facts({ item }: { item: Item }) {
   const t = useT()
   const { resource } = item
-  const video = resource.type === 'video'
+  const video = hasDuration(resource.type)
   const timed = video || resource.type === 'article'
   const value = video ? resource.duration_seconds : resource.reading_time_minutes
   return (
@@ -140,6 +140,12 @@ function Facts({ item }: { item: Item }) {
           : t(video ? 'item.duration_unknown' : 'item.reading_unknown')}
         <span className="conf">{t(value == null ? 'conf.unknown' : video ? 'conf.measured' : 'conf.estimated')}</span>
       </span>}
+      {resource.type === 'repo' && resource.stars != null && (
+        <span className="f" title={t('item.stars', { count: formatNumber(resource.stars) })}>
+          <Icon name="star" className="xs" />
+          {formatCompact(resource.stars)}
+        </span>
+      )}
       {resource.published_at && <span className="f">{formatDate(resource.published_at)}</span>}
     </div>
   )

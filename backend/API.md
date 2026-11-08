@@ -83,7 +83,7 @@ link valid 1 hour, e.g. `docker compose exec api vigie reset-password alice@exam
 ## Types
 
 ```jsonc
-// ItemType = "article" | "video"      ItemStatus = "to_watch" | "seen"
+// ItemType = "article" | "video" | "podcast" | "website" | "repo"      ItemStatus = "to_watch" | "seen"
 User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "hidden_types": [], "created_at": "..." }
 Tag      = { "id": "uuid", "name": "python" }
 Resource = {
@@ -93,6 +93,7 @@ Resource = {
   "site_name": "..."|null, "favicon_url": "..."|null, "author": "..."|null,
   "duration_seconds": 212|null,          // videos
   "reading_time_minutes": 4|null,        // articles
+  "stars": 4054|null,                     // repositories: refreshed when older than 6 h, on `GET /api/items`
   "published_at": "..."|null, "fetched_at": "..."
 }
 Item = {
@@ -168,7 +169,7 @@ expired (1 h) or already used. Tokens are random, stored hashed (SHA-256), singl
 All fields optional (omitted = unchanged). `422` for an empty / over-long name or a timezone that is not a
 known IANA name (`zoneinfo`). `locale` (`auto` | `en` | `fr`, default `auto`) and `theme` (`system` | `dark` | `light`, default `system`) and
 `mobile_layout` (`list` | `grid`, default `list`: how the library shows on a phone) are
-stored on the account; any other value is a `422`. `hidden_types` (list of `article` | `video` | `website` | `repo`, default `[]`) hides
+stored on the account; any other value is a `422`. `hidden_types` (list of `article` | `video` | `podcast` | `website` | `repo`, default `[]`) hides
 those types from the filter chips and the type pickers (existing items stay in the library); `422` if it
 would hide every type. The timezone drives "day", "week" and streaks in the statistics.
 
@@ -244,20 +245,22 @@ Fetches metadata without saving anything (used by the add form).
   "image_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg", "site_name": "YouTube",
   "favicon_url": "https://www.youtube.com/favicon.ico", "author": "Rick Astley",
   "duration_seconds": 212, "reading_time_minutes": null, "published_at": null,
-  "existing_item_id": null
+  "stars": null, "existing_item_id": null
 }
 ```
+`stars` is set for repositories only (GitHub, GitLab, Codeberg). `duration_seconds` also covers podcasts.
 `existing_item_id` is the current user's item id if this URL is already in their library, else `null`.
 Metadata failures never error: the title falls back to the hostname. `422` for an invalid URL or one longer than 2048 chars.
 
 ## Items
 
 ### `GET /api/items`
-Query params (all optional): `status` (`to_watch|seen`), `type` (`article|video`), `tag` (tag name,
+Query params (all optional): `status` (`to_watch|seen`), `type` (`article|video|podcast|website|repo`), `tag` (tag name,
 case-insensitive, or tag id), `q` (substring search on title, description, site name and your notes),
 `shared` (`true` = only items shared with me, `false` = only my own), `queued` (`true` = only items in the
 watch queue, `false` = only items not in it), `cursor`, `limit` (1-100, default 20).
-Sorted by `created_at` desc.
+Sorted by `created_at` desc. Repositories whose `stars` are older than 6 h are refreshed from the host's
+public API before answering (at most 10 per request, 3 s in all; a failed lookup keeps the previous count).
 ```json
 { "items": [Item], "next_cursor": "opaque-string-or-null" }
 ```

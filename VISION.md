@@ -74,16 +74,17 @@ Le **Cœur** est toujours actif. Les autres s'activent **par compte** dans *Rég
 
 ### 5.1 Cœur — Bibliothèque
 
-**Saisie** : **URL**. Optionnels : tags, note, type (`article` / `video`, déduit sinon), statut (`À voir` par défaut).
+**Saisie** : **URL**. Optionnels : tags, note, type (`article` / `video` / `podcast` / `website` / `repo`, déduit sinon), statut (`À voir` par défaut).
 
 **Normalisation de l'URL** : schéma et hôte en minuscules, suppression du fragment, des paramètres de suivi (`utm_*`, `fbclid`, `gclid`, `mc_*`, `ref`, `si` YouTube), du slash final, tri des paramètres restants ; `youtu.be/<id>` et `youtube.com/shorts/<id>` → `youtube.com/watch?v=<id>`. **Longueur max 2 048 caractères** (refus en 422 au-delà).
 
 **Récupération des métadonnées** (protégée SSRF) : http/https, ports 80 et 443 uniquement (8080 et 8443 tolérés), résolution DNS puis refus des IP privées, loopback, link-local et réservées, connexion épinglée sur l'IP vérifiée, 5 s, 2 Mo, 3 redirections revérifiées. Sources par ordre de priorité : OpenGraph, Twitter cards, `<title>`, `<link rel=icon>`, `/favicon.ico`. YouTube : oEmbed + durée lue dans la page.
 
 **Calculs**
-- Type déduit = `video` si l'hôte est une plateforme vidéo connue (YouTube, Vimeo, Dailymotion, Twitch, PeerTube via `og:type=video`) ou si `og:type` commence par `video`, sinon `article`. L'utilisateur peut le corriger (`type_override`).
+- Type déduit = `podcast` si l'hôte est une plateforme de podcasts (Apple Podcasts, pages `/episode` et `/show` de Spotify, Castbox, Ausha…) ou si la page déclare un `PodcastEpisode` / `PodcastSeries` en JSON-LD ; sinon `video` si l'hôte est une plateforme vidéo connue (YouTube, Vimeo, Dailymotion, Twitch, PeerTube via `og:type=video`) ou si `og:type` commence par `video` ; `repo` pour `github.com`, `gitlab.com`, `codeberg.org/<owner>/<repo>` ; `website` pour une page d'accueil ; sinon `article`. L'utilisateur peut le corriger (`type_override`).
+- Étoiles d'un dépôt = `stargazers_count` (GitHub), `star_count` (GitLab), `stars_count` (Codeberg), lues dans l'API publique de l'hébergeur. Une valeur plus vieille que 6 h est relue à l'affichage de la bibliothèque (10 dépôts au plus par requête, 3 s au plus, l'ancienne valeur est gardée si l'API ne répond pas).
 - Temps de lecture = `max(1, ceil(mots du corps / 230))` minutes, confiance `estimé`. Inconnu si la page n'a pas pu être lue.
-- Durée vidéo : confiance `mesuré` quand elle vient de la plateforme, `inconnu` sinon (jamais devinée).
+- Durée vidéo ou podcast : confiance `mesuré` quand elle vient de la plateforme (JSON-LD `duration`, `music:duration`), `inconnu` sinon (jamais devinée).
 
 **Doublon** : ajouter une URL déjà présente ne crée rien ; la réponse renvoie l'item existant avec l'avertissement `already_in_library`, et l'interface ouvre la carte.
 
@@ -97,9 +98,9 @@ Le **Cœur** est toujours actif. Les autres s'activent **par compte** dans *Rég
 
 ### 5.2 File
 
-**Règle** : un item est dans la file s'il a un `queue_position` et que son type effectif est `video`. Positions 0-based, contiguës par utilisateur, recompactées à chaque ajout, déplacement ou retrait.
+**Règle** : un item est dans la file s'il a un `queue_position`, quel que soit son type. Positions 0-based, contiguës par utilisateur, recompactées à chaque ajout, déplacement ou retrait.
 
-**Sortie automatique** : marquer Vu, supprimer, ou changer le type en `article` retire de la file.
+**Sortie automatique** : marquer Vu ou supprimer retire de la file.
 
 **Affichage** : liste réordonnable (glisser au doigt et au clavier), durée totale de la file = Σ durées connues, confiance `partiel` si au moins une durée est inconnue (« ≈ 2 h 40, 2 vidéos sans durée »).
 
