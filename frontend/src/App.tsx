@@ -53,6 +53,13 @@ const QueuePage = lazy(() =>
   import('@/features/queue/QueuePage').then((m) => ({ default: m.QueuePage })),
 )
 
+const ContactsPage = lazy(() =>
+  import('@/features/contacts/ContactsPage').then((m) => ({ default: m.ContactsPage })),
+)
+const ContactThread = lazy(() =>
+  import('@/features/contacts/ContactThread').then((m) => ({ default: m.ContactThread })),
+)
+
 const StatsPage = lazy(() =>
   import('@/features/stats/StatsPage').then((m) => ({ default: m.StatsPage })),
 )
@@ -175,6 +182,8 @@ export default function App() {
                   <Route index element={<LibraryPage />} />
                   <Route path="queue" element={<QueuePage />} />
                   <Route path="shared" element={<LibraryPage sharedOnly />} />
+                  <Route path="contacts" element={<ContactsPage />} />
+                  <Route path="contacts/:id" element={<ContactThread />} />
                   <Route path="stats" element={<StatsPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route element={<RequireAdmin />}>

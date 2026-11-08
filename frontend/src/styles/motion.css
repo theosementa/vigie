@@ -89,6 +89,17 @@
   }
   .leaving > * { min-height: 0; overflow: hidden; }
   .cards > .leaving { animation-name: leave-card; display: block; }
+
+  /* A block that opens in place (the "save as contact" prompt): its height grows from 0, so the
+     content below and the dialog never jump. Pair with .leaving to close it. */
+  @keyframes expand { from { grid-template-rows: 0fr; opacity: 0; } }
+  .expand {
+    display: grid;
+    grid-template-rows: 1fr;
+    animation: expand var(--dur-slow) var(--ease);
+  }
+  .expand > * { min-height: 0; overflow: hidden; }
+  .expand.leaving { display: grid; }
 }
 
 @media (prefers-reduced-motion: reduce) {

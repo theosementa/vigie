@@ -1,12 +1,40 @@
-import { Link, NavLink } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { Icon } from '@/components/Icon'
 import { LogoMark } from '@/components/Logo'
 import { useAddItem } from '@/features/items/addItemContext'
 import { useMe } from '@/features/auth/useAuth'
 import { fullName, initials } from '@/lib/format'
 import { useT } from '@/lib/i18n'
-import { ADMIN_ENTRY, NAV, SETTINGS_ENTRY, type NavEntry } from './nav'
+import { ADMIN_ENTRY, NAV, SETTINGS_ENTRY, isEntryActive, type NavEntry } from './nav'
 import { useNavCounts } from './useNavCounts'
+
+/** A NavLink that also knows Contacts belong to Shared (see `isEntryActive`). */
+function NavItem({
+  entry,
+  className,
+  children,
+  ...rest
+}: {
+  entry: NavEntry
+  className?: string
+  children: (isActive: boolean) => ReactNode
+  'aria-label'?: string
+  title?: string
+}) {
+  const { pathname } = useLocation()
+  const active = isEntryActive(entry, pathname)
+  return (
+    <Link
+      to={entry.to}
+      className={[className, active && 'active'].filter(Boolean).join(' ') || undefined}
+      aria-current={active ? 'page' : undefined}
+      {...rest}
+    >
+      {children(active)}
+    </Link>
+  )
+}
 
 /** Phone: 4 tabs around the central round "add" action. Active tab = bold icon + text colour. */
 export function TabBar() {
@@ -14,14 +42,14 @@ export function TabBar() {
   const { open } = useAddItem()
   const [library, queue, shared, stats] = NAV
   const tab = (entry: NavEntry) => (
-    <NavLink key={entry.to} to={entry.to} end={entry.end} className="tab">
-      {({ isActive }) => (
+    <NavItem key={entry.to} entry={entry} className="tab">
+      {(isActive) => (
         <>
           <Icon name={entry.icon} bold={isActive} />
           {t(entry.label)}
         </>
       )}
-    </NavLink>
+    </NavItem>
   )
   return (
     <nav className="tabbar only-mobile" aria-label={t('nav.main')}>
@@ -46,21 +74,20 @@ export function Rail() {
   const counts = useNavCounts()
   const badge: Record<string, string | null> = { '/queue': counts.queue }
   const link = (entry: NavEntry) => (
-    <NavLink
+    <NavItem
       key={entry.to}
-      to={entry.to}
-      end={entry.end}
+      entry={entry}
       className="rail-link"
       aria-label={t(entry.label)}
       title={t(entry.label)}
     >
-      {({ isActive }) => (
+      {(isActive) => (
         <>
           <Icon name={entry.icon} bold={isActive} />
           {badge[entry.to] && badge[entry.to] !== '0' && <span className="badge-n">{badge[entry.to]}</span>}
         </>
       )}
-    </NavLink>
+    </NavItem>
   )
   return (
     <aside className="rail only-desktop" aria-label={t('nav.main')}>
@@ -98,15 +125,15 @@ export function Sidebar() {
     ) : null,
   }
   const link = (entry: NavEntry) => (
-    <NavLink key={entry.to} to={entry.to} end={entry.end}>
-      {({ isActive }) => (
+    <NavItem key={entry.to} entry={entry}>
+      {(isActive) => (
         <>
           <Icon name={entry.icon} small bold={isActive} />
           {t(entry.sideLabel ?? entry.label)}
           {count[entry.to] != null && <span className="n">{count[entry.to]}</span>}
         </>
       )}
-    </NavLink>
+    </NavItem>
   )
 
   return (

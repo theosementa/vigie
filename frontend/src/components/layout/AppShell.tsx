@@ -1,13 +1,14 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, matchPath, useLocation } from 'react-router-dom'
 import { useRealtime } from '@/features/realtime/useRealtime'
 import { Icon } from '@/components/Icon'
 import { useMe } from '@/features/auth/useAuth'
+import { contactLabel, useContacts } from '@/features/contacts/queries'
 import { CaptureBar } from '@/features/items/CaptureBar'
 import { setSearchOpen, useSearchOpen } from '@/features/items/searchOpen'
 import { useLibraryFilters } from '@/features/items/useLibraryFilters'
 import { usePile } from '@/features/stats/queries'
 import { formatDayLong, formatNumber } from '@/lib/format'
-import { useT } from '@/lib/i18n'
+import { useT, type MessageKey } from '@/lib/i18n'
 import { Rail, Sidebar, TabBar } from './Navigation'
 import { entryFor, isLibraryPath } from './nav'
 
@@ -57,21 +58,43 @@ function SearchButton() {
   )
 }
 
+/** Title of a contact's history: its name, or the address. */
+function ContactName({ id }: { id: string }) {
+  const { data } = useContacts()
+  const contact = data?.find((c) => c.id === id)
+  return <>{contact ? contactLabel(contact) : ''}</>
+}
+
+/** Where the back button of a sub-screen goes, with the label of its destination. */
+function backTarget(pathname: string): { to: string; label: MessageKey } | null {
+  if (pathname === '/settings') return { to: '/', label: 'nav.library' }
+  if (pathname === '/admin') return { to: '/settings', label: 'nav.settings' }
+  if (pathname === '/contacts') return { to: '/shared', label: 'nav.shared' }
+  if (pathname.startsWith('/contacts/')) return { to: '/contacts', label: 'nav.contacts' }
+  return null
+}
+
 /** Screen title: DA screen header on a phone (back, search and settings buttons), main header on tablet and desktop. */
 function PageHeader() {
   const t = useT()
   const { pathname } = useLocation()
   const entry = entryFor(pathname)
-  const title = t(entry?.title ?? 'shell.logo')
-  const back = pathname === '/settings' ? '/' : pathname === '/admin' ? '/settings' : null
+  const thread = matchPath('/contacts/:id', pathname)
+  const isContacts = pathname === '/contacts' || thread !== null
+  const title = thread?.params.id ? (
+    <ContactName id={thread.params.id} />
+  ) : (
+    t(pathname === '/contacts' ? 'title.contacts' : (entry?.title ?? 'shell.logo'))
+  )
+  const back = backTarget(pathname)
   const library = isLibraryPath(pathname)
-  const narrow = pathname === '/settings' ? 'xl' : pathname === '/admin' ? '2xl' : null
+  const narrow = isContacts || pathname === '/settings' ? 'xl' : pathname === '/admin' ? '2xl' : null
   return (
     <>
       <header className="scr-h only-mobile">
         <div className="flex min-w-0 items-center gap-3">
           {back && (
-            <Link to={back} className="icon-btn" aria-label={t(back === '/' ? 'nav.library' : 'nav.settings')}>
+            <Link to={back.to} className="icon-btn" aria-label={t(back.label)}>
               <Icon name="alt-arrow-left" small />
             </Link>
           )}
@@ -80,6 +103,11 @@ function PageHeader() {
         {library && (
           <div className="icon-btns">
             <SearchButton />
+            {pathname === '/shared' && (
+              <Link to="/contacts" className="icon-btn" aria-label={t('nav.contacts')} title={t('nav.contacts')}>
+                <Icon name="users-group-rounded" small />
+              </Link>
+            )}
             {pathname === '/' && (
               <Link to="/settings" className="icon-btn" aria-label={t('nav.settings')} title={t('nav.settings')}>
                 <Icon name="settings" small />
@@ -90,8 +118,21 @@ function PageHeader() {
       </header>
       <header className={`main-h only-desktop${narrow ? ` main-h-narrow main-h-${narrow}` : ''}`}>
         <div>
-          <h1>{title}</h1>
+          <div className="flex min-w-0 items-center gap-3">
+            {isContacts && back && (
+              <Link to={back.to} className="icon-btn" aria-label={t(back.label)}>
+                <Icon name="alt-arrow-left" small />
+              </Link>
+            )}
+            <h1>{title}</h1>
+          </div>
           {pathname === '/' && <LibrarySub />}
+          {pathname === '/shared' && (
+            <Link to="/contacts" className="btn btn-2 btn-sm mt-3 inline-flex">
+              <Icon name="users-group-rounded" small />
+              {t('nav.contacts')}
+            </Link>
+          )}
         </div>
         {library && <CaptureBar />}
       </header>

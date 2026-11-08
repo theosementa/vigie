@@ -37,7 +37,16 @@ export const ADMIN_ENTRY: NavEntry = {
   title: 'title.admin',
 }
 
+/** Active entry for the tab bar, rail and sidebar. Contacts live under Shared, which stays lit there. */
+export function isEntryActive(entry: NavEntry, pathname: string): boolean {
+  if (entry.end) return pathname === entry.to
+  if (entry.to === '/shared' && (pathname === '/contacts' || pathname.startsWith('/contacts/'))) return true
+  return pathname === entry.to || pathname.startsWith(`${entry.to}/`)
+}
+
 export function entryFor(pathname: string): NavEntry | undefined {
+  // Contacts live under Shared: that tab stays lit while you are there.
+  if (pathname.startsWith('/contacts')) return NAV.find((n) => n.to === '/shared')
   return [...NAV, SETTINGS_ENTRY, ADMIN_ENTRY].find((n) =>
     n.end ? pathname === n.to : pathname.startsWith(n.to),
   )

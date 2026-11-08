@@ -31,6 +31,9 @@ export type ItemEvent = Schemas['ItemEventOut']
 export type ItemsPage = Schemas['ItemList']
 export type QueueList = Schemas['QueueOut']
 export type ShareResult = Schemas['ShareOut']
+export type Contact = Schemas['ContactOut']
+export type ContactHistoryEntry = Schemas['HistoryEntry']
+export type ContactHistoryPage = Schemas['HistoryPage']
 export type RefreshResult = Schemas['RefreshOut']
 
 /** Query of GET /items; empty values are dropped before the request. */
@@ -149,6 +152,21 @@ export const api = {
   },
   tags: {
     list: () => ok(client.GET('/api/tags')),
+  },
+  contacts: {
+    list: () => ok(client.GET('/api/contacts')),
+    create: (input: { email: string; name?: string | null }) =>
+      ok(client.POST('/api/contacts', { body: input })),
+    rename: (id: string, name: string | null) =>
+      ok(client.PATCH('/api/contacts/{contact_id}', { params: { path: { contact_id: id } }, body: { name } })),
+    remove: (id: string) =>
+      ok(client.DELETE('/api/contacts/{contact_id}', { params: { path: { contact_id: id } } })),
+    history: (id: string, before?: string, limit = 30) =>
+      ok(
+        client.GET('/api/contacts/{contact_id}/history', {
+          params: { path: { contact_id: id }, query: { before, limit } },
+        }),
+      ),
   },
   stats: {
     summary: (query: { period: StatsPeriod; offset: number }) =>

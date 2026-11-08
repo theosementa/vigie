@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { contactsKey } from '@/features/contacts/queries'
 import { meKey, sessionsKey, useClearSession, useMe } from '@/features/auth/useAuth'
 import { itemsKey, queueKey, tagsKey } from '@/features/items/queries'
 import { statsKey } from '@/features/stats/queries'
@@ -11,6 +12,7 @@ const KEYS: Record<string, readonly unknown[]> = {
   stats: statsKey,
   me: meKey,
   sessions: sessionsKey,
+  contacts: contactsKey,
 }
 
 /** Refetch what the server says changed on another device ("*" = everything). */
