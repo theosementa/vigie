@@ -514,7 +514,7 @@ export const en = {
   'contacts.add.hint': 'Only you see your contacts. The name is whatever you type.',
   'contacts.email': 'Email address',
   'contacts.name': 'Name (optional)',
-  'contacts.name.placeholder': 'Camille Roux',
+  'contacts.name.placeholder': 'John Doe',
   'contacts.create.error': 'Couldn’t save the contact. Try again.',
   'contacts.invalid_email': 'That isn’t a valid email address.',
   'contacts.rename': 'Rename',

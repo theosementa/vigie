@@ -516,7 +516,7 @@ export const fr: Record<keyof typeof en, string> = {
   'contacts.add.hint': 'Toi seul·e vois tes contacts. Le nom est celui que tu choisis.',
   'contacts.email': 'Adresse e‑mail',
   'contacts.name': 'Nom (facultatif)',
-  'contacts.name.placeholder': 'Camille Roux',
+  'contacts.name.placeholder': 'John Doe',
   'contacts.create.error': 'Impossible d’enregistrer le contact. Réessaie.',
   'contacts.invalid_email': 'Ce n’est pas une adresse e‑mail valide.',
   'contacts.rename': 'Renommer',

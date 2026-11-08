@@ -100,7 +100,7 @@ function SaveContactsPrompt({ addresses }: { addresses: string[] }) {
                   autoComplete="off"
                   maxLength={100}
                   value={names[email] ?? ''}
-                  placeholder={t('contacts.name')}
+                  placeholder={t('contacts.name.placeholder')}
                   onChange={(e) => setNames({ ...names, [email]: e.target.value })}
                   className="h-9 rounded-lg"
                 />
