@@ -108,8 +108,8 @@ The **Core** is always on. The others are enabled **per account** in *Settings �
 - A view never stores results: it is re-run every time. A view whose tag was deleted shows an empty result with "This tag no longer exists".
 
 **Delete and Seen without confirmation, with Undo**
-- **Delete** removes the card at once and shows a toast "Removed · Undo" for 5 s. The `DELETE` request is sent when the toast ends, or right away (`keepalive`) if the page is hidden or closed. Undo therefore never needs a server-side restore. If the request fails, the card comes back with an error toast.
-- **Mark as seen** applies at once (request sent immediately) and shows "Marked as seen · Undo" for 5 s; Undo sends the item back to To watch. The journal records `seen` then `unseen`, so the statistics stay right (§5.4: a `seen` followed by an `unseen` in the same period does not count).
+- **Delete** removes the card at once and shows a toast "Removed “title” · Undo" for 5 s (title cut to about 40 characters, the custom title if renamed). The `DELETE` request is sent when the toast ends, or right away (`keepalive`) if the page is hidden or closed. Undo therefore never needs a server-side restore. If the request fails, the card comes back with an error toast.
+- **Mark as seen** applies at once (request sent immediately) and shows "“title” marked as seen · Undo" for 5 s; Undo sends the item back to To watch, and to its former queue position when it was queued (the toast then says it was removed from the queue). The journal records `seen` then `unseen`, so the statistics stay right (§5.4: a `seen` followed by an `unseen` in the same period does not count).
 - Deleting a saved view uses the same Undo toast. A confirmation stays only where an Undo cannot work: deleting the account, revoking an API token, deleting a contact (its history is involved).
 
 **Display**: card grid (image, title, site + favicon, duration or reading time, tags, state). Missing image → the art-direction thumbnail (no random gradient). Detail: metadata, note, tags, item history (added, seen, shared by…).

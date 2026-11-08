@@ -24,6 +24,7 @@ import {
   type TagWithCount,
   type UpdateItemInput,
 } from '@/lib/api'
+import { ellipsize } from '@/lib/format'
 import { t } from '@/lib/i18n'
 import { contactsKey } from '@/features/contacts/queries'
 import { statsKey } from '@/features/stats/queries'
@@ -170,6 +171,7 @@ export function useCreateItem() {
 }
 
 const UNDO_MS = 5000
+const TITLE_MAX = 40
 
 interface StatusVars {
   id: string
@@ -221,7 +223,7 @@ export function useSetItemStatus() {
       const queuePosition = ctx?.queuePosition ?? null
       qc.setQueryData(itemKey(item.id), item)
       if (status === 'seen')
-        toast(t(queuePosition === null ? 'item.marked_seen' : 'queue.seen_removed'), {
+        toast(t(queuePosition === null ? 'item.marked_seen' : 'queue.seen_removed', { title: ellipsize(item.resource.title, TITLE_MAX) }), {
           duration: UNDO_MS,
           action: {
             label: t('common.undo'),

@@ -2,12 +2,14 @@ import { useCallback } from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api, type Item } from '@/lib/api'
+import { ellipsize } from '@/lib/format'
 import { t } from '@/lib/i18n'
 import { refreshAfterDelete, itemKey } from './queries'
 import { setPending } from './pendingDeletes'
 import { useLibraryFilters } from './useLibraryFilters'
 
 const UNDO_MS = 5000
+const TITLE_MAX = 40
 
 /** Deletions waiting for their toast to end, each with the function that sends it now. */
 const waiting = new Map<string, (dismiss?: boolean) => void>()
@@ -55,7 +57,7 @@ export function useDeleteItem() {
         if (dismiss) toast.dismiss(toastId)
         void commit(qc, id)
       }
-      const toastId = toast(t('item.deleted'), {
+      const toastId = toast(t('item.deleted', { title: ellipsize(item.resource.title, TITLE_MAX) }), {
         duration: UNDO_MS,
         onAutoClose: () => send(),
         onDismiss: () => send(),

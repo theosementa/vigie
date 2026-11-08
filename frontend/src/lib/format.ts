@@ -90,6 +90,11 @@ export function formatRelativeDay(iso: string, locale: Locale = getLocale()): st
   return new Intl.RelativeTimeFormat(intlLocale(locale), { numeric: 'auto' }).format(Math.min(days, 0), 'day')
 }
 
+/** Cut `text` to `max` characters, ending with an ellipsis. */
+export function ellipsize(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text
+}
+
 /** ISO datetime -> "just now", "5 minutes ago", "2 hours ago", "3 days ago". */
 export function formatAgo(iso: string, locale: Locale = getLocale()): string {
   const rtf = new Intl.RelativeTimeFormat(intlLocale(locale), { numeric: 'auto' })
