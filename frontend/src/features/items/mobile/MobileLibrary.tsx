@@ -1,5 +1,6 @@
 import { Icon } from '@/components/Icon'
 import { usePullToRefresh } from '@/hooks/usePullToRefresh'
+import { ViewChips } from '@/features/views/ViewChips'
 import { LibraryChips } from '../LibraryChips'
 import { LibraryContent } from '../LibraryContent'
 import { useTags } from '../queries'
@@ -34,6 +35,7 @@ export function MobileLibrary({ lib }: { lib: Library }) {
       {(searchOpen || filters.q !== '') && (
         <SearchField value={filters.q} onChange={(q) => update({ q })} autoFocus={searchOpen && filters.q === ''} />
       )}
+      {!sharedOnly && <ViewChips />}
       <LibraryChips filters={filters} tags={tags} onChange={update} withCount={!sharedOnly} />
       {!sharedOnly && <ScopePanel />}
       <LibraryContent lib={lib} variant={layout === 'grid' ? 'cards' : 'list'} />

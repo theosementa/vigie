@@ -11,6 +11,18 @@ export interface LibraryFilters {
   q: string
 }
 
+/** The library filters carried by a URL query (unknown or invalid values fall back to the defaults). */
+export function readFilters(params: URLSearchParams): LibraryFilters {
+  const t = params.get('type')
+  return {
+    status: params.get('status') === 'seen' ? 'seen' : 'to_watch',
+    type: RESOURCE_TYPES.find((x) => x === t) ?? 'all',
+    length: LENGTH_BUCKETS.find((x) => x === params.get('length')) ?? null,
+    tag: params.get('tag'),
+    q: params.get('q') ?? '',
+  }
+}
+
 /**
  * Filters live in the URL (?status=&type=&length=&tag=&q=) so they are shared by mobile, sidebar and toolbar.
  * The opened item is `?item=<id>` so any component (add flow, cards) can open one.
@@ -18,17 +30,7 @@ export interface LibraryFilters {
 export function useLibraryFilters() {
   const [params, setParams] = useSearchParams()
 
-  const filters: LibraryFilters = useMemo(() => {
-    const status = params.get('status') === 'seen' ? 'seen' : 'to_watch'
-    const t = params.get('type')
-    return {
-      status,
-      type: RESOURCE_TYPES.find((x) => x === t) ?? 'all',
-      length: LENGTH_BUCKETS.find((x) => x === params.get('length')) ?? null,
-      tag: params.get('tag'),
-      q: params.get('q') ?? '',
-    }
-  }, [params])
+  const filters = useMemo(() => readFilters(params), [params])
 
   const itemId = params.get('item')
 

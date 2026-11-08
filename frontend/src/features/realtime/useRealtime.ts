@@ -4,6 +4,7 @@ import { contactsKey } from '@/features/contacts/queries'
 import { meKey, sessionsKey, useClearSession, useMe } from '@/features/auth/useAuth'
 import { itemsKey, queueKey, tagsKey } from '@/features/items/queries'
 import { statsKey } from '@/features/stats/queries'
+import { viewsKey } from '@/features/views/queries'
 
 const KEYS: Record<string, readonly unknown[]> = {
   items: itemsKey,
@@ -13,6 +14,7 @@ const KEYS: Record<string, readonly unknown[]> = {
   me: meKey,
   sessions: sessionsKey,
   contacts: contactsKey,
+  views: viewsKey,
 }
 
 /** Refetch what the server says changed on another device ("*" = everything). */

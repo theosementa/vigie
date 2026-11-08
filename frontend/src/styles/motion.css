@@ -101,6 +101,21 @@
   }
   .expand > * { min-height: 0; overflow: hidden; }
   .expand.leaving { animation: leave 240ms var(--ease) forwards; }
+
+  /* Saved view chips: the row opens and closes its height (and the 14 px gap above the next block),
+     each chip its width (and the 6 px gap beside it), so nothing around them jumps. */
+  @keyframes vrow-open { from { grid-template-rows: 0fr; opacity: 0; margin-bottom: -14px; } }
+  @keyframes vrow-close { to { grid-template-rows: 0fr; opacity: 0; margin-bottom: -14px; } }
+  @keyframes vchip-open { from { grid-template-columns: 0fr; opacity: 0; margin-right: -6px; } }
+  @keyframes vchip-close { to { grid-template-columns: 0fr; opacity: 0; margin-right: -6px; } }
+  .vrow { display: grid; grid-template-rows: 1fr; }
+  .vrow > * { min-height: 0; }
+  .vrow-in { animation: vrow-open var(--dur-slow) var(--ease); }
+  .vrow-out { pointer-events: none; animation: vrow-close 240ms var(--ease) forwards; }
+  .vchip { display: grid; grid-template-columns: 1fr; flex: none; }
+  .vchip > * { min-width: 0; overflow: hidden; }
+  .vchip-in { animation: vchip-open var(--dur-slow) var(--ease); }
+  .vchip-out { pointer-events: none; animation: vchip-close 240ms var(--ease) forwards; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { Icon } from '@/components/Icon'
 import { LogoMark } from '@/components/Logo'
 import { useAddItem } from '@/features/items/addItemContext'
+import { SidebarViews } from '@/features/views/SidebarViews'
+import { useActiveView } from '@/features/views/queries'
 import { useMe } from '@/features/auth/useAuth'
 import { fullName, initials } from '@/lib/format'
 import { useT } from '@/lib/i18n'
@@ -13,17 +15,20 @@ import { useNavCounts } from './useNavCounts'
 function NavItem({
   entry,
   className,
+  current,
   children,
   ...rest
 }: {
   entry: NavEntry
   className?: string
+  /** Overrides the path-based answer (Library gives way to the view selected under it). */
+  current?: boolean
   children: (isActive: boolean) => ReactNode
   'aria-label'?: string
   title?: string
 }) {
   const { pathname } = useLocation()
-  const active = isEntryActive(entry, pathname)
+  const active = current ?? isEntryActive(entry, pathname)
   return (
     <Link
       to={entry.to}
@@ -113,6 +118,7 @@ export function Sidebar() {
   const t = useT()
   const { data: me } = useMe()
   const counts = useNavCounts()
+  const viewSelected = useActiveView() !== undefined
 
   const count: Record<string, React.ReactNode> = {
     '/': counts.toWatch,
@@ -125,7 +131,7 @@ export function Sidebar() {
     ) : null,
   }
   const link = (entry: NavEntry) => (
-    <NavItem key={entry.to} entry={entry}>
+    <NavItem key={entry.to} entry={entry} current={entry.end && viewSelected ? false : undefined}>
       {(isActive) => (
         <>
           <Icon name={entry.icon} small bold={isActive} />
@@ -139,7 +145,16 @@ export function Sidebar() {
   return (
     <aside className="side only-desktop" aria-label={t('nav.main')}>
       <nav className="nav" aria-label={t('nav.main')}>
-        {NAV.map(link)}
+        {NAV.map((entry) =>
+          entry.end ? (
+            <div key={entry.to}>
+              {link(entry)}
+              <SidebarViews />
+            </div>
+          ) : (
+            link(entry)
+          ),
+        )}
         <div className="nav-sep" />
         {link(SETTINGS_ENTRY)}
         {me?.role === 'admin' && link(ADMIN_ENTRY)}

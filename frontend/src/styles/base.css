@@ -306,6 +306,18 @@
 .nav a{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;color:var(--muted);font-size:14px;font-weight:500;text-decoration:none}
 .nav a .n{margin-left:auto;font-size:12.5px;display:flex;align-items:center;gap:6px}
 .nav a[aria-current="page"]{background:var(--surface-2);color:var(--text)}
+/* Saved views under Library. The 2 px between rows is a transparent border, so a row collapses with its gap. */
+.nv-list{margin:0;padding:0;list-style:none}
+.nv{position:relative;border-radius:9px}
+.side .nav .nv-list a{border-top:2px solid transparent;background-clip:padding-box;padding-right:40px;-webkit-user-select:none;user-select:none}
+.nv-list a .i{flex:none}
+.nv-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nv-more{position:absolute;right:6px;top:6px;width:28px;height:28px;background:transparent;opacity:0}
+.nv:hover .nv-more,.nv:focus-within .nv-more,.nv-more[data-popup-open]{opacity:1}
+@media (hover:none){.nv-more{opacity:1}}
+.nv[data-dragging]{background:var(--surface-2);box-shadow:0 0 0 1px var(--line)}
+/* Saved views as chips (phone, tablet portrait): no text selection or iOS callout on a long press */
+.vchip-btn{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .nav-sep{height:1px;background:var(--line);margin:6px 4px}
 .me{margin-top:auto;display:flex;align-items:center;gap:10px;font-size:13px;padding:0 6px}
 .me div{display:grid;line-height:1.3}.me span{color:var(--muted);font-size:12px}

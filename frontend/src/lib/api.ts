@@ -32,6 +32,7 @@ export type ItemsPage = Schemas['ItemList']
 export type QueueList = Schemas['QueueOut']
 export type ShareResult = Schemas['ShareOut']
 export type Contact = Schemas['ContactOut']
+export type SavedView = Schemas['ViewOut']
 export type ContactHistoryEntry = Schemas['HistoryEntry']
 export type ContactHistoryPage = Schemas['HistoryPage']
 export type RefreshResult = Schemas['RefreshOut']
@@ -169,6 +170,14 @@ export const api = {
           params: { path: { contact_id: id }, query: { before, limit } },
         }),
       ),
+  },
+  views: {
+    list: () => ok(client.GET('/api/views')),
+    create: (input: Schemas['ViewIn']) => ok(client.POST('/api/views', { body: input })),
+    update: (id: string, input: Schemas['ViewUpdate']) =>
+      ok(client.PATCH('/api/views/{view_id}', { params: { path: { view_id: id } }, body: input })),
+    remove: (id: string, { keepalive }: { keepalive?: boolean } = {}) =>
+      ok(client.DELETE('/api/views/{view_id}', { params: { path: { view_id: id } }, keepalive })),
   },
   stats: {
     summary: (query: { period: StatsPeriod; offset: number }) =>

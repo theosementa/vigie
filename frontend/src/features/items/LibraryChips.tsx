@@ -1,20 +1,26 @@
-import { Fragment } from 'react'
+import { Fragment, type ButtonHTMLAttributes } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Icon } from '@/components/Icon'
 import { usePile } from '@/features/stats/queries'
 import type { ItemStatus, LengthBucket, ResourceType, TagWithCount } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
+import { canonicalQuery } from '@/features/views/query'
+import { useViews } from '@/features/views/queries'
+import { useViewDialogs } from '@/features/views/viewDialogsContext'
+import { cn } from '@/lib/utils'
 import { LENGTH_BUCKETS } from './metadata'
 import { useResourceTypes } from './useResourceTypes'
 import type { LibraryFilters } from './useLibraryFilters'
 
 type Patch = { status?: ItemStatus; type?: ResourceType | 'all'; length?: LengthBucket | null; tag?: string | null }
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button type="button" className="chip" aria-pressed={active} onClick={onClick}>
-      {children}
-    </button>
-  )
+export function Chip({
+  active,
+  className,
+  ...props
+}: { active: boolean } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button type="button" className={cn('chip', className)} aria-pressed={active} {...props} />
 }
 
 /** Filter chips of the DA: À voir (with the exact count), Vu, type, length, tags. They drive the URL filters. */
@@ -32,6 +38,12 @@ export function LibraryChips({
 }) {
   const t = useT()
   const { pile } = usePile()
+  const [params] = useSearchParams()
+  const { data: views = [] } = useViews()
+  const { save } = useViewDialogs()
+  const query = canonicalQuery(params)
+  // Offered for a set of filters that is not a saved view yet (the library only, not "shared with me").
+  const saveable = withCount && query !== '' && !views.some((v) => canonicalQuery(v.query) === query)
   const types = useResourceTypes(filters.type === 'all' ? undefined : filters.type)
   const groups = [
     [
@@ -62,6 +74,14 @@ export function LibraryChips({
         #{tag.name}
       </Chip>
     )),
+    saveable
+      ? [
+          <Chip key="save" active={false} className="enter" onClick={() => save(query)}>
+            <Icon name="bookmark" />
+            {t('view.save')}
+          </Chip>,
+        ]
+      : [],
   ].filter((group) => group.length > 0)
   return (
     <div className="chips" role="group" aria-label={t('filters.label')}>

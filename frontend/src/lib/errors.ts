@@ -24,6 +24,9 @@ const KNOWN: Partial<Record<MessageKey, true>> = {
   'error.not_found': true,
   'error.user_not_found': true,
   'error.invitation_not_found': true,
+  'error.view_name_taken': true,
+  'error.view_empty': true,
+  'error.views_limit': true,
   'error.network_error': true,
 }
 

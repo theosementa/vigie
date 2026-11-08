@@ -18,6 +18,7 @@ import { useMe } from '@/features/auth/useAuth'
 import { useTimezoneSync } from '@/features/auth/useTimezoneSync'
 import { AddItemProvider } from '@/features/items/AddItem'
 import { ItemDialogsProvider } from '@/features/items/ItemDialogsProvider'
+import { ViewDialogsProvider } from '@/features/views/ViewDialogsProvider'
 import { useLocaleFromUser } from '@/hooks/useLocale'
 import { useThemeColorSync, useThemeFromUser } from '@/hooks/useTheme'
 import { Icon } from '@/components/Icon'
@@ -125,9 +126,11 @@ function RequireAuth() {
   }
   return (
     <ItemDialogsProvider>
-      <AddItemProvider>
-        <Outlet />
-      </AddItemProvider>
+      <ViewDialogsProvider>
+        <AddItemProvider>
+          <Outlet />
+        </AddItemProvider>
+      </ViewDialogsProvider>
     </ItemDialogsProvider>
   )
 }

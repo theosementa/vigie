@@ -6,22 +6,10 @@ import { ellipsize } from '@/lib/format'
 import { t } from '@/lib/i18n'
 import { refreshAfterDelete, itemKey } from './queries'
 import { setPending } from './pendingDeletes'
+import { deferDelete } from './undoDelete'
 import { useLibraryFilters } from './useLibraryFilters'
 
-const UNDO_MS = 5000
 const TITLE_MAX = 40
-
-/** Deletions waiting for their toast to end, each with the function that sends it now. */
-const waiting = new Map<string, (dismiss?: boolean) => void>()
-
-/** The page is going away or hidden (timers stop in the background): send everything right now. */
-function sendAll() {
-  for (const send of [...waiting.values()]) send(true)
-}
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') sendAll()
-})
-addEventListener('pagehide', sendAll)
 
 async function commit(qc: QueryClient, id: string) {
   try {
@@ -52,24 +40,12 @@ export function useDeleteItem() {
       if (itemId === id) update({ item: null })
       onDeleted?.()
 
-      const send = (dismiss = false) => {
-        if (!waiting.delete(id)) return
-        if (dismiss) toast.dismiss(toastId)
-        void commit(qc, id)
-      }
-      const toastId = toast(t('item.deleted', { title: ellipsize(item.resource.title, TITLE_MAX) }), {
-        duration: UNDO_MS,
-        onAutoClose: () => send(),
-        onDismiss: () => send(),
-        action: {
-          label: t('common.undo'),
-          onClick: () => {
-            waiting.delete(id)
-            setPending(id, null)
-          },
-        },
-      })
-      waiting.set(id, send)
+      deferDelete(
+        id,
+        t('item.deleted', { title: ellipsize(item.resource.title, TITLE_MAX) }),
+        () => void commit(qc, id),
+        () => setPending(id, null),
+      )
     },
     [qc, itemId, update],
   )

@@ -5,6 +5,7 @@ import { formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { useAddItem } from './addItemContext'
 import { ItemList } from './ItemList'
+import { useTags } from './queries'
 import type { Library } from './useLibrary'
 
 /** Fires `onVisible` whenever the sentinel is (still) in view; re-armed after every loaded page. */
@@ -40,9 +41,13 @@ function InfiniteSentinel({
 function EmptyState({ lib }: { lib: Library }) {
   const t = useT()
   const { open } = useAddItem()
+  const { data: tags } = useTags()
+  const tag = lib.filters.tag?.trim().toLowerCase()
+  // A saved view can outlive its tag.
+  const tagGone = Boolean(tag) && tags !== undefined && !tags.some((x) => x.name.toLowerCase() === tag)
   const seen = lib.filters.status === 'seen'
   const first = !lib.hasActiveFilters && !lib.sharedOnly && !seen
-  const kind = lib.hasActiveFilters ? 'filtered' : lib.sharedOnly ? (seen ? 'shared_seen' : 'shared') : seen ? 'seen' : 'to_watch'
+  const kind = tagGone ? 'tag_gone' : lib.hasActiveFilters ? 'filtered' : lib.sharedOnly ? (seen ? 'shared_seen' : 'shared') : seen ? 'seen' : 'to_watch'
   return (
     <div className="empty">
       <div className="ghost">{t(seen ? 'empty.ghost.seen' : 'empty.ghost.to_watch')}</div>
