@@ -2,7 +2,7 @@ name: vigie
 
 services:
   db:
-    image: postgres:18.4-alpine
+    image: postgres:17.6-alpine
     restart: unless-stopped
     # Not published on the host: only the api reaches it, on the compose network.
     environment:
