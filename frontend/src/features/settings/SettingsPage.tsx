@@ -28,7 +28,8 @@ import { useT, type MessageKey, type TFunction } from '@/lib/i18n'
 import { useLocalePreference } from '@/hooks/useLocale'
 import { useTheme } from '@/hooks/useTheme'
 import { useMobileLayout, type MobileLayout } from '@/lib/mobileLayout'
-import { useShowRepos } from '@/lib/showRepos'
+import { useHiddenTypes } from '@/lib/hiddenTypes'
+import { RESOURCE_TYPES, TYPE_ICON } from '@/features/items/metadata'
 import { useZoomLock } from '@/lib/zoomLock'
 import type { IconBase } from '@/components/Icon'
 
@@ -120,7 +121,7 @@ function AppearanceSection() {
   const { theme, setTheme } = useTheme()
   const { preference, setPreference } = useLocalePreference()
   const [layout, setLayout] = useMobileLayout()
-  const [showRepos, setShowRepos] = useShowRepos()
+  const [hidden, setHidden] = useHiddenTypes()
   const [zoomLock, setZoomLock] = useZoomLock()
   return (
     <section className={sectionClass}>
@@ -157,23 +158,36 @@ function AppearanceSection() {
           </button>
         ))}
       </div>
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p id="repos-label" className="text-sm font-medium">
-            {t('repos.label')}
-          </p>
-          <p className="text-xs text-muted-foreground">{t('repos.help')}</p>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={showRepos}
-          aria-labelledby="repos-label"
-          onClick={() => setShowRepos(!showRepos)}
-        >
-          <span className={showRepos ? 'switch on' : 'switch'} />
-        </button>
-      </div>
+      <p id="types-label" className="mt-4 text-sm font-medium">
+        {t('types.label')}
+      </p>
+      <p className="text-xs text-muted-foreground">{t('types.help')}</p>
+      <ul aria-labelledby="types-label" className="mt-1 divide-y divide-border">
+        {RESOURCE_TYPES.map((type) => {
+          const on = !hidden.includes(type)
+          // At least one type has to stay on, or there would be nothing left to add.
+          const last = on && hidden.length >= RESOURCE_TYPES.length - 1
+          return (
+            <li key={type} className="flex items-center justify-between gap-3 py-2.5">
+              <span id={`type-${type}`} className="flex items-center gap-2 text-sm">
+                <Icon name={TYPE_ICON[type]} small />
+                {t(`type.${type}`)}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={on}
+                aria-labelledby={`type-${type}`}
+                disabled={last}
+                className="disabled:opacity-50"
+                onClick={() => setHidden(on ? [...hidden, type] : hidden.filter((h) => h !== type))}
+              >
+                <span className={on ? 'switch on' : 'switch'} />
+              </button>
+            </li>
+          )
+        })}
+      </ul>
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p id="zoom-label" className="text-sm font-medium">

@@ -845,12 +845,12 @@ export interface components {
         ProfileUpdate: {
             /** First Name */
             first_name?: string | null;
+            /** Hidden Types */
+            hidden_types?: ("article" | "video" | "website" | "repo")[] | null;
             /** Last Name */
             last_name?: string | null;
             locale?: components["schemas"]["Locale"] | null;
             mobile_layout?: components["schemas"]["MobileLayout"] | null;
-            /** Show Repos */
-            show_repos?: boolean | null;
             theme?: components["schemas"]["Theme"] | null;
             /** Timezone */
             timezone?: string | null;
@@ -1175,6 +1175,8 @@ export interface components {
             email: string;
             /** First Name */
             first_name: string;
+            /** Hidden Types */
+            hidden_types: ("article" | "video" | "website" | "repo")[];
             /**
              * Id
              * Format: uuid
@@ -1189,8 +1191,6 @@ export interface components {
              * @enum {string}
              */
             role: "admin" | "user";
-            /** Show Repos */
-            show_repos: boolean;
             theme: components["schemas"]["Theme"];
             /** Timezone */
             timezone: string;

@@ -2,13 +2,14 @@ import re
 import uuid
 from datetime import datetime
 from functools import lru_cache
-from typing import Annotated, Literal
+from typing import Annotated, Literal, get_args
 from zoneinfo import available_timezones
 
 from email_validator import EmailNotValidError, validate_email
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 from app.models.user import Locale, MobileLayout, Theme
+from app.schemas.resource import ItemType
 
 # Not-so-private names (RFC 6761 / 8375 and homelab habits). Accepted in `invite` and `closed`
 # instances (homelabs), refused in `open` ones, where the address could never be reached.
@@ -85,7 +86,17 @@ class ProfileUpdate(BaseModel):
     locale: Locale | None = None
     theme: Theme | None = None
     mobile_layout: MobileLayout | None = None
-    show_repos: bool | None = None
+    hidden_types: list[ItemType] | None = None
+
+    @field_validator("hidden_types")
+    @classmethod
+    def check_hidden_types(cls, v: list[ItemType] | None) -> list[ItemType] | None:
+        if v is None:
+            return None
+        unique = list(dict.fromkeys(v))
+        if len(unique) >= len(get_args(ItemType)):
+            raise ValueError("At least one type must stay visible")
+        return unique
 
     @field_validator("timezone")
     @classmethod
@@ -129,7 +140,7 @@ class UserOut(BaseModel):
     locale: Locale
     theme: Theme
     mobile_layout: MobileLayout
-    show_repos: bool
+    hidden_types: list[ItemType]
     created_at: datetime
 
 

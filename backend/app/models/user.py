@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, String, func, text
+from sqlalchemy import CheckConstraint, DateTime, Integer, String, func, text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -56,6 +57,8 @@ class User(Base):
     mobile_layout: Mapped[str] = mapped_column(
         String(10), server_default=text("'list'"), default=MobileLayout.LIST
     )
-    # whether the "Repository" type is offered (filter chip, type pickers); off for non-developers
-    show_repos: Mapped[bool] = mapped_column(Boolean, server_default=text("true"), default=True)
+    # resource types the user does not want offered (filter chips, type pickers); none by default
+    hidden_types: Mapped[list[str]] = mapped_column(
+        ARRAY(String(20)), server_default=text("'{}'"), default=list
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

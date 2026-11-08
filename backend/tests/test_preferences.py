@@ -41,15 +41,22 @@ async def test_invalid_mobile_layout_is_422(alice, value):
     assert (await alice.get("/api/auth/me")).json()["mobile_layout"] == "list"
 
 
-async def test_show_repos_defaults_to_true_and_follows_the_account(alice):
-    assert (await alice.get("/api/auth/me")).json()["show_repos"] is True
-    r = await alice.patch("/api/auth/me", json={"show_repos": False})
-    assert r.status_code == 200 and r.json()["show_repos"] is False
+async def test_hidden_types_default_to_none_and_follow_the_account(alice):
+    assert (await alice.get("/api/auth/me")).json()["hidden_types"] == []
+    r = await alice.patch("/api/auth/me", json={"hidden_types": ["repo", "video", "repo"]})
+    assert r.status_code == 200 and r.json()["hidden_types"] == ["repo", "video"]
     # untouched by other updates, persisted for every device reading /me
     await alice.patch("/api/auth/me", json={"theme": "dark"})
-    assert (await alice.get("/api/auth/me")).json()["show_repos"] is False
+    assert (await alice.get("/api/auth/me")).json()["hidden_types"] == ["repo", "video"]
+    # an empty list shows everything again
+    r = await alice.patch("/api/auth/me", json={"hidden_types": []})
+    assert r.json()["hidden_types"] == []
 
 
-async def test_invalid_show_repos_is_422(alice):
-    assert (await alice.patch("/api/auth/me", json={"show_repos": "maybe"})).status_code == 422
-    assert (await alice.get("/api/auth/me")).json()["show_repos"] is True
+@pytest.mark.parametrize(
+    "value",
+    [["podcast"], "repo", ["article", "video", "website", "repo"]],
+)
+async def test_invalid_hidden_types_is_422(alice, value):
+    assert (await alice.patch("/api/auth/me", json={"hidden_types": value})).status_code == 422
+    assert (await alice.get("/api/auth/me")).json()["hidden_types"] == []

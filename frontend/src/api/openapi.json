@@ -902,6 +902,26 @@
             ],
             "title": "First Name"
           },
+          "hidden_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "enum": [
+                    "article",
+                    "video",
+                    "website",
+                    "repo"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden Types"
+          },
           "last_name": {
             "anyOf": [
               {
@@ -934,17 +954,6 @@
                 "type": "null"
               }
             ]
-          },
-          "show_repos": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Show Repos"
           },
           "theme": {
             "anyOf": [
@@ -1807,6 +1816,19 @@
             "title": "First Name",
             "type": "string"
           },
+          "hidden_types": {
+            "items": {
+              "enum": [
+                "article",
+                "video",
+                "website",
+                "repo"
+              ],
+              "type": "string"
+            },
+            "title": "Hidden Types",
+            "type": "array"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -1830,10 +1852,6 @@
             "title": "Role",
             "type": "string"
           },
-          "show_repos": {
-            "title": "Show Repos",
-            "type": "boolean"
-          },
           "theme": {
             "$ref": "#/components/schemas/Theme"
           },
@@ -1852,7 +1870,7 @@
           "locale",
           "theme",
           "mobile_layout",
-          "show_repos",
+          "hidden_types",
           "created_at"
         ],
         "title": "UserOut",
