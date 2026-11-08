@@ -60,3 +60,13 @@ async def test_hidden_types_default_to_none_and_follow_the_account(alice):
 async def test_invalid_hidden_types_is_422(alice, value):
     assert (await alice.patch("/api/auth/me", json={"hidden_types": value})).status_code == 422
     assert (await alice.get("/api/auth/me")).json()["hidden_types"] == []
+
+
+async def test_auto_create_contacts_is_on_by_default_and_follows_the_account(alice):
+    assert (await alice.get("/api/auth/me")).json()["auto_create_contacts"] is True
+    r = await alice.patch("/api/auth/me", json={"auto_create_contacts": False})
+    assert r.status_code == 200 and r.json()["auto_create_contacts"] is False
+    await alice.patch("/api/auth/me", json={"theme": "dark"})  # untouched by other updates
+    assert (await alice.get("/api/auth/me")).json()["auto_create_contacts"] is False
+    r = await alice.patch("/api/auth/me", json={"auto_create_contacts": True})
+    assert r.json()["auto_create_contacts"] is True

@@ -212,6 +212,8 @@ async def update_me(body: ProfileUpdate, user: CurrentUser, session: SessionDep)
         user.mobile_layout = body.mobile_layout
     if "hidden_types" in fields and body.hidden_types is not None:
         user.hidden_types = body.hidden_types
+    if "auto_create_contacts" in fields and body.auto_create_contacts is not None:
+        user.auto_create_contacts = body.auto_create_contacts
     await session.commit()
     return user
 

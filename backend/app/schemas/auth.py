@@ -87,6 +87,7 @@ class ProfileUpdate(BaseModel):
     theme: Theme | None = None
     mobile_layout: MobileLayout | None = None
     hidden_types: list[ItemType] | None = None
+    auto_create_contacts: bool | None = None
 
     @field_validator("hidden_types")
     @classmethod
@@ -141,6 +142,7 @@ class UserOut(BaseModel):
     theme: Theme
     mobile_layout: MobileLayout
     hidden_types: list[ItemType]
+    auto_create_contacts: bool
     created_at: datetime
 
 

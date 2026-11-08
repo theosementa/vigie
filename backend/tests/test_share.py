@@ -1,4 +1,4 @@
-from tests.conftest import make_client, register
+from tests.conftest import make_client, register, sql
 
 
 async def add(c, url, **extra):
@@ -14,7 +14,7 @@ async def test_share_with_existing_user(alice, bob):
         json={"emails": ["BOB@example.com"], "message": "you should read this"},
     )
     assert r.status_code == 200
-    assert r.json() == {"sent": ["bob@example.com"]}
+    assert r.json() == {"sent": ["bob@example.com"], "unknown_contacts": []}
 
     listing = (await bob.get("/api/items")).json()["items"]
     assert len(listing) == 1
@@ -39,7 +39,10 @@ async def test_share_unknown_email(alice):
     item = await add(alice, "https://example.com/a")
     r = await alice.post(f"/api/items/{item['id']}/share", json={"emails": ["ghost@example.com"]})
     assert r.status_code == 200
-    assert r.json() == {"sent": ["ghost@example.com"]}  # same shape as a known address
+    assert r.json() == {
+        "sent": ["ghost@example.com"],
+        "unknown_contacts": [],
+    }  # same shape as a known address
 
 
 async def test_share_when_recipient_already_has_resource(alice, bob):
@@ -48,7 +51,7 @@ async def test_share_when_recipient_already_has_resource(alice, bob):
     r = await alice.post(
         f"/api/items/{item['id']}/share", json={"emails": ["bob@example.com"], "message": "hi"}
     )
-    assert r.json() == {"sent": ["bob@example.com"]}
+    assert r.json() == {"sent": ["bob@example.com"], "unknown_contacts": []}
 
     after = (await bob.get(f"/api/items/{bobs['id']}")).json()
     assert after["shared_by"]["email"] == "alice@example.com"  # only shared_by is filled
@@ -61,7 +64,7 @@ async def test_share_twice_is_idempotent(alice, bob):
     url = f"/api/items/{item['id']}/share"
     assert (await alice.post(url, json={"emails": ["bob@example.com"]})).status_code == 200
     second = (await alice.post(url, json={"emails": ["bob@example.com"]})).json()
-    assert second == {"sent": ["bob@example.com"]}
+    assert second == {"sent": ["bob@example.com"], "unknown_contacts": []}
     assert len((await bob.get("/api/items")).json()["items"]) == 1
 
 
@@ -88,7 +91,8 @@ async def test_share_mixed_batch_dedupes_and_ignores_self(alice, bob):
                 "carol@example.com",
                 "nobody@example.com",
                 "alice@example.com",
-            ]
+            ],
+            "unknown_contacts": [],
         }
         assert len((await alice.get("/api/items")).json()["items"]) == 1
 
@@ -98,3 +102,36 @@ async def test_share_validation(alice):
     assert (
         await alice.post(f"/api/items/{item['id']}/share", json={"emails": []})
     ).status_code == 422
+
+
+async def test_share_log_records_every_address_but_never_the_account(alice, bob):
+    item = await add(alice, "https://example.com/a")
+    await alice.post(
+        f"/api/items/{item['id']}/share",
+        json={"emails": ["bob@example.com", "ghost@example.com", "alice@example.com"]},
+    )
+    rows = await sql(
+        "SELECT recipient_email, recipient_user_id FROM share_log ORDER BY recipient_email"
+    )
+    assert [r[0] for r in rows] == ["bob@example.com", "ghost@example.com"]  # not the sender
+    assert rows[0][1] is not None and rows[1][1] is None  # set only when delivered
+
+
+async def test_share_response_is_identical_for_registered_and_unregistered(alice, bob):
+    await alice.patch("/api/auth/me", json={"auto_create_contacts": False})
+    item = await add(alice, "https://example.com/a")
+    url = f"/api/items/{item['id']}/share"
+    known = await alice.post(url, json={"emails": ["bob@example.com"]})
+    unknown = await alice.post(url, json={"emails": ["ghost@example.com"]})
+    assert known.status_code == unknown.status_code == 200
+    assert known.json() == {"sent": ["bob@example.com"], "unknown_contacts": ["bob@example.com"]}
+    assert unknown.json() == {
+        "sent": ["ghost@example.com"],
+        "unknown_contacts": ["ghost@example.com"],
+    }
+
+
+async def test_share_rejects_malformed_addresses(alice):
+    item = await add(alice, "https://example.com/a")
+    r = await alice.post(f"/api/items/{item['id']}/share", json={"emails": ["not an email"]})
+    assert r.status_code == 422
