@@ -230,6 +230,105 @@
         "title": "AnalyticsWindow",
         "type": "object"
       },
+      "ContactIn": {
+        "properties": {
+          "email": {
+            "maxLength": 320,
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "ContactIn",
+        "type": "object"
+      },
+      "ContactOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_shared_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Shared At"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "share_count": {
+            "title": "Share Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "created_at",
+          "last_shared_at",
+          "share_count"
+        ],
+        "title": "ContactOut",
+        "type": "object"
+      },
+      "ContactUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "ContactUpdate",
+        "type": "object"
+      },
       "ErrorDetail": {
         "additionalProperties": true,
         "description": "The `detail` of an error raised by the API. Some errors add fields (e.g. `item_id`).",
@@ -285,6 +384,135 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HistoryEntry": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "sent",
+              "received"
+            ],
+            "title": "Direction",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "my_item_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "My Item Id"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/HistoryResource"
+          }
+        },
+        "required": [
+          "id",
+          "direction",
+          "at",
+          "message",
+          "resource",
+          "my_item_id"
+        ],
+        "title": "HistoryEntry",
+        "type": "object"
+      },
+      "HistoryPage": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "next_before": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Before"
+          }
+        },
+        "required": [
+          "entries",
+          "next_before"
+        ],
+        "title": "HistoryPage",
+        "type": "object"
+      },
+      "HistoryResource": {
+        "properties": {
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "article",
+              "video",
+              "podcast",
+              "website",
+              "repo"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "type",
+          "image_url",
+          "url"
+        ],
+        "title": "HistoryResource",
         "type": "object"
       },
       "InvitationIn": {
@@ -903,6 +1131,17 @@
       },
       "ProfileUpdate": {
         "properties": {
+          "auto_create_contacts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Create Contacts"
+          },
           "first_name": {
             "anyOf": [
               {
@@ -1450,10 +1689,18 @@
             },
             "title": "Sent",
             "type": "array"
+          },
+          "unknown_contacts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unknown Contacts",
+            "type": "array"
           }
         },
         "required": [
-          "sent"
+          "sent",
+          "unknown_contacts"
         ],
         "title": "ShareOut",
         "type": "object"
@@ -1814,6 +2061,10 @@
       },
       "UserOut": {
         "properties": {
+          "auto_create_contacts": {
+            "title": "Auto Create Contacts",
+            "type": "boolean"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -1883,6 +2134,7 @@
           "theme",
           "mobile_layout",
           "hidden_types",
+          "auto_create_contacts",
           "created_at"
         ],
         "title": "UserOut",
@@ -2892,6 +3144,329 @@
         "summary": "Revoke Session",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/contacts": {
+      "get": {
+        "operationId": "list_contacts",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ContactOut"
+                  },
+                  "title": "Response List Contacts",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "List Contacts",
+        "tags": [
+          "contacts"
+        ]
+      },
+      "post": {
+        "operationId": "create_contact",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Contact",
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/contacts/{contact_id}": {
+      "delete": {
+        "operationId": "delete_contact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Contact",
+        "tags": [
+          "contacts"
+        ]
+      },
+      "patch": {
+        "operationId": "update_contact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Contact",
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/contacts/{contact_id}/history": {
+      "get": {
+        "operationId": "contact_history",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Contact History",
+        "tags": [
+          "contacts"
         ]
       }
     },

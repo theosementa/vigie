@@ -286,6 +286,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Contacts */
+        get: operations["list_contacts"];
+        put?: never;
+        /** Create Contact */
+        post: operations["create_contact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{contact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Contact */
+        delete: operations["delete_contact"];
+        options?: never;
+        head?: never;
+        /** Update Contact */
+        patch: operations["update_contact"];
+        trace?: never;
+    };
+    "/api/contacts/{contact_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Contact History */
+        get: operations["contact_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -630,6 +683,39 @@ export interface components {
             /** Shares */
             shares: number;
         };
+        /** ContactIn */
+        ContactIn: {
+            /** Email */
+            email: string;
+            /** Name */
+            name?: string | null;
+        };
+        /** ContactOut */
+        ContactOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Last Shared At */
+            last_shared_at: string | null;
+            /** Name */
+            name: string | null;
+            /** Share Count */
+            share_count: number;
+        };
+        /** ContactUpdate */
+        ContactUpdate: {
+            /** Name */
+            name?: string | null;
+        };
         /**
          * ErrorDetail
          * @description The `detail` of an error raised by the API. Some errors add fields (e.g. `item_id`).
@@ -658,6 +744,50 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HistoryEntry */
+        HistoryEntry: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "sent" | "received";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Message */
+            message: string | null;
+            /** My Item Id */
+            my_item_id: string | null;
+            resource: components["schemas"]["HistoryResource"];
+        };
+        /** HistoryPage */
+        HistoryPage: {
+            /** Entries */
+            entries: components["schemas"]["HistoryEntry"][];
+            /** Next Before */
+            next_before: string | null;
+        };
+        /** HistoryResource */
+        HistoryResource: {
+            /** Image Url */
+            image_url: string | null;
+            /** Title */
+            title: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "article" | "video" | "podcast" | "website" | "repo";
+            /** Url */
+            url: string;
         };
         /** InvitationIn */
         InvitationIn: {
@@ -845,6 +975,8 @@ export interface components {
         };
         /** ProfileUpdate */
         ProfileUpdate: {
+            /** Auto Create Contacts */
+            auto_create_contacts?: boolean | null;
             /** First Name */
             first_name?: string | null;
             /** Hidden Types */
@@ -1016,6 +1148,8 @@ export interface components {
         ShareOut: {
             /** Sent */
             sent: string[];
+            /** Unknown Contacts */
+            unknown_contacts: string[];
         };
         /** SharerCount */
         SharerCount: {
@@ -1166,6 +1300,8 @@ export interface components {
         };
         /** UserOut */
         UserOut: {
+            /** Auto Create Contacts */
+            auto_create_contacts: boolean;
             /**
              * Created At
              * Format: date-time
@@ -2017,6 +2153,247 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_contacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_contact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_contact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_contact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contact_history: {
+        parameters: {
+            query?: {
+                before?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
