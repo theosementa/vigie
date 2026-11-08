@@ -1,200 +1,200 @@
 # VISION — Vigie
 
-> PWA de veille open source (AGPL-3.0) · auto-hébergeable en une commande · instance publique en mode `invite`
+> Open-source (AGPL-3.0) watch-list PWA · self-hostable with one command · public instance in `invite` mode
 
 ## 1. Pitch
 
-Tu colles un lien (ou tu le partages depuis ton téléphone) : Vigie en tire une carte illustrée et la range dans **À voir**. Tu vides ta pile à ton rythme, tu notes, tu tagues, tu envoies ce qui vaut le coup à quelqu'un, et Vigie te montre honnêtement si tu rattrapes ton retard.
+You paste a link (or share it from your phone): Vigie turns it into an illustrated card and files it under **To watch**. You empty your pile at your own pace, rate, tag, send what is worth it to someone, and Vigie honestly shows whether you are catching up.
 
-Esprit : **un écran de veille, pas un fil d'actualité** : ce qui entre est choisi, ce qui sort est vu.
+Spirit: **a watch screen, not a news feed**: what comes in is chosen, what goes out is seen.
 
-## 2. Objectifs
+## 2. Goals
 
-- **Ne plus perdre un lien** : capturer un article ou une vidéo en moins de 3 secondes, depuis n'importe où (feuille de partage, bookmarklet, raccourci, API).
-- **Vider la pile** : savoir quoi regarder maintenant (file vidéo, filtres, recherche) et marquer « Vu » en un geste.
-- **Voir sa veille** : combien j'ai vu, combien j'en accumule, depuis quand je tiens le rythme, chaque chiffre avec sa base.
-- **Partager sans réseau social** : envoyer un lien à une personne précise, avec un mot.
-- **Héberger soi-même sans être expert** : `docker compose up -d`, HTTPS automatique, défauts sûrs, mise à jour par `docker compose pull`.
-- **Ouvert à tous** : interface en anglais et en français, accessible (AA), utilisable au pouce comme à la souris.
+- **Never lose a link**: capture an article or a video in under 3 seconds, from anywhere (share sheet, bookmarklet, shortcut, API).
+- **Empty the pile**: know what to watch now (video queue, filters, search) and mark it "Seen" in one gesture.
+- **See your watching**: how much I have seen, how much is piling up, since when I have kept the pace, every number with its basis.
+- **Share without a social network**: send a link to one specific person, with a note.
+- **Self-host without being an expert**: `docker compose up -d`, automatic HTTPS, safe defaults, update with `docker compose pull`.
+- **Open to everyone**: interface in English and French, accessible (AA), usable with a thumb as well as a mouse.
 
-### Non-objectifs
+### Non-goals
 
-- **Pas de réseau social** : pas de profils publics, de fil, d'abonnés, de likes, d'annuaire d'utilisateurs.
-- **Pas d'algorithme** : aucune recommandation, aucun classement « pour toi ». L'ordre vient de toi (date, file, filtres).
-- **Pas d'archivage du contenu** : Vigie garde un lien et ses métadonnées, pas une copie de l'article (droits, stockage). Pas de lecture hors ligne au MVP.
-- **Pas de télémétrie** : aucune analytics, aucun appel sortant hormis la récupération des métadonnées et l'e-mail si configuré.
-- **Pas d'IA au MVP** : pas de résumés, pas de classement automatique.
-- **Pas d'apps natives** : la PWA couvre iPhone, Android et desktop.
+- **No social network**: no public profiles, feed, followers, likes, or user directory.
+- **No algorithm**: no recommendations, no "for you" ranking. The order comes from you (date, queue, filters).
+- **No content archiving**: Vigie keeps a link and its metadata, not a copy of the article (rights, storage). No offline reading in the MVP.
+- **No telemetry**: no analytics, no outgoing call except fetching metadata and e-mail if configured.
+- **No AI in the MVP**: no summaries, no automatic sorting.
+- **No native apps**: the PWA covers iPhone, Android and desktop.
 
-## 3. Principes produit
+## 3. Product principles
 
-1. **Une ressource, plusieurs bibliothèques** : une URL normalisée = une `Resource` globale, récupérée une fois ; chaque utilisateur en a son `Item` privé (statut, notes, tags, type). Ce qui est privé ne fuit jamais d'un compte à l'autre : un item d'un autre compte répond **404**, exactement comme un id inexistant.
-2. **Le journal est la seule source de vérité de l'historique** : chaque changement d'état écrit un `ItemEvent` dans la même transaction. Toutes les statistiques datées se calculent sur le journal, jamais sur l'état courant. Supprimer un item ne réécrit pas le passé.
-3. **Chaque chiffre dit d'où il vient** : explication (« Basé sur 42 vidéos vues, 3 sans durée ») et confiance (`mesuré` / `estimé` / `partiel` / `inconnu`) renvoyées par l'API avec la valeur.
-4. **Une capture n'échoue jamais pour une raison de métadonnées** : si la page ne répond pas, la carte est créée avec le nom d'hôte comme titre et l'état « métadonnées indisponibles », réessayable. Seule une URL invalide ou interdite (SSRF) est refusée.
-5. **Le réseau ne bloque jamais la base** : aucune requête sortante pendant une transaction ouverte. On récupère, puis on écrit dans une session courte.
-6. **Sûr par défaut** : l'app refuse de démarrer avec un secret par défaut ou trop court ; la base n'est jamais exposée hors du réseau Docker ; les conteneurs tournent sans root ; chaque route sensible est limitée en débit.
-7. **Aucune énumération de comptes** : inscription, connexion, réinitialisation et partage répondent de la même façon qu'un compte existe ou non.
-8. **Tes données t'appartiennent** : export complet (JSON + CSV) et suppression de compte en libre-service, effectifs immédiatement.
-9. **Désactiver masque, ne supprime pas** : un module désactivé disparaît de la navigation, de l'accueil, de la capture et des stats ; ses données restent.
-10. **Le texte de l'interface n'est jamais écrit en dur** : toutes les chaînes passent par le dictionnaire `en` / `fr` ; l'API renvoie des codes et des paramètres, le front formule.
+1. **One resource, many libraries**: one normalised URL = one global `Resource`, fetched once; each user has their own private `Item` (status, notes, tags, type). What is private never leaks from one account to another: another account's item answers **404**, exactly like a non-existent id.
+2. **The journal is the only source of truth for history**: every state change writes an `ItemEvent` in the same transaction. All dated statistics are computed from the journal, never from the current state. Deleting an item does not rewrite the past.
+3. **Every number says where it comes from**: an explanation ("Based on 42 videos seen, 3 without duration") and a confidence (`measured` / `estimated` / `partial` / `unknown`) are returned by the API with the value.
+4. **A capture never fails because of metadata**: if the page does not answer, the card is created with the host name as title and the "metadata unavailable" state, which can be retried. Only an invalid or forbidden URL (SSRF) is refused.
+5. **The network never blocks the database**: no outgoing request during an open transaction. We fetch first, then write in a short session.
+6. **Safe by default**: the app refuses to start with a default or too-short secret; the database is never exposed outside the Docker network; containers run without root; every sensitive route is rate-limited.
+7. **No account enumeration**: sign-up, sign-in, reset and sharing answer the same way whether an account exists or not.
+8. **Your data belongs to you**: full export (JSON + CSV) and account deletion, self-service, effective immediately.
+9. **Disabling hides, it does not delete**: a disabled module disappears from navigation, home, capture and stats; its data stays.
+10. **Interface text is never hard-coded**: every string goes through the `en` / `fr` dictionary; the API returns codes and parameters, the front end words them.
 
-## 4. Comptes et instance
+## 4. Accounts and instance
 
-- **Un compte = une bibliothèque.** Prénom, nom, e-mail + mot de passe. Le formulaire d'inscription explique pourquoi on demande le nom : « Ton nom s'affiche quand tu envoies un lien à quelqu'un, pour qu'il sache de qui il vient. Il n'est visible par personne d'autre. »
-- **Identifiants** : e-mail + mot de passe (Argon2, 8 caractères minimum, 72 octets max pris en compte). Session JWT dans un cookie `httpOnly`, `SameSite=Lax`, `Secure` automatique derrière HTTPS.
-- **Rôles** : `admin` et `user`. Le **premier compte créé** sur une instance vide devient admin.
-- **Mode d'inscription**, réglé par l'admin dans *Administration* et modifiable à tout moment (`REGISTRATION` dans `.env` ne fixe que la valeur initiale d'une instance neuve) :
+- **One account = one library.** First name, last name, e-mail + password. The sign-up form explains why the name is asked: "Your name is shown when you send a link to someone, so they know who it is from. Nobody else can see it."
+- **Credentials**: e-mail + password (Argon2, 8 characters minimum, 72 bytes maximum taken into account). JWT session in an `httpOnly` cookie, `SameSite=Lax`, `Secure` automatic behind HTTPS.
+- **Roles**: `admin` and `user`. The **first account created** on an empty instance becomes admin.
+- **Registration mode**, set by the admin in *Administration* and changeable at any time (`REGISTRATION` in `.env` only sets the initial value of a new instance):
 
-| Mode | Comportement |
+| Mode | Behaviour |
 |---|---|
-| `invite` **(défaut)** | Après le premier compte, seules les **adresses e-mail ajoutées par un admin** à la liste des invités peuvent créer un compte. Si SMTP est configuré, l'invité reçoit un e-mail ; sinon l'admin lui transmet l'adresse du site |
-| `open` | Tout le monde peut s'inscrire ; e-mail à vérifier si SMTP est configuré |
-| `closed` | Plus aucune inscription |
+| `invite` **(default)** | After the first account, only **e-mail addresses added by an admin** to the invite list can create an account. If SMTP is configured, the invitee receives an e-mail; otherwise the admin passes them the site address |
+| `open` | Anyone can sign up; e-mail to verify if SMTP is configured |
+| `closed` | No more sign-ups |
 
-- **Changer de mode ne touche jamais aux comptes existants** : passer de `open` à `invite` ou `closed` bloque seulement les nouvelles inscriptions.
-- **Instance publique** : démarre en `invite`, son propriétaire seul admin ; il passe en `open` quand il veut, et revient en `invite` si besoin.
+- **Changing mode never touches existing accounts**: going from `open` to `invite` or `closed` only blocks new sign-ups.
+- **Public instance**: starts in `invite`, its owner the only admin; it switches to `open` when they want, and back to `invite` if needed.
 
-- **Sessions révocables** : `users.token_version` incrémenté au changement de mot de passe ou par « Me déconnecter partout » ; un JWT d'une version antérieure est refusé.
-- **Mot de passe oublié** : par e-mail si `SMTP_*` est configuré (lien à usage unique, 1 h) ; sinon un admin génère un lien de réinitialisation depuis l'administration, ou en CLI (`docker compose exec api vigie reset-password <email>`).
-- **Jetons d'API personnels** (pour raccourcis iOS, extension, scripts) : nommés, affichés une seule fois, stockés hachés, révocables, portée `capture` (ajouter) ou `full`.
-- **Administration** (admin seulement) : mode d'inscription, liste des invités (ajouter / retirer une adresse, voir si elle a créé son compte), liste des comptes (nom, e-mail, date, nombre d'items), suppression d'un compte, lien de réinitialisation, **activité de l'instance** (comptes actifs sur 24 h / 7 j / 30 j, inscriptions, items ajoutés / vus, partages, courbe par jour sur 7 / 30 / 90 jours : des compteurs calculés dans la base de l'instance, rien n'est envoyé ailleurs). Aucun accès au contenu des bibliothèques.
-- **Domaines e-mail** : les domaines à usage spécial (`.local`, `.lan`, `.home.arpa`, `.test`) sont acceptés quand `REGISTRATION=invite` ou `closed`, pour les homelabs.
+- **Revocable sessions**: `users.token_version` is incremented on password change or by "Sign me out everywhere"; a JWT from an earlier version is refused.
+- **Forgotten password**: by e-mail if `SMTP_*` is configured (single-use link, 1 h); otherwise an admin generates a reset link from the administration, or from the CLI (`docker compose exec api vigie reset-password <email>`).
+- **Personal API tokens** (for iOS shortcuts, extension, scripts): named, shown once, stored hashed, revocable, scope `capture` (add) or `full`.
+- **Administration** (admin only): registration mode, invite list (add / remove an address, see whether it has created its account), account list (name, e-mail, date, item count), account deletion, reset link, **instance activity** (active accounts over 24 h / 7 d / 30 d, sign-ups, items added / seen, shares, per-day curve over 7 / 30 / 90 days: counters computed in the instance's own database, nothing is sent elsewhere). No access to library contents.
+- **E-mail domains**: special-use domains (`.local`, `.lan`, `.home.arpa`, `.test`) are accepted when `REGISTRATION=invite` or `closed`, for homelabs.
 
 ## 5. Modules
 
-Le **Cœur** est toujours actif. Les autres s'activent **par compte** dans *Réglages → Modules*. Un module désactivé masque ses écrans, widgets, entrées de capture et statistiques ; ses données restent et reviennent à la réactivation. Ses routes répondent 404.
+The **Core** is always on. The others are enabled **per account** in *Settings → Modules*. A disabled module hides its screens, widgets, capture entries and statistics; its data stays and comes back on re-enabling. Its routes answer 404.
 
-| Module | Défaut | Résumé |
+| Module | Default | Summary |
 |---|---|---|
-| Cœur — Bibliothèque | Toujours | Capture, cartes, statuts À voir / Vu, tags, notes, recherche, filtres |
-| File | Activé | Liste ordonnée de vidéos à regarder ensuite |
-| Partage | Activé | Envoyer un item à une autre personne de l'instance |
-| Statistiques | Activé | Rythme, temps passé, séries, tendance de la pile |
+| Core — Library | Always | Capture, cards, To watch / Seen statuses, tags, notes, search, filters |
+| Queue | On | Ordered list of videos to watch next |
+| Sharing | On | Send an item to another person on the instance |
+| Statistics | On | Pace, time spent, streaks, pile trend |
 
-### 5.1 Cœur — Bibliothèque
+### 5.1 Core — Library
 
-**Saisie** : **URL**. Optionnels : tags, note, type (`article` / `video` / `podcast` / `website` / `repo`, déduit sinon), statut (`À voir` par défaut).
+**Input**: **URL**. Optional: tags, note, type (`article` / `video` / `podcast` / `website` / `repo`, inferred otherwise), status (`To watch` by default).
 
-**Normalisation de l'URL** : schéma et hôte en minuscules, suppression du fragment, des paramètres de suivi (`utm_*`, `fbclid`, `gclid`, `mc_*`, `ref`, `si` YouTube), du slash final, tri des paramètres restants ; `youtu.be/<id>` et `youtube.com/shorts/<id>` → `youtube.com/watch?v=<id>`. **Longueur max 2 048 caractères** (refus en 422 au-delà).
+**URL normalisation**: scheme and host lowercased; fragment, tracking parameters (`utm_*`, `fbclid`, `gclid`, `mc_*`, `ref`, YouTube `si`) and trailing slash removed; remaining parameters sorted; `youtu.be/<id>` and `youtube.com/shorts/<id>` → `youtube.com/watch?v=<id>`. **Maximum length 2,048 characters** (refused with 422 beyond).
 
-**Récupération des métadonnées** (protégée SSRF) : http/https, ports 80 et 443 uniquement (8080 et 8443 tolérés), résolution DNS puis refus des IP privées, loopback, link-local et réservées, connexion épinglée sur l'IP vérifiée, 5 s, 2 Mo, 3 redirections revérifiées. Sources par ordre de priorité : OpenGraph, Twitter cards, `<title>`, `<link rel=icon>`, `/favicon.ico`. YouTube : oEmbed + durée lue dans la page.
+**Metadata fetching** (SSRF-protected): http/https, ports 80 and 443 only (8080 and 8443 tolerated), DNS resolution then refusal of private, loopback, link-local and reserved IPs, connection pinned to the verified IP, 5 s, 2 MB, 3 redirects re-verified. Sources in priority order: OpenGraph, Twitter cards, `<title>`, `<link rel=icon>`, `/favicon.ico`. YouTube: oEmbed + duration read from the page.
 
-**Calculs**
-- Type déduit = `podcast` si l'hôte est une plateforme de podcasts (Apple Podcasts, pages `/episode` et `/show` de Spotify, Castbox, Ausha…) ou si la page déclare un `PodcastEpisode` / `PodcastSeries` en JSON-LD ; sinon `video` si l'hôte est une plateforme vidéo connue (YouTube, Vimeo, Dailymotion, Twitch, PeerTube via `og:type=video`) ou si `og:type` commence par `video` ; `repo` pour `github.com`, `gitlab.com`, `codeberg.org/<owner>/<repo>` ; `website` pour une page d'accueil ; sinon `article`. L'utilisateur peut le corriger (`type_override`).
-- Étoiles d'un dépôt = `stargazers_count` (GitHub), `star_count` (GitLab), `stars_count` (Codeberg), lues dans l'API publique de l'hébergeur. Une valeur plus vieille que 6 h est relue à l'affichage de la bibliothèque (10 dépôts au plus par requête, 3 s au plus, l'ancienne valeur est gardée si l'API ne répond pas).
-- Temps de lecture = `max(1, ceil(mots du corps / 230))` minutes, confiance `estimé`. Inconnu si la page n'a pas pu être lue.
-- Durée vidéo ou podcast : confiance `mesuré` quand elle vient de la plateforme (JSON-LD `duration`, `music:duration`), `inconnu` sinon (jamais devinée).
+**Computations**
+- Inferred type = `podcast` if the host is a podcast platform (Apple Podcasts, Spotify `/episode` and `/show` pages, Castbox, Ausha…) or if the page declares a `PodcastEpisode` / `PodcastSeries` in JSON-LD; otherwise `video` if the host is a known video platform (YouTube, Vimeo, Dailymotion, Twitch, PeerTube via `og:type=video`) or if `og:type` starts with `video`; `repo` for `github.com`, `gitlab.com`, `codeberg.org/<owner>/<repo>`; `website` for a home page; otherwise `article`. The user can correct it (`type_override`).
+- A repository's stars = `stargazers_count` (GitHub), `star_count` (GitLab), `stars_count` (Codeberg), read from the host's public API. A value older than 6 h is re-read when the library is displayed (10 repositories at most per request, 3 s at most, the old value is kept if the API does not answer).
+- Reading time = `max(1, ceil(body words / 230))` minutes, confidence `estimated`. Unknown if the page could not be read.
+- Video or podcast duration: confidence `measured` when it comes from the platform (JSON-LD `duration`, `music:duration`), `unknown` otherwise (never guessed).
 
-**Doublon** : ajouter une URL déjà présente ne crée rien ; la réponse renvoie l'item existant avec l'avertissement `already_in_library`, et l'interface ouvre la carte.
+**Duplicate**: adding a URL that is already present creates nothing; the response returns the existing item with the `already_in_library` warning, and the interface opens the card.
 
-**Actualiser** : relance la récupération ; la réponse dit si elle a réussi (`refreshed: true | false` + raison). L'interface n'annonce jamais un succès qui n'a pas eu lieu.
+**Refresh**: restarts the fetch; the response says whether it succeeded (`refreshed: true | false` + reason). The interface never announces a success that did not happen.
 
-**Saisie rapide** : un champ URL pré-rempli depuis le presse-papiers **seulement sur action** (bouton « Coller »), jamais lu à l'ouverture. Aperçu de la carte en direct, bouton « Ajouter à Vigie ».
+**Quick capture**: a URL field pre-filled from the clipboard **only on action** (a "Paste" button), never read on open. Live card preview, "Add to Vigie" button.
 
-**Recherche** : titre, site, URL, notes, tags (`ILIKE` + `pg_trgm`). Filtres : statut, type, tag, source, partagé avec moi, dans la file. Les filtres vivent dans l'URL.
+**Search**: title, site, URL, notes, tags (`ILIKE` + `pg_trgm`). Filters: status, type, tag, source, shared with me, in the queue. Filters live in the URL.
 
-**Affichage** : grille de cartes (image, titre, site + favicon, durée ou temps de lecture, tags, état). Image absente → vignette de la DA (pas de dégradé aléatoire). Détail : métadonnées, note, tags, historique de l'item (ajouté, vu, partagé par…).
+**Display**: card grid (image, title, site + favicon, duration or reading time, tags, state). Missing image → the art-direction thumbnail (no random gradient). Detail: metadata, note, tags, item history (added, seen, shared by…).
 
-### 5.2 File
+### 5.2 Queue
 
-**Règle** : un item est dans la file s'il a un `queue_position`, quel que soit son type. Positions 0-based, contiguës par utilisateur, recompactées à chaque ajout, déplacement ou retrait.
+**Rule**: an item is in the queue if it has a `queue_position`, whatever its type. Positions are 0-based, contiguous per user, and compacted on every add, move or removal.
 
-**Sortie automatique** : marquer Vu ou supprimer retire de la file.
+**Automatic exit**: marking Seen or deleting removes it from the queue.
 
-**Affichage** : liste réordonnable (glisser au doigt et au clavier), durée totale de la file = Σ durées connues, confiance `partiel` si au moins une durée est inconnue (« ≈ 2 h 40, 2 vidéos sans durée »).
+**Display**: reorderable list (drag by finger and by keyboard), total queue duration = Σ known durations, confidence `partial` if at least one duration is unknown ("≈ 2 h 40, 2 videos without duration").
 
-### 5.3 Partage
+### 5.3 Sharing
 
-**Saisie** : **adresse e-mail du destinataire**, message optionnel (280 caractères).
+**Input**: **recipient's e-mail address**, optional message (280 characters).
 
-**Effet** : crée chez le destinataire un item `À voir` avec `shared_by` et le message ; notes et tags de l'expéditeur ne sont pas copiés. Si le destinataire a déjà la ressource, son item reçoit la mention du partage sans changer de statut.
+**Effect**: creates a `To watch` item for the recipient with `shared_by` and the message; the sender's notes and tags are not copied. If the recipient already has the resource, their item gets the share mention without changing status.
 
-**Anti-énumération** : vers une adresse qui n'est pas un contact, la réponse est toujours `202` avec « Envoyé si cette adresse a un compte et accepte tes partages ». Vers un contact, le partage est confirmé avec son nom.
+**Anti-enumeration**: to an address that is not a contact, the response is always `202` with "Sent if this address has an account and accepts your shares". To a contact, the share is confirmed with their name.
 
-**Contacts** (symétriques) : deux comptes deviennent contacts quand
-- le destinataire **ouvre** un partage reçu (il voit le nom de l'expéditeur, l'expéditeur voit désormais le sien), ou
-- l'un accepte le **lien de contact** de l'autre (usage unique, expire en 7 jours, créé dans *Partagés → Ajouter un contact*).
+**Contacts** (symmetric): two accounts become contacts when
+- the recipient **opens** a received share (they see the sender's name, the sender now sees theirs), or
+- one accepts the other's **contact link** (single use, expires in 7 days, created in *Shared → Add a contact*).
 
-Le champ destinataire propose les contacts par nom. Retirer un contact est possible à tout moment ; les items déjà reçus restent.
+The recipient field suggests contacts by name. A contact can be removed at any time; items already received stay.
 
-**Réception** : réglage « Qui peut m'envoyer des liens » (`tout le monde` / `mes contacts` / `personne`). Défaut à la création du compte : `tout le monde` si l'instance est en `invite` ou `closed`, `mes contacts` si elle est en `open`.
+**Receiving**: a "Who can send me links" setting (`everyone` / `my contacts` / `nobody`). Default at account creation: `everyone` if the instance is in `invite` or `closed`, `my contacts` if it is in `open`.
 
-**Limites** : 50 partages par jour et par compte.
+**Limits**: 50 shares per day per account.
 
-### 5.4 Statistiques
+### 5.4 Statistics
 
-Période `semaine` (lundi → dimanche) / `mois` / `année`, navigable, dans le **fuseau du compte** (`users.timezone`, IANA, détecté à l'inscription, modifiable).
+Period `week` (Monday → Sunday) / `month` / `year`, navigable, in the **account's time zone** (`users.timezone`, IANA, detected at sign-up, editable).
 
-**Calculs** (sur le journal `item_events`, principe 2)
-- **Vus sur P** = nombre de ressources distinctes ayant un événement `seen` dans P qui n'est pas suivi d'un `unseen` dans P. Supprimer l'item plus tard ne change pas ce chiffre.
-- **Ajoutés sur P** = ressources distinctes ayant un `added` dans P.
-- **Temps de visionnage sur P** = Σ `duration_seconds` des vidéos vues sur P. Confiance `mesuré` si toutes les durées sont connues, sinon `partiel` avec le nombre de vidéos sans durée.
-- **Temps de lecture sur P** = Σ temps de lecture des articles vus sur P, confiance `estimé` (230 mots/min).
-- **Delta** = `(P − P₋₁) / P₋₁`. Si `P₋₁ = 0` : pas de pourcentage, mention « nouveau ».
-- **Série courante** = nombre de jours consécutifs avec au moins un `seen`, en remontant depuis aujourd'hui ; si aujourd'hui n'a encore rien, on part d'hier et la série est marquée « à prolonger aujourd'hui ». **Record** = plus longue série du journal.
-- **Pile (backlog) au jour J** = Σ jusqu'à J de `added` (+1), `seen` (−1), `unseen` (+1), `deleted` d'un item À voir (−1). Tendance = pente des 28 derniers jours : « tu rattrapes » si < 0, « stable » si |pente| < 0,1/jour, « ça s'accumule » sinon.
-- **Top tags / sources** de P = tags actuels et `site_name` des items vus sur P ; base affichée (« sur 31 items vus encore dans ta bibliothèque ») car un item supprimé n'a plus de tags.
-- **Objectifs** (anneaux) : objectif hebdomadaire d'items vus et de temps de visionnage, **stockés sur le compte** (`module_settings`), pas dans le navigateur.
+**Computations** (on the `item_events` journal, principle 2)
+- **Seen over P** = number of distinct resources having a `seen` event in P that is not followed by an `unseen` in P. Deleting the item later does not change this number.
+- **Added over P** = distinct resources having an `added` in P.
+- **Watch time over P** = Σ `duration_seconds` of videos seen over P. Confidence `measured` if all durations are known, otherwise `partial` with the number of videos without duration.
+- **Reading time over P** = Σ reading time of articles seen over P, confidence `estimated` (230 words/min).
+- **Delta** = `(P − P₋₁) / P₋₁`. If `P₋₁ = 0`: no percentage, "new" shown.
+- **Current streak** = number of consecutive days with at least one `seen`, counting back from today; if today has nothing yet, we start from yesterday and the streak is marked "to extend today". **Record** = longest streak in the journal.
+- **Pile (backlog) on day D** = Σ up to D of `added` (+1), `seen` (−1), `unseen` (+1), `deleted` of a To watch item (−1). Trend = slope over the last 28 days: "you're catching up" if < 0, "stable" if |slope| < 0.1/day, "it's piling up" otherwise.
+- **Top tags / sources** of P = current tags and `site_name` of the items seen over P; basis shown ("out of 31 seen items still in your library") because a deleted item no longer has tags.
+- **Goals** (rings): weekly goal of items seen and of watch time, **stored on the account** (`module_settings`), not in the browser.
 
-**Affichage** : anneaux d'objectifs, histogramme articles / vidéos avec la période précédente en fantôme, chiffres clés avec delta, série, tendance de la pile, tops (clic → bibliothèque filtrée). Chaque graphe a son alternative en tableau.
+**Display**: goal rings, articles / videos histogram with the previous period as a ghost, key figures with delta, streak, pile trend, tops (click → filtered library). Every chart has its table alternative.
 
-## 6. Reprise d'historique
+## 6. History import
 
-Une app vide ne donne rien à voir : l'import est dans l'onboarding.
+An empty app has nothing to show: the import is part of onboarding.
 
-| Source | Format | Ce qui est repris |
+| Source | Format | What is imported |
 |---|---|---|
-| Favoris de navigateur (Chrome, Firefox, Safari) | HTML Netscape | URL, titre, date d'ajout, dossiers → tags |
-| Pocket (export) | CSV | URL, titre, date, tags, statut (`archive` → Vu) |
-| Instapaper | CSV | URL, titre, dossier → tag, date |
-| Raindrop.io | CSV | URL, titre, tags, date, note |
-| Liste de liens | Texte, une URL par ligne | URL |
+| Browser bookmarks (Chrome, Firefox, Safari) | Netscape HTML | URL, title, date added, folders → tags |
+| Pocket (export) | CSV | URL, title, date, tags, status (`archive` → Seen) |
+| Instapaper | CSV | URL, title, folder → tag, date |
+| Raindrop.io | CSV | URL, title, tags, date, note |
+| Link list | Text, one URL per line | URL |
 
-- L'import crée les items **tout de suite** (titre de l'export ou nom d'hôte), puis récupère les métadonnées **en tâche de fond** (file en base, traitée par l'API, 2 requêtes simultanées par hôte, reprise après redémarrage). La progression s'affiche (« 412 / 1 280 cartes complétées »).
-- Les dates d'origine alimentent le journal (`added` / `seen` datés), donc les stats démarrent avec ton vrai historique.
-- Doublons ignorés et comptés dans le récap. Limite : 20 000 lignes par import.
+- The import creates the items **right away** (title from the export or host name), then fetches metadata **in the background** (queue in the database, processed by the API, 2 simultaneous requests per host, resumes after a restart). Progress is shown ("412 / 1,280 cards completed").
+- Original dates feed the journal (dated `added` / `seen`), so stats start with your real history.
+- Duplicates are skipped and counted in the summary. Limit: 20,000 rows per import.
 
-**Export** : JSON complet (items, notes, tags, journal) et CSV compatible Pocket, en un clic dans *Réglages → Données*.
+**Export**: full JSON (items, notes, tags, journal) and Pocket-compatible CSV, in one click in *Settings → Data*.
 
-## 7. Accueil (Bibliothèque)
+## 7. Home (Library)
 
-- **Barre de capture** : coller un lien, toujours visible sur desktop, derrière l'action centrale sur mobile.
-- **À voir** : les cartes, les plus récentes d'abord, filtres en tête.
-- **Prochaine vidéo** de la file (si module File) : une carte large, « Regarder ».
-- **Reçu récemment** (si module Partage) : partages non ouverts, avec le mot de l'expéditeur.
-- **Rythme de la semaine** (si module Stats) : vus cette semaine vs objectif, série.
+- **Capture bar**: paste a link, always visible on desktop, behind the central action on mobile.
+- **To watch**: the cards, newest first, filters at the top.
+- **Next video** from the queue (if the Queue module is on): a wide card, "Watch".
+- **Recently received** (if the Sharing module is on): unopened shares, with the sender's note.
+- **This week's pace** (if the Stats module is on): seen this week vs goal, streak.
 
-## 8. Signaux (in-app)
+## 8. Signals (in-app)
 
-Pas de notifications push au MVP. Des pastilles dans la navigation :
-- **Partages reçus non ouverts** : compteur sur l'onglet Partagés.
-- **Import en cours** : progression dans Réglages → Données.
-- **Pile qui s'accumule** : une ligne sur l'accueil quand la tendance est « ça s'accumule » trois semaines de suite, avec l'action « Voir les plus anciens ».
+No push notifications in the MVP. Badges in the navigation:
+- **Unopened received shares**: counter on the Shared tab.
+- **Import in progress**: progress in Settings → Data.
+- **Pile building up**: one line on home when the trend is "it's piling up" three weeks in a row, with the "See the oldest" action.
 
-## 9. Réglages
+## 9. Settings
 
-**Compte** : prénom et nom (50 caractères chacun), e-mail, mot de passe, langue (`auto` / `en` / `fr`), thème (`système` / `sombre` / `clair`), fuseau horaire, me déconnecter partout, jetons d'API, bookmarklet, supprimer mon compte.
-**Modules** : File, Partage, Statistiques (interrupteurs, enregistrés au basculement), objectifs, qui peut m'envoyer des partages.
-**Données** : importer, exporter.
-**Administration** (admin) : mode d'inscription, invités, comptes.
+**Account**: first and last name (50 characters each), e-mail, password, language (`auto` / `en` / `fr`), theme (`system` / `dark` / `light`), time zone, sign me out everywhere, API tokens, bookmarklet, delete my account.
+**Modules**: Queue, Sharing, Statistics (switches, saved on toggle), goals, who can send me shares.
+**Data**: import, export.
+**Administration** (admin): registration mode, invitees, accounts.
 
-## 10. Stack technique
+## 10. Tech stack
 
-| Couche | Choix |
+| Layer | Choice |
 |---|---|
-| Front | React 19 + Vite + TypeScript strict, **PWA** (`vite-plugin-pwa`), TanStack Query, `openapi-fetch` + types générés, React Router, **Tailwind CSS v4** dont le thème (`@theme`) reprend tels quels les tokens de la DA (`tokens.css`), SVG maison pour les graphes, i18n maison (`lib/i18n.ts`, dictionnaires typés `en` / `fr`, `Intl` pour nombres et dates) |
-| Back | Python 3.13 **FastAPI**, SQLAlchemy 2 async (asyncpg), Alembic, Pydantic v2, `pydantic-settings`, `httpx` + `selectolax`, Argon2 (`pwdlib`), PyJWT, géré avec `uv` |
-| Jobs | File de tâches en table Postgres (`jobs`, `SELECT … FOR UPDATE SKIP LOCKED`), boucle dans le lifespan de l'API, désactivable (`JOBS_ENABLED=false`) |
-| BDD | **PostgreSQL 17** (`pg_trgm`) |
-| E-mail | SMTP optionnel (`SMTP_*`) : vérification, réinitialisation, invitations. Sans SMTP, tout fonctionne par liens générés par l'admin |
-| Infra | Docker Compose : `web` (**Caddy** : SPA, proxy `/api`, HTTPS automatique si `VIGIE_DOMAIN` est défini, en-têtes de sécurité), `api` (non-root), `db` (non exposée). Images publiées sur `ghcr.io` |
-| Qualité | `pytest` (Postgres réel), `ruff check` + `ruff format`, `tsc -b`, ESLint ; GitHub Actions sur chaque PR, Dependabot |
-| Déploiement de l'instance publique | Runner GitHub self-hosted sur le serveur de l'instance, derrière un tunnel Cloudflare |
+| Front end | React 19 + Vite + strict TypeScript, **PWA** (`vite-plugin-pwa`), TanStack Query, `openapi-fetch` + generated types, React Router, **Tailwind CSS v4** whose theme (`@theme`) reuses the art-direction tokens as they are (`tokens.css`), in-house SVG for charts, in-house i18n (`lib/i18n.ts`, typed `en` / `fr` dictionaries, `Intl` for numbers and dates) |
+| Back end | Python 3.13 **FastAPI**, SQLAlchemy 2 async (asyncpg), Alembic, Pydantic v2, `pydantic-settings`, `httpx` + `selectolax`, Argon2 (`pwdlib`), PyJWT, managed with `uv` |
+| Jobs | Task queue in a Postgres table (`jobs`, `SELECT … FOR UPDATE SKIP LOCKED`), loop in the API lifespan, can be disabled (`JOBS_ENABLED=false`) |
+| Database | **PostgreSQL 17** (`pg_trgm`) |
+| E-mail | Optional SMTP (`SMTP_*`): verification, reset, invitations. Without SMTP, everything works through links generated by the admin |
+| Infra | Docker Compose: `web` (**Caddy**: SPA, `/api` proxy, automatic HTTPS if `VIGIE_DOMAIN` is set, security headers), `api` (non-root), `db` (not exposed). Images published on `ghcr.io` |
+| Quality | `pytest` (real Postgres), `ruff check` + `ruff format`, `tsc -b`, ESLint; GitHub Actions on every PR, Dependabot |
+| Public instance deployment | Self-hosted GitHub runner on the instance's server, behind a Cloudflare tunnel |
 
-**Écarts au blueprint, et pourquoi** : PostgreSQL réel en tests (et non SQLite) car la recherche (`pg_trgm`), les agrégats par fuseau et `SKIP LOCKED` sont propres à Postgres ; **Tailwind conservé** (choix de Théo, déjà en place dans le code) : les tokens de la DA alimentent son thème, aucune couleur ni taille en dur hors tokens ; i18n et code d'erreur côté API au lieu de textes français côté back, car l'interface est bilingue ; images publiées sur `ghcr.io` pour que l'auto-hébergement ne demande pas de build.
+**Deviations from the blueprint, and why**: real PostgreSQL in tests (not SQLite) because search (`pg_trgm`), per-time-zone aggregates and `SKIP LOCKED` are specific to Postgres; **Tailwind kept** (the author's choice, already in the code): the art-direction tokens feed its theme, with no hard-coded colour or size outside tokens; i18n and error codes on the API side instead of French text in the back end, because the interface is bilingual; images published on `ghcr.io` so that self-hosting needs no build.
 
-### Modèle de données (esquisse)
+### Data model (sketch)
 
 ```
 User(id, email, password_hash, first_name, last_name, role, token_version, locale, theme, timezone, email_verified_at, receive_shares, created_at)
@@ -203,7 +203,7 @@ Resource(id, url, url_hash, type, title, description, image_url, site_name, favi
 Item(id, user_id, resource_id, status, type_override, notes, seen_at, queue_position, shared_by_user_id, share_message, opened_at, created_at)   unique(user_id, resource_id)
 Tag(id, user_id, name)  ItemTag(item_id, tag_id)
 ItemEvent(id, user_id, item_id?, resource_id, kind, occurred_at)   kind ∈ added | seen | unseen | deleted | shared
-Contact(user_id, contact_id, created_at)            une ligne par sens
+Contact(user_id, contact_id, created_at)            one row per direction
 ContactLink(id, user_id, token_hash, expires_at, used_at)
 InstanceSettings(registration_mode, updated_at, updated_by)
 Invitation(id, email, created_by, created_at, used_at)
@@ -213,54 +213,54 @@ Job(id, kind, payload_json, status, attempts, run_after, locked_at, error)
 ImportRun(id, user_id, source, total, done, duplicates, failed, created_at, finished_at)
 ```
 
-`Resource.url` n'est plus indexée directement : unicité sur `url_hash` (SHA-256), ce qui lève la limite de taille de l'index btree.
+`Resource.url` is no longer indexed directly: uniqueness is on `url_hash` (SHA-256), which lifts the btree index size limit.
 
-## 11. Direction artistique
+## 11. Art direction
 
-Référence visuelle : `vigie-da.html` (tokens copiés tels quels dans `tokens.css`, classes reprises dans `base.css`).
-- Métaphore : **l'écran d'un instrument de navigation la nuit**. Ce qui arrive est un écho, ce qui est vu s'éteint, les objectifs se lisent comme un écran radar (anneaux concentriques).
-- Accent « écho » : vert phosphore (`#B8F25C` sombre, `#A6E33F` clair ; trait `#3B6A00` en clair), réservé à **trois choses** : l'action principale de l'écran (Ajouter, Envoyer, Créer), ce qui est nouveau (partage non ouvert, ajout du jour), le point « maintenant » des graphes. Aplats en `--accent`, petites marques (points, focus) en `--accent-ink`.
-- **Ce qui est vu s'éteint** : item Vu = titre en secondaire, image en niveaux de gris atténuée ; pas de badge.
-- Thème de référence : **sombre** ; le clair reprend les mêmes rôles. Sélecteur Sombre / Clair / Système.
-- Typo : **Geologica** seule, deux graisses (500 titres et chiffres, 400 texte), resserrement réservé aux grandes tailles, chiffres tabulaires partout.
-- États : `ok` bleu « tu rattrapes », `watch` jaune « stable », `plan` orange « en retard », `over` rouge « ça s'accumule » (seul état rouge, avec les suppressions), `unknown` gris « inconnu » ; aucun ne reprend le vert de l'accent.
-- Icônes : **Solar** (480 Design, CC BY 4.0), `linear` partout, `bold` pour l'onglet ou l'entrée active, embarquées au build.
-- Image absente : vignette monogramme (initiale du site) sur `--surface-2` ; métadonnées indisponibles : vignette en pointillés + « Réessayer ».
+Visual reference: `vigie-da.html` (tokens copied as they are into `tokens.css`, classes reused in `base.css`).
+- Metaphor: **the screen of a navigation instrument at night**. What arrives is an echo, what is seen fades out, goals read like a radar screen (concentric rings).
+- "Echo" accent: phosphor green (`#B8F25C` dark, `#A6E33F` light; stroke `#3B6A00` in light), reserved for **three things**: the screen's main action (Add, Send, Create), what is new (unopened share, today's addition), the "now" point of charts. Fills use `--accent`, small marks (dots, focus) use `--accent-ink`.
+- **What is seen fades out**: a Seen item = title in secondary colour, image in dimmed greyscale; no badge.
+- Reference theme: **dark**; light reuses the same roles. Dark / Light / System selector.
+- Typography: **Geologica** only, two weights (500 titles and numbers, 400 text), tightening reserved for large sizes, tabular figures everywhere.
+- States: `ok` blue "you're catching up", `watch` yellow "stable", `plan` orange "behind", `over` red "it's piling up" (the only red state, together with deletions), `unknown` grey "unknown"; none reuses the accent green.
+- Icons: **Solar** (480 Design, CC BY 4.0), `linear` everywhere, `bold` for the active tab or entry, embedded at build time.
+- Missing image: monogram thumbnail (the site's initial) on `--surface-2`; metadata unavailable: dashed thumbnail + "Retry".
 
-### Navigation par plateforme
+### Navigation by platform
 
-- **Mobile** : barre d'onglets en bas : Bibliothèque, File, **action centrale « Ajouter »**, Partagés, Stats. L'action centrale ouvre la capture plein écran (champ URL, « Coller », aperçu, « Ajouter à Vigie » collant en bas). Réglages depuis l'en-tête de la Bibliothèque.
-- **Tablette portrait** : rail d'icônes latéral, capture en modale.
-- **Tablette paysage et desktop** : barre latérale complète (modules actifs, puis Réglages, puis le compte). Barre de capture dans l'en-tête de la Bibliothèque, inspecteur à droite à partir de 1 280 px.
+- **Mobile**: bottom tab bar: Library, Queue, **central "Add" action**, Shared, Stats. The central action opens full-screen capture (URL field, "Paste", preview, sticky "Add to Vigie" at the bottom). Settings from the Library header.
+- **Tablet portrait**: side icon rail, capture in a modal.
+- **Tablet landscape and desktop**: full sidebar (active modules, then Settings, then the account). Capture bar in the Library header, inspector on the right from 1,280 px.
 
 ## 12. Roadmap
 
-Le code actuel (MVP fonctionnel : bibliothèque, file, partage, stats) est **repris, pas réécrit de zéro** : chaque phase garde ce qui est sain et le remet aux règles de ce document.
+The current code (a working MVP: library, queue, sharing, stats) is **taken over, not rewritten from scratch**: each phase keeps what is sound and brings it back to this document's rules.
 
-**Reprise, dans l'ordre de build**
-0. **Historique Git honnête** : commit initial (vision + DA), puis import du code existant tel quel, puis nettoyage (code mort, doublons, docs périmées).
-1. **Socle sûr et auto-hébergeable** : refus des secrets par défaut, compose durci (base non exposée, non-root, images épinglées), Caddy + HTTPS auto, limitation de débit, mode d'inscription modifiable par l'admin + premier admin + liste des invités + prénom / nom, sessions révocables, changement de mot de passe, suppression de compte, garde-fou sur la base de test, correctif réseau-hors-transaction, URL ≤ 2 048 / `url_hash`. LICENSE, README en anglais, CONTRIBUTING, SECURITY, CI.
-2. **Fondations front** : tokens de la DA branchés sur le thème Tailwind (`@theme`) et composants restylés à la DA, shell mobile / rail / sidebar, i18n `en` / `fr`, client `openapi-fetch` généré, thème Sombre / Clair / Système, cache du service worker vidé à la déconnexion. Bibliothèque, capture et détail portés.
-3. **Modules** : table `UserModule`, File et Partage portés (anti-énumération, contacts et lien de contact, réception), « Actualiser » honnête.
-4. **Statistiques sur le journal** : calculs du §5.4 en fonctions pures testées, objectifs sur le compte, explication + confiance sur chaque chiffre.
-5. **Capture partout** : jetons d'API, bookmarklet, Web Share Target (Android), raccourci iOS documenté.
-6. **Reprise et portabilité** : file de jobs, imports (§6), export JSON / CSV.
-7. **Instance publique** : SMTP (vérification, réinitialisation, invitations par e-mail), proxy d'images (masque l'IP des visiteurs aux CDN tiers), pages Confidentialité et Conditions, administration.
-→ Passe `unslop` sur l'app réelle, images `ghcr.io`, déploiement de l'instance publique, guide d'auto-hébergement.
+**Takeover, in build order**
+0. **Honest Git history**: initial commit (vision + art direction), then import of the existing code as is, then clean-up (dead code, duplicates, outdated docs).
+1. **Safe, self-hostable foundation**: refusal of default secrets, hardened compose (database not exposed, non-root, pinned images), Caddy + automatic HTTPS, rate limiting, registration mode editable by the admin + first admin + invite list + first / last name, revocable sessions, password change, account deletion, guard on the test database, network-outside-transaction fix, URL ≤ 2,048 / `url_hash`. LICENSE, English README, CONTRIBUTING, SECURITY, CI.
+2. **Front-end foundations**: art-direction tokens wired into the Tailwind theme (`@theme`) and components restyled to the art direction, mobile shell / rail / sidebar, `en` / `fr` i18n, generated `openapi-fetch` client, Dark / Light / System theme, service-worker cache cleared on sign-out. Library, capture and detail ported.
+3. **Modules**: `UserModule` table, Queue and Sharing ported (anti-enumeration, contacts and contact link, receiving), honest "Refresh".
+4. **Statistics on the journal**: computations of §5.4 as tested pure functions, goals on the account, explanation + confidence on every number.
+5. **Capture everywhere**: API tokens, bookmarklet, Web Share Target (Android), documented iOS shortcut.
+6. **Import and portability**: job queue, imports (§6), JSON / CSV export.
+7. **Public instance**: SMTP (verification, reset, e-mail invitations), image proxy (hides visitors' IPs from third-party CDNs), Privacy and Terms pages, administration.
+→ `unslop` pass on the real app, `ghcr.io` images, public instance deployment, self-hosting guide.
 
-**V1.1** : recherche plein texte `tsvector` (`english` / `french`), extension navigateur, import RSS (flux → items À voir), notifications Web Push des partages.
+**V1.1**: `tsvector` full-text search (`english` / `french`), browser extension, RSS import (feed → To watch items), Web Push notifications for shares.
 
-**V2** : collections partagées, résumés IA optionnels (clé fournie par l'instance), lecture hors ligne en mode lecteur.
+**V2**: shared collections, optional AI summaries (key provided by the instance), offline reading in reader mode.
 
-## 13. Questions ouvertes
+## 13. Open questions
 
-1. **Capacité de l'instance publique** : le serveur tient-il quelques milliers de comptes (CPU des récupérations, bande passante du proxy d'images) ? On le mesure pendant la phase `invite` avant d'ouvrir.
+1. **Public instance capacity**: can the server handle a few thousand accounts (fetch CPU, image proxy bandwidth)? We measure it during the `invite` phase before opening.
 
-### Tranché
+### Settled
 
-- Nom : **Vigie** (choisi avec la DA), dépôt `vigie`.
-- Instance publique : port `8101` par défaut, mode `invite`, son propriétaire seul admin.
-- Pré-production : port `8102` par défaut, base de données et volumes à part (projet compose `vigie-pp`), liste blanche `ALLOWED_EMAILS` (le propriétaire seul, d'autres adresses s'ajoutent dans le `.env` du serveur). La branche `preprod` s'y déploie, `main` va en production : une feature passe d'abord par `preprod`, puis on fusionne dans `main` une fois validée.
-- Partage : contacts créés à l'ouverture d'un partage ou par lien de contact ; prénom et nom demandés à l'inscription, avec la raison affichée.
-- Traductions : dictionnaires dans le dépôt ; une plateforme communautaire seulement quand d'autres langues seront demandées.
-- Stats après suppression : tags et source ne sont pas figés dans l'événement ; la base est affichée.
+- Name: **Vigie** (chosen together with the art direction), repository `vigie`.
+- Public instance: port `8101` by default, `invite` mode, its owner the only admin.
+- Pre-production: port `8102` by default, separate database and volumes (compose project `vigie-pp`), `ALLOWED_EMAILS` allow-list (the owner only; other addresses are added in the server's `.env`). The `preprod` branch deploys there, `main` goes to production: a feature goes through `preprod` first, then is merged into `main` once validated.
+- Sharing: contacts created when a share is opened or through a contact link; first and last name asked at sign-up, with the reason shown.
+- Translations: dictionaries in the repository; a community platform only when other languages are requested.
+- Stats after deletion: tags and source are not frozen into the event; the basis is shown.

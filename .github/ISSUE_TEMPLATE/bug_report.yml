@@ -1,0 +1,52 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping to improve Vigie. For security issues, do **not** open an issue: use the private security advisory link on the issue chooser.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Click on …
+        3. See the error
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where do you use Vigie?
+      options:
+        - Mobile (installed PWA)
+        - Mobile browser
+        - Tablet
+        - Desktop browser
+        - API / self-hosting
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or build number
+      description: Shown at the bottom of Settings → General → App.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Safari 19 on iOS 27, Chrome 140 on macOS, …
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Remove any private link, e-mail or token first.

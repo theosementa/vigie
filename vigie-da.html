@@ -3,7 +3,7 @@
   Vigie, direction artistique v1. This file is the visual spec: the :root blocks become tokens.css,
   the component rules (from "Components" on) become base.css with the same class names.
 -->
-<html lang="fr" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -326,10 +326,10 @@ figcaption strong{color:var(--text);font-weight:500}
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4.5 18.5a12 12 0 0 1 17 0M8.5 14.5a6.4 6.4 0 0 1 9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="19.5" r="2.4" fill="currentColor"/></svg>
       Vigie
     </div>
-    <div class="seg" role="group" aria-label="Thème">
-      <button data-set-theme="dark" aria-pressed="true">Sombre</button>
-      <button data-set-theme="light" aria-pressed="false">Clair</button>
-      <button data-set-theme="system" aria-pressed="false">Système</button>
+    <div class="seg" role="group" aria-label="Theme">
+      <button data-set-theme="dark" aria-pressed="true">Dark</button>
+      <button data-set-theme="light" aria-pressed="false">Light</button>
+      <button data-set-theme="system" aria-pressed="false">System</button>
     </div>
   </header>
 
@@ -337,21 +337,21 @@ figcaption strong{color:var(--text);font-weight:500}
   <section class="hero">
     <div>
       <h1>Vigie</h1>
-      <p class="lede">Un instrument de veille, pas un fil d'actualité. Comme sur une passerelle la nuit, l'écran reste sombre et calme : ce qui arrive est un écho, ce que tu as vu s'éteint, et tes objectifs se lisent comme un écran radar.</p>
+      <p class="lede">A watch instrument, not a news feed. Like on a ship's bridge at night, the screen stays dark and calm: what arrives is an echo, what you have seen fades out, and your goals read like a radar screen.</p>
       <div class="principles">
-        <div class="principle"><div><h3>L'écho se mérite</h3><p>Le vert phosphore marque trois choses, pas une de plus : l'action principale de l'écran (Ajouter, Envoyer, Créer), ce qui est nouveau (partage pas encore ouvert, ajout du jour), le point « maintenant » des graphes.</p></div></div>
-        <div class="principle"><div><h3>Ce qui est vu s'éteint</h3><p>À voir : titre plein, image en couleur. Vu : titre secondaire, image en niveaux de gris atténuée. On voit d'un coup d'œil ce qui reste, sans badge.</p></div></div>
-        <div class="principle"><div><h3>Une seule voix, Geologica</h3><p>Deux graisses : 500 pour les titres et les chiffres, 400 pour le texte. Le resserrement est réservé aux grandes tailles. Chiffres tabulaires partout, unités plus petites et en secondaire.</p></div></div>
+        <div class="principle"><div><h3>The echo is earned</h3><p>Phosphor green marks three things, no more: the screen's main action (Add, Send, Create), what is new (a share not yet opened, today's addition), the “now” point of charts.</p></div></div>
+        <div class="principle"><div><h3>What is seen fades out</h3><p>To watch: full title, colour image. Seen: secondary title, dimmed greyscale image. You see at a glance what is left, with no badge.</p></div></div>
+        <div class="principle"><div><h3>One voice, Geologica</h3><p>Two weights: 500 for titles and numbers, 400 for text. Tightening is reserved for large sizes. Tabular figures everywhere, units smaller and in secondary colour.</p></div></div>
       </div>
     </div>
 
-    <div class="phone" aria-label="Maquette mobile, Bibliothèque">
+    <div class="phone" aria-label="Mobile mock-up, Library">
       <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
       <div class="scr">
-        <div class="scr-h"><h3>Bibliothèque</h3><div class="icon-btns"><span class="icon-btn" aria-label="Rechercher"><svg class="i s"><use href="#s-magnifier"/></svg></span><span class="icon-btn" aria-label="Réglages"><svg class="i s"><use href="#s-settings"/></svg></span></div></div>
-        <div class="chips"><span class="chip" aria-pressed="true">À voir <b>87</b></span><span class="chip">Vu</span><span class="chip">Vidéos</span><span class="chip">#postgres</span></div>
+        <div class="scr-h"><h3>Library</h3><div class="icon-btns"><span class="icon-btn" aria-label="Search"><svg class="i s"><use href="#s-magnifier"/></svg></span><span class="icon-btn" aria-label="Settings"><svg class="i s"><use href="#s-settings"/></svg></span></div></div>
+        <div class="chips"><span class="chip" aria-pressed="true">To watch <b>87</b></span><span class="chip">Seen</span><span class="chip">Videos</span><span class="chip">#postgres</span></div>
         <div class="panel scope">
-          <svg width="112" height="112" viewBox="0 0 120 120" role="img" aria-label="Semaine : 14 vus sur 20, 3&nbsp;h&nbsp;12 de visionnage sur 5&nbsp;h, série de 9 jours sur un record de 14">
+          <svg width="112" height="112" viewBox="0 0 120 120" role="img" aria-label="Week: 14 seen out of 20, 3&nbsp;h&nbsp;12 of watch time out of 5&nbsp;h, 9-day streak on a record of 14">
             <g class="grid"><circle cx="60" cy="60" r="54"/><circle cx="60" cy="60" r="40"/><circle cx="60" cy="60" r="26"/><path d="M60 2v116M2 60h116"/></g>
             <circle class="ring" cx="60" cy="60" r="54" stroke-width="4" stroke-dasharray="237.5 400"/>
             <circle class="ring" cx="60" cy="60" r="40" stroke-width="4" stroke-dasharray="160.8 400" style="opacity:.7"/>
@@ -359,24 +359,24 @@ figcaption strong{color:var(--text);font-weight:500}
             <circle cx="60" cy="60" r="3.5" fill="var(--accent-ink)"/>
           </svg>
           <ul>
-            <li>Vus cette semaine<b>14<small>/ 20</small></b></li>
-            <li><span>Visionnage <span class="conf">partiel</span></span><b>3&nbsp;h&nbsp;12<small>/ 5&nbsp;h</small></b></li>
-            <li>Série<b>9 jours<small>record 14</small></b></li>
+            <li>Seen this week<b>14<small>/ 20</small></b></li>
+            <li><span>Watch time <span class="conf">partial</span></span><b>3&nbsp;h&nbsp;12<small>/ 5&nbsp;h</small></b></li>
+            <li>Streak<b>9 days<small>record 14</small></b></li>
           </ul>
         </div>
-        <div class="recv"><span class="dot" aria-hidden="true"></span><span><b>Camille Roux</b> t'a envoyé une vidéo <q>À regarder avant jeudi</q></span></div>
+        <div class="recv"><span class="dot" aria-hidden="true"></span><span><b>Camille Roux</b> sent you a video <q>Watch before Thursday</q></span></div>
         <div class="list">
-          <div class="it"><div class="th"><svg class="og"><use href="#og-pg"/></svg></div><div><div class="tt">Postgres 18 : les entrées-sorties asynchrones, expliquées</div><div class="meta">lwn.net · 12 min</div></div></div>
-          <div class="it"><div class="th"><svg class="og"><use href="#og-sqlite"/></svg><span class="dur">24:18</span></div><div><div class="tt">How SQLite scales read-heavy workloads</div><div class="meta"><span class="dot" aria-label="Nouveau"></span>youtube.com · Camille Roux</div></div></div>
-          <div class="it"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div><div class="tt">Interaction to Next Paint, un an après</div><div class="meta">web.dev · 9 min</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-pg"/></svg></div><div><div class="tt">Postgres 18: asynchronous I/O, explained</div><div class="meta">lwn.net · 12 min</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-sqlite"/></svg><span class="dur">24:18</span></div><div><div class="tt">How SQLite scales read-heavy workloads</div><div class="meta"><span class="dot" aria-label="New"></span>youtube.com · Camille Roux</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div><div class="tt">Interaction to Next Paint, one year on</div><div class="meta">web.dev · 9 min</div></div></div>
           <div class="it"><div class="th"><svg class="og"><use href="#og-flags"/></svg></div><div><div class="tt">The hidden cost of feature flags</div><div class="meta">arstechnica.com · 7 min</div></div></div>
         </div>
       </div>
       <nav class="tabbar" aria-label="Navigation">
-        <span class="tab" aria-current="page"><svg class="i"><use href="#s-layers-minimalistic-b"/></svg>Bibliothèque</span>
-        <span class="tab"><svg class="i"><use href="#s-playlist-minimalistic"/></svg>File</span>
-        <span class="tab"><span class="start" aria-label="Ajouter un lien"><svg class="i"><use href="#s-add"/></svg></span></span>
-        <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Partagés</span>
+        <span class="tab" aria-current="page"><svg class="i"><use href="#s-layers-minimalistic-b"/></svg>Library</span>
+        <span class="tab"><svg class="i"><use href="#s-playlist-minimalistic"/></svg>Queue</span>
+        <span class="tab"><span class="start" aria-label="Add a link"><svg class="i"><use href="#s-add"/></svg></span></span>
+        <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Shared</span>
         <span class="tab"><svg class="i"><use href="#s-radar-2"/></svg>Stats</span>
       </nav>
     </div>
@@ -385,129 +385,129 @@ figcaption strong{color:var(--text);font-weight:500}
   <!-- ===================== MOBILE ===================== -->
   <section class="section">
     <h2>Mobile</h2>
-    <p class="intro">La barre d'onglets en bas porte les quatre écrans du quotidien et, au centre, l'action Ajouter, le seul gros bouton en écho. Toute saisie s'ouvre en plein écran, l'action principale collée en bas, au pouce.</p>
+    <p class="intro">The bottom tab bar carries the four everyday screens and, in the centre, the Add action, the only big echo-coloured button. Every input opens full screen, the main action stuck to the bottom, within thumb reach.</p>
     <div class="phones">
 
       <figure>
-        <div class="phone" aria-label="Maquette mobile, ajouter un lien">
+        <div class="phone" aria-label="Mobile mock-up, add a link">
           <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
           <div class="scr">
-            <div class="sheet-h"><h3>Ajouter un lien</h3><span class="icon-btn" aria-label="Fermer"><svg class="i s"><use href="#s-x"/></svg></span></div>
-            <div class="field focus"><label>Lien</label><div class="v"><span>https://lwn.net/Articles/998412/</span><span class="caret"></span></div></div>
-            <button class="btn btn-2 btn-sm" style="justify-self:start;align-self:flex-start"><svg class="i"><use href="#s-clipboard"/></svg>Coller</button>
-            <div class="preview"><div class="th"><svg class="og" style="width:100%;height:100%"><use href="#og-pg"/></svg></div><div><div class="tt">Postgres 18 : les entrées-sorties asynchrones, expliquées</div><div class="meta">lwn.net · 12 min · article</div></div></div>
-            <div class="seg full" role="group" aria-label="Type"><button aria-pressed="true"><svg class="i xs"><use href="#s-document-text"/></svg>Article</button><button aria-pressed="false"><svg class="i xs"><use href="#s-videocamera"/></svg>Vidéo</button></div>
+            <div class="sheet-h"><h3>Add a link</h3><span class="icon-btn" aria-label="Close"><svg class="i s"><use href="#s-x"/></svg></span></div>
+            <div class="field focus"><label>Link</label><div class="v"><span>https://lwn.net/Articles/998412/</span><span class="caret"></span></div></div>
+            <button class="btn btn-2 btn-sm" style="justify-self:start;align-self:flex-start"><svg class="i"><use href="#s-clipboard"/></svg>Paste</button>
+            <div class="preview"><div class="th"><svg class="og" style="width:100%;height:100%"><use href="#og-pg"/></svg></div><div><div class="tt">Postgres 18: asynchronous I/O, explained</div><div class="meta">lwn.net · 12 min · article</div></div></div>
+            <div class="seg full" role="group" aria-label="Type"><button aria-pressed="true"><svg class="i xs"><use href="#s-document-text"/></svg>Article</button><button aria-pressed="false"><svg class="i xs"><use href="#s-videocamera"/></svg>Video</button></div>
             <div class="tags"><span class="tag">#postgres</span><span class="tag">#perf</span><span class="tag add">+ Tag</span></div>
-            <div class="field"><label>Note (optionnel)</label><div class="v"><span class="ph">Pourquoi tu le gardes…</span></div></div>
-            <button class="cta"><svg class="i s"><use href="#s-add"/></svg>Ajouter à Vigie</button>
+            <div class="field"><label>Note (optional)</label><div class="v"><span class="ph">Why you are keeping it…</span></div></div>
+            <button class="cta"><svg class="i s"><use href="#s-add"/></svg>Add to Vigie</button>
           </div>
           <div class="homebar"></div>
         </div>
-        <figcaption><strong>Capture en 3 secondes.</strong> Un seul champ obligatoire. Le presse-papiers n'est lu que sur « Coller », jamais à l'ouverture. Titre, image, durée et type se déduisent ; l'aperçu se remplit pendant que tu tapes.</figcaption>
+        <figcaption><strong>Capture in 3 seconds.</strong> Only one required field. The clipboard is read only on “Paste”, never on open. Title, image, duration and type are inferred; the preview fills in as you type.</figcaption>
       </figure>
 
       <figure>
-        <div class="phone" aria-label="Maquette mobile, envoyer un lien">
+        <div class="phone" aria-label="Mobile mock-up, send a link">
           <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
           <div class="scr">
-            <div class="sheet-h"><h3>Envoyer à…</h3><span class="icon-btn" aria-label="Fermer"><svg class="i s"><use href="#s-x"/></svg></span></div>
+            <div class="sheet-h"><h3>Send to…</h3><span class="icon-btn" aria-label="Close"><svg class="i s"><use href="#s-x"/></svg></span></div>
             <div class="preview"><div class="th"><svg class="og" style="width:100%;height:100%"><use href="#og-uring"/></svg></div><div><div class="tt">io_uring and the end of epoll</div><div class="meta">lwn.net · 18 min</div></div></div>
-            <div class="field focus"><label>Contact ou adresse e-mail</label><div class="v"><span>cam</span><span class="caret"></span></div></div>
+            <div class="field focus"><label>Contact or e-mail address</label><div class="v"><span>cam</span><span class="caret"></span></div></div>
             <div class="list">
-              <div class="it" style="grid-template-columns:30px minmax(0,1fr) auto"><span class="av">CR</span><div><div class="tt" style="font-size:14px">Camille Roux</div><div class="meta">Contact depuis le 12 oct.</div></div><svg class="i s" style="color:var(--accent-ink)"><use href="#s-check-circle"/></svg></div>
-              <div class="it" style="grid-template-columns:30px minmax(0,1fr) auto"><span class="av">CL</span><div><div class="tt" style="font-size:14px">Camélia Laurent</div><div class="meta">Contact depuis le 3 sept.</div></div><span></span></div>
+              <div class="it" style="grid-template-columns:30px minmax(0,1fr) auto"><span class="av">CR</span><div><div class="tt" style="font-size:14px">Camille Roux</div><div class="meta">Contact since 12 Oct</div></div><svg class="i s" style="color:var(--accent-ink)"><use href="#s-check-circle"/></svg></div>
+              <div class="it" style="grid-template-columns:30px minmax(0,1fr) auto"><span class="av">CL</span><div><div class="tt" style="font-size:14px">Camélia Laurent</div><div class="meta">Contact since 3 Sept</div></div><span></span></div>
             </div>
-            <div class="field"><label>Un mot (optionnel)</label><div class="v"><span>Le passage sur SQPOLL vaut le détour</span></div><div class="help">38 / 280</div></div>
-            <div class="note-s"><svg class="i"><use href="#s-eye"/></svg><span>Camille verra ton nom et ton mot, jamais tes notes ni tes tags.</span></div>
-            <button class="cta"><svg class="i s"><use href="#s-plain"/></svg>Envoyer à Camille</button>
+            <div class="field"><label>A note (optional)</label><div class="v"><span>The SQPOLL part is worth the detour</span></div><div class="help">38 / 280</div></div>
+            <div class="note-s"><svg class="i"><use href="#s-eye"/></svg><span>Camille will see your name and your note, never your notes or tags.</span></div>
+            <button class="cta"><svg class="i s"><use href="#s-plain"/></svg>Send to Camille</button>
           </div>
           <div class="homebar"></div>
         </div>
-        <figcaption><strong>Partager à une personne.</strong> Les contacts sont proposés par leur nom. Vers une adresse inconnue, la réponse reste « Envoyé si cette adresse a un compte et accepte tes partages » : Vigie ne révèle jamais qui est inscrit.</figcaption>
+        <figcaption><strong>Share with one person.</strong> Contacts are suggested by name. To an unknown address, the answer stays “Sent if this address has an account and accepts your shares”: Vigie never reveals who is registered.</figcaption>
       </figure>
 
       <figure>
-        <div class="phone" aria-label="Maquette mobile, file vidéo">
+        <div class="phone" aria-label="Mobile mock-up, video queue">
           <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
           <div class="scr">
-            <div class="scr-h"><div><h3>File</h3><div class="sub">6 vidéos · ≈&nbsp;2&nbsp;h&nbsp;40 <span class="conf">partiel</span></div></div><span class="icon-btn" aria-label="Plus d'options"><svg class="i s"><use href="#s-menu-dots"/></svg></span></div>
+            <div class="scr-h"><div><h3>Queue</h3><div class="sub">6 videos · ≈&nbsp;2&nbsp;h&nbsp;40 <span class="conf">partial</span></div></div><span class="icon-btn" aria-label="More options"><svg class="i s"><use href="#s-menu-dots"/></svg></span></div>
             <div class="next">
               <div class="th"><svg class="og"><use href="#og-sqlite"/></svg><span class="dur" style="font-size:12px;right:8px;bottom:8px">24:18</span></div>
-              <div class="nb"><div><div class="sub">Ensuite · envoyée par Camille Roux</div><div class="tt">How SQLite scales read-heavy workloads</div></div><span class="play" aria-label="Regarder"><svg class="i s"><use href="#s-play"/></svg></span></div>
+              <div class="nb"><div><div class="sub">Next · sent by Camille Roux</div><div class="tt">How SQLite scales read-heavy workloads</div></div><span class="play" aria-label="Watch"><svg class="i s"><use href="#s-play"/></svg></span></div>
             </div>
             <div>
               <div class="q"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;position:relative"><svg class="og" style="width:100%;height:100%"><use href="#og-rust"/></svg></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Rust in the Linux kernel, 2026 status</div><div class="meta">youtube.com · 41:02</div></div></div>
-              <div class="q"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;position:relative"><svg class="og" style="width:100%;height:100%"><use href="#og-kafka"/></svg></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Kafka sans ZooKeeper, en pratique</div><div class="meta">youtube.com · 32:45</div></div></div>
-              <div class="q is-unknown"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--line)"><span class="mono" style="font-size:14px;background:transparent">V</span></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Conférence : la veille sans burn-out</div><div class="meta">vimeo.com · durée inconnue</div></div></div>
+              <div class="q"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;position:relative"><svg class="og" style="width:100%;height:100%"><use href="#og-kafka"/></svg></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Kafka without ZooKeeper, in practice</div><div class="meta">youtube.com · 32:45</div></div></div>
+              <div class="q is-unknown"><span class="h"><svg class="i"><use href="#s-reorder"/></svg></span><div class="th" style="width:64px;height:40px;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--line)"><span class="mono" style="font-size:14px;background:transparent">V</span></div><div><div class="tt" style="font-size:14px;font-weight:500;line-height:1.3">Talk: staying informed without burn-out</div><div class="meta">vimeo.com · unknown duration</div></div></div>
             </div>
           </div>
           <nav class="tabbar" aria-label="Navigation">
-            <span class="tab"><svg class="i"><use href="#s-layers-minimalistic"/></svg>Bibliothèque</span>
-            <span class="tab" aria-current="page"><svg class="i"><use href="#s-playlist-minimalistic-b"/></svg>File</span>
-            <span class="tab"><span class="start" aria-label="Ajouter un lien"><svg class="i"><use href="#s-add"/></svg></span></span>
-            <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Partagés</span>
+            <span class="tab"><svg class="i"><use href="#s-layers-minimalistic"/></svg>Library</span>
+            <span class="tab" aria-current="page"><svg class="i"><use href="#s-playlist-minimalistic-b"/></svg>Queue</span>
+            <span class="tab"><span class="start" aria-label="Add a link"><svg class="i"><use href="#s-add"/></svg></span></span>
+            <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Shared</span>
             <span class="tab"><svg class="i"><use href="#s-radar-2"/></svg>Stats</span>
           </nav>
         </div>
-        <figcaption><strong>File.</strong> La prochaine vidéo en grand, le reste se réordonne à la poignée (doigt ou clavier). Une durée inconnue reste inconnue : le total le dit (« partiel ») au lieu d'inventer.</figcaption>
+        <figcaption><strong>Queue.</strong> The next video large, the rest reorders by the handle (finger or keyboard). An unknown duration stays unknown: the total says so (“partial”) instead of making something up.</figcaption>
       </figure>
 
       <figure>
-        <div class="phone" aria-label="Maquette mobile, statistiques">
+        <div class="phone" aria-label="Mobile mock-up, statistics">
           <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
           <div class="scr">
-            <div class="scr-h"><h3>Stats</h3><div class="icon-btns"><span class="icon-btn" aria-label="Semaine précédente"><svg class="i s"><use href="#s-alt-arrow-left"/></svg></span><span class="icon-btn" aria-label="Semaine suivante"><svg class="i s"><use href="#s-alt-arrow-right"/></svg></span></div></div>
-            <div class="seg full" role="group" aria-label="Période"><button aria-pressed="true">Semaine</button><button aria-pressed="false">Mois</button><button aria-pressed="false">Année</button></div>
-            <div class="sub" style="margin-top:-6px">Du lundi 2 au dimanche 8 novembre · fuseau Europe/Paris</div>
+            <div class="scr-h"><h3>Stats</h3><div class="icon-btns"><span class="icon-btn" aria-label="Previous week"><svg class="i s"><use href="#s-alt-arrow-left"/></svg></span><span class="icon-btn" aria-label="Next week"><svg class="i s"><use href="#s-alt-arrow-right"/></svg></span></div></div>
+            <div class="seg full" role="group" aria-label="Period"><button aria-pressed="true">Week</button><button aria-pressed="false">Month</button><button aria-pressed="false">Year</button></div>
+            <div class="sub" style="margin-top:-6px">Monday 2 to Sunday 8 November · time zone Europe/Paris</div>
             <div class="panel">
-              <h5>Vus par jour <span class="delta" style="margin-left:auto;color:var(--text)">14 · +4 vs sem. dernière</span></h5>
-              <svg class="hist" viewBox="0 0 300 120" role="img" aria-label="Vus par jour cette semaine : lundi 3, mardi 1, mercredi 4, jeudi 6 en cours ; semaine précédente en contour">
+              <h5>Seen per day <span class="delta" style="margin-left:auto;color:var(--text)">14 · +4 vs last week</span></h5>
+              <svg class="hist" viewBox="0 0 300 120" role="img" aria-label="Seen per day this week: Monday 3, Tuesday 1, Wednesday 4, Thursday 6 in progress; previous week outlined">
                 <g fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3 3">
                   <rect x="12" y="62" width="26" height="38" rx="3"/><rect x="54" y="74" width="26" height="26" rx="3"/><rect x="96" y="50" width="26" height="50" rx="3"/><rect x="138" y="80" width="26" height="20" rx="3"/><rect x="180" y="68" width="26" height="32" rx="3"/><rect x="222" y="86" width="26" height="14" rx="3"/><rect x="264" y="74" width="26" height="26" rx="3"/>
                 </g>
                 <g fill="var(--text)"><rect x="12" y="70" width="26" height="30" rx="3"/><rect x="54" y="90" width="26" height="10" rx="3"/><rect x="96" y="60" width="26" height="40" rx="3"/><rect x="138" y="40" width="26" height="60" rx="3"/></g>
                 <g fill="var(--muted)" opacity=".55"><rect x="12" y="86" width="26" height="14" rx="0"/><rect x="96" y="84" width="26" height="16"/><rect x="138" y="76" width="26" height="24"/></g>
                 <circle cx="151" cy="32" r="4" fill="var(--accent-ink)"/>
-                <g fill="var(--muted)" font-size="11" font-family="Geologica,sans-serif" text-anchor="middle"><text x="25" y="114">L</text><text x="67" y="114">M</text><text x="109" y="114">M</text><text x="151" y="114" fill="var(--text)" font-weight="500">J</text><text x="193" y="114">V</text><text x="235" y="114">S</text><text x="277" y="114">D</text></g>
+                <g fill="var(--muted)" font-size="11" font-family="Geologica,sans-serif" text-anchor="middle"><text x="25" y="114">M</text><text x="67" y="114">T</text><text x="109" y="114">W</text><text x="151" y="114" fill="var(--text)" font-weight="500">T</text><text x="193" y="114">F</text><text x="235" y="114">S</text><text x="277" y="114">S</text></g>
               </svg>
-              <div class="legend"><span><i style="background:var(--text)"></i>Articles</span><span><i style="background:var(--muted);opacity:.55"></i>Vidéos</span><span><i style="border:1.5px dashed var(--line)"></i>Semaine dernière</span></div>
+              <div class="legend"><span><i style="background:var(--text)"></i>Articles</span><span><i style="background:var(--muted);opacity:.55"></i>Videos</span><span><i style="border:1.5px dashed var(--line)"></i>Last week</span></div>
             </div>
             <div class="panel kpis" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px">
-              <div><h5>Visionnage <span class="conf">partiel</span></h5><div class="kpi">3&nbsp;h&nbsp;12</div><div class="sub">1 vidéo sans durée</div></div>
-              <div><h5>Lecture <span class="conf">estimé</span></h5><div class="kpi">≈&nbsp;1&nbsp;h&nbsp;48</div><div class="sub">230 mots/min</div></div>
-              <div><h5>Pile</h5><div class="kpi">87</div><span class="badge s-ok">−6 en 28 j · tu rattrapes</span></div>
-              <div><h5>Série</h5><div class="kpi">9<small>jours</small></div><div class="sub">Record 14</div></div>
+              <div><h5>Watch time <span class="conf">partial</span></h5><div class="kpi">3&nbsp;h&nbsp;12</div><div class="sub">1 video without duration</div></div>
+              <div><h5>Reading <span class="conf">estimated</span></h5><div class="kpi">≈&nbsp;1&nbsp;h&nbsp;48</div><div class="sub">230 words/min</div></div>
+              <div><h5>Pile</h5><div class="kpi">87</div><span class="badge s-ok">−6 in 28 d · you're catching up</span></div>
+              <div><h5>Streak</h5><div class="kpi">9<small>days</small></div><div class="sub">Record 14</div></div>
             </div>
           </div>
           <nav class="tabbar" aria-label="Navigation">
-            <span class="tab"><svg class="i"><use href="#s-layers-minimalistic"/></svg>Bibliothèque</span>
-            <span class="tab"><svg class="i"><use href="#s-playlist-minimalistic"/></svg>File</span>
-            <span class="tab"><span class="start" aria-label="Ajouter un lien"><svg class="i"><use href="#s-add"/></svg></span></span>
-            <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Partagés</span>
+            <span class="tab"><svg class="i"><use href="#s-layers-minimalistic"/></svg>Library</span>
+            <span class="tab"><svg class="i"><use href="#s-playlist-minimalistic"/></svg>Queue</span>
+            <span class="tab"><span class="start" aria-label="Add a link"><svg class="i"><use href="#s-add"/></svg></span></span>
+            <span class="tab"><svg class="i"><use href="#s-plain"/></svg>Shared</span>
             <span class="tab" aria-current="page"><svg class="i"><use href="#s-radar-2-b"/></svg>Stats</span>
           </nav>
         </div>
-        <figcaption><strong>Chaque chiffre dit d'où il vient.</strong> La période précédente en contour pointillé, le jour en cours marqué d'un écho. Les puces « partiel » et « estimé » accompagnent toujours la valeur, jamais une note de bas de page.</figcaption>
+        <figcaption><strong>Every number says where it comes from.</strong> The previous period in a dashed outline, the current day marked with an echo. The “partial” and “estimated” chips always accompany the value, never a footnote.</figcaption>
       </figure>
 
       <figure>
-        <div class="phone" aria-label="Maquette mobile, création de compte">
+        <div class="phone" aria-label="Mobile mock-up, account creation">
           <div class="status"><span>9:41</span><span class="isl"></span><span>5G</span></div>
           <div class="scr" style="padding-top:28px">
             <div class="logo" style="font-size:19px"><svg width="24" height="24" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4.5 18.5a12 12 0 0 1 17 0M8.5 14.5a6.4 6.4 0 0 1 9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="19.5" r="2.4" fill="currentColor"/></svg>Vigie</div>
-            <div><h3 style="margin:16px 0 8px;font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Crée ton compte</h3><div class="sub" style="font-size:14px">Tu as été invité·e sur vigie.example.org.</div></div>
+            <div><h3 style="margin:16px 0 8px;font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Create your account</h3><div class="sub" style="font-size:14px">You have been invited to vigie.example.org.</div></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div class="field focus"><label>Prénom</label><div class="v"><span>Camille</span><span class="caret"></span></div></div>
-              <div class="field"><label>Nom</label><div class="v"><span class="ph">Roux</span></div></div>
+              <div class="field focus"><label>First name</label><div class="v"><span>Camille</span><span class="caret"></span></div></div>
+              <div class="field"><label>Last name</label><div class="v"><span class="ph">Roux</span></div></div>
             </div>
-            <div class="note-s"><svg class="i"><use href="#s-eye"/></svg><span>Ton nom s'affiche quand tu envoies un lien à quelqu'un, pour qu'il sache de qui il vient. Il n'est visible par personne d'autre.</span></div>
-            <div class="field"><label>Adresse e-mail</label><div class="v"><span>camille.roux@exemple.fr</span></div></div>
-            <div class="field"><label>Mot de passe</label><div class="v"><span>••••••••••••</span></div><div class="help">8 caractères minimum</div></div>
-            <button class="cta">Créer mon compte</button>
+            <div class="note-s"><svg class="i"><use href="#s-eye"/></svg><span>Your name is shown when you send a link to someone, so they know who it is from. Nobody else can see it.</span></div>
+            <div class="field"><label>E-mail address</label><div class="v"><span>camille.roux@example.com</span></div></div>
+            <div class="field"><label>Password</label><div class="v"><span>••••••••••••</span></div><div class="help">8 characters minimum</div></div>
+            <button class="cta">Create my account</button>
           </div>
           <div class="homebar"></div>
         </div>
-        <figcaption><strong>On demande le nom, et on dit pourquoi.</strong> L'explication est sous les champs, pas dans une infobulle. En mode invitation, seules les adresses ajoutées par l'admin passent.</figcaption>
+        <figcaption><strong>We ask for the name, and say why.</strong> The explanation sits under the fields, not in a tooltip. In invite mode, only addresses added by the admin get through.</figcaption>
       </figure>
 
     </div>
@@ -515,42 +515,42 @@ figcaption strong{color:var(--text);font-weight:500}
 
   <!-- ===================== DESKTOP ===================== -->
   <section class="section">
-    <h2>Desktop et tablette</h2>
-    <p class="intro">La barre latérale liste les modules actifs avec leurs compteurs, puis Réglages et le compte. La capture vit dans l'en-tête de la Bibliothèque (raccourci <b>N</b>). En tablette portrait, la barre devient un rail d'icônes de 72 px sans libellé ; à partir de 1 280 px, un clic sur une carte ouvre l'inspecteur à droite au lieu d'une modale.</p>
+    <h2>Desktop and tablet</h2>
+    <p class="intro">The sidebar lists the active modules with their counters, then Settings and the account. Capture lives in the Library header (shortcut <b>N</b>). On a portrait tablet, the bar becomes a 72 px icon rail with no labels; from 1,280 px, a click on a card opens the inspector on the right instead of a modal.</p>
     <div class="desk-wrap">
-      <div class="desk" aria-label="Maquette desktop, Bibliothèque">
+      <div class="desk" aria-label="Desktop mock-up, Library">
         <aside class="side">
           <div class="logo"><svg width="24" height="24" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4.5 18.5a12 12 0 0 1 17 0M8.5 14.5a6.4 6.4 0 0 1 9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="19.5" r="2.4" fill="currentColor"/></svg>Vigie</div>
           <nav class="nav" aria-label="Navigation">
-            <a aria-current="page"><svg class="i s"><use href="#s-layers-minimalistic-b"/></svg>Bibliothèque<span class="n">87</span></a>
-            <a><svg class="i s"><use href="#s-playlist-minimalistic"/></svg>File<span class="n">6</span></a>
-            <a><svg class="i s"><use href="#s-plain"/></svg>Partagés<span class="n"><span class="dot" aria-hidden="true"></span>2</span></a>
-            <a><svg class="i s"><use href="#s-radar-2"/></svg>Statistiques</a>
+            <a aria-current="page"><svg class="i s"><use href="#s-layers-minimalistic-b"/></svg>Library<span class="n">87</span></a>
+            <a><svg class="i s"><use href="#s-playlist-minimalistic"/></svg>Queue<span class="n">6</span></a>
+            <a><svg class="i s"><use href="#s-plain"/></svg>Shared<span class="n"><span class="dot" aria-hidden="true"></span>2</span></a>
+            <a><svg class="i s"><use href="#s-radar-2"/></svg>Statistics</a>
             <div class="nav-sep"></div>
-            <a><svg class="i s"><use href="#s-settings"/></svg>Réglages</a>
+            <a><svg class="i s"><use href="#s-settings"/></svg>Settings</a>
             <a><svg class="i s"><use href="#s-users-group-rounded"/></svg>Administration</a>
           </nav>
           <div class="me"><span class="av">AM</span><div>Alex Martin<span>Admin</span></div></div>
         </aside>
         <main class="main">
           <div class="main-h">
-            <div><h4>Bibliothèque</h4><p>87 à voir · jeudi 5 novembre</p></div>
-            <div class="capture"><span class="in"><svg class="i xs"><use href="#s-link-minimalistic-2"/></svg>Colle un lien…<kbd>N</kbd></span><button class="btn btn-accent"><svg class="i"><use href="#s-add"/></svg>Ajouter</button></div>
+            <div><h4>Library</h4><p>87 to watch · Thursday 5 November</p></div>
+            <div class="capture"><span class="in"><svg class="i xs"><use href="#s-link-minimalistic-2"/></svg>Paste a link…<kbd>N</kbd></span><button class="btn btn-accent"><svg class="i"><use href="#s-add"/></svg>Add</button></div>
           </div>
-          <div class="chips"><span class="chip" aria-pressed="true">À voir <b>87</b></span><span class="chip">Vu</span><span class="chip">Articles</span><span class="chip">Vidéos</span><span class="chip">Partagé avec moi</span><span class="chip">#postgres</span><span class="chip">#web</span></div>
+          <div class="chips"><span class="chip" aria-pressed="true">To watch <b>87</b></span><span class="chip">Seen</span><span class="chip">Articles</span><span class="chip">Videos</span><span class="chip">Shared with me</span><span class="chip">#postgres</span><span class="chip">#web</span></div>
           <div class="strip">
-            <div class="panel"><h5>Vus cette semaine</h5><div class="kpi">14<small>/ 20</small></div><div class="sub">+4 vs semaine dernière</div></div>
-            <div class="panel"><h5>Visionnage <span class="conf">partiel</span></h5><div class="kpi">3&nbsp;h&nbsp;12</div><div class="sub">1 vidéo sans durée</div></div>
-            <div class="panel"><h5>Série</h5><div class="kpi">9<small>jours</small></div><div class="sub">Record 14</div></div>
-            <div class="panel"><h5>Pile sur 28 jours</h5><div class="kpi">−6</div><span class="badge s-ok">tu rattrapes</span></div>
+            <div class="panel"><h5>Seen this week</h5><div class="kpi">14<small>/ 20</small></div><div class="sub">+4 vs last week</div></div>
+            <div class="panel"><h5>Watch time <span class="conf">partial</span></h5><div class="kpi">3&nbsp;h&nbsp;12</div><div class="sub">1 video without duration</div></div>
+            <div class="panel"><h5>Streak</h5><div class="kpi">9<small>days</small></div><div class="sub">Record 14</div></div>
+            <div class="panel"><h5>Pile over 28 days</h5><div class="kpi">−6</div><span class="badge s-ok">you're catching up</span></div>
           </div>
           <div class="cards">
-            <div class="card"><div class="th"><svg class="og"><use href="#og-pg"/></svg></div><div class="cb"><div class="tt">Postgres 18 : les entrées-sorties asynchrones, expliquées</div><div class="meta">lwn.net · 12 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-pg"/></svg></div><div class="cb"><div class="tt">Postgres 18: asynchronous I/O, explained</div><div class="meta">lwn.net · 12 min</div></div></div>
             <div class="card"><div class="th"><svg class="og"><use href="#og-sqlite"/></svg><span class="dur" style="position:absolute;right:6px;bottom:6px;font-size:11px;font-weight:600;padding:0 5px;border-radius:4px;background:rgba(0,0,0,.72);color:#fff">24:18</span></div><div class="cb"><div class="tt">How SQLite scales read-heavy workloads</div><div class="meta"><span class="dot"></span>Camille Roux · youtube.com</div></div></div>
-            <div class="card"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div class="cb"><div class="tt">Interaction to Next Paint, un an après</div><div class="meta">web.dev · 9 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div class="cb"><div class="tt">Interaction to Next Paint, one year on</div><div class="meta">web.dev · 9 min</div></div></div>
             <div class="card"><div class="th"><svg class="og"><use href="#og-flags"/></svg></div><div class="cb"><div class="tt">The hidden cost of feature flags</div><div class="meta">arstechnica.com · 7 min</div></div></div>
-            <div class="card"><div class="th"><svg class="og"><use href="#og-kafka"/></svg></div><div class="cb"><div class="tt">Comment GitHub a migré ses files vers Kafka</div><div class="meta">github.blog · 15 min</div></div></div>
-            <div class="card"><div class="th"><svg class="og"><use href="#og-key"/></svg></div><div class="cb"><div class="tt">Pourquoi les passkeys tardent à remplacer les mots de passe</div><div class="meta">lemonde.fr · 6 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-kafka"/></svg></div><div class="cb"><div class="tt">How GitHub migrated its queues to Kafka</div><div class="meta">github.blog · 15 min</div></div></div>
+            <div class="card"><div class="th"><svg class="og"><use href="#og-key"/></svg></div><div class="cb"><div class="tt">Why passkeys are slow to replace passwords</div><div class="meta">lemonde.fr · 6 min</div></div></div>
             <div class="card"><div class="th"><svg class="og"><use href="#og-rust"/></svg></div><div class="cb"><div class="tt">Rust in the Linux kernel, 2026 status</div><div class="meta">youtube.com · 41:02</div></div></div>
             <div class="card"><div class="th"><span class="mono" style="font-size:28px">S</span></div><div class="cb"><div class="tt">Notes on structured concurrency</div><div class="meta">smallcultfollowing.com · 14 min</div></div></div>
           </div>
@@ -561,112 +561,112 @@ figcaption strong{color:var(--text);font-weight:500}
 
   <!-- ===================== FOUNDATIONS ===================== -->
   <section class="section">
-    <h2>Fondations</h2>
-    <p class="intro">Thème de référence sombre : c'est l'écran de passerelle la nuit, et le soir sur le canapé on vide sa pile dans le noir. Le clair reprend les mêmes rôles. Bascule le thème en haut de page : les valeurs se mettent à jour.</p>
+    <h2>Foundations</h2>
+    <p class="intro">Dark is the reference theme: it is the bridge screen at night, and in the evening on the couch you empty your pile in the dark. Light reuses the same roles. Switch the theme at the top of the page: the values update.</p>
     <div class="f-grid">
-      <div class="sw" data-var="--bg"><div class="c" style="background:var(--bg)"></div><div class="m"><b>Fond</b><span class="hex"></span><span>Fond de l'app</span></div></div>
-      <div class="sw" data-var="--surface"><div class="c" style="background:var(--surface)"></div><div class="m"><b>Panneau</b><span class="hex"></span><span>Cartes, navigation</span></div></div>
-      <div class="sw" data-var="--surface-2"><div class="c" style="background:var(--surface-2)"></div><div class="m"><b>Champ</b><span class="hex"></span><span>Filtres, contrôles, vignettes</span></div></div>
-      <div class="sw" data-var="--line"><div class="c" style="background:var(--line)"></div><div class="m"><b>Ligne</b><span class="hex"></span><span>Séparateurs, grille du radar</span></div></div>
-      <div class="sw" data-var="--muted"><div class="c" style="background:var(--muted)"></div><div class="m"><b>Secondaire</b><span class="hex"></span><span>Légendes, unités, « vu »</span></div></div>
-      <div class="sw" data-var="--text"><div class="c" style="background:var(--text)"></div><div class="m"><b>Texte</b><span class="hex"></span><span>Texte, trait de donnée</span></div></div>
-      <div class="sw" data-var="--accent"><div class="c" style="background:var(--accent)"></div><div class="m"><b>Écho</b><span class="hex"></span><span>Aplat de l'action principale</span></div></div>
-      <div class="sw" data-var="--accent-ink"><div class="c" style="background:var(--accent-ink)"></div><div class="m"><b>Écho, trait</b><span class="hex"></span><span>Points, focus, « maintenant »</span></div></div>
+      <div class="sw" data-var="--bg"><div class="c" style="background:var(--bg)"></div><div class="m"><b>Background</b><span class="hex"></span><span>App background</span></div></div>
+      <div class="sw" data-var="--surface"><div class="c" style="background:var(--surface)"></div><div class="m"><b>Panel</b><span class="hex"></span><span>Cards, navigation</span></div></div>
+      <div class="sw" data-var="--surface-2"><div class="c" style="background:var(--surface-2)"></div><div class="m"><b>Field</b><span class="hex"></span><span>Filters, controls, thumbnails</span></div></div>
+      <div class="sw" data-var="--line"><div class="c" style="background:var(--line)"></div><div class="m"><b>Line</b><span class="hex"></span><span>Separators, radar grid</span></div></div>
+      <div class="sw" data-var="--muted"><div class="c" style="background:var(--muted)"></div><div class="m"><b>Secondary</b><span class="hex"></span><span>Captions, units, “seen”</span></div></div>
+      <div class="sw" data-var="--text"><div class="c" style="background:var(--text)"></div><div class="m"><b>Text</b><span class="hex"></span><span>Text, data stroke</span></div></div>
+      <div class="sw" data-var="--accent"><div class="c" style="background:var(--accent)"></div><div class="m"><b>Echo</b><span class="hex"></span><span>Fill of the main action</span></div></div>
+      <div class="sw" data-var="--accent-ink"><div class="c" style="background:var(--accent-ink)"></div><div class="m"><b>Echo, stroke</b><span class="hex"></span><span>Dots, focus, “now”</span></div></div>
     </div>
 
-    <h3 class="f-h">États</h3>
+    <h3 class="f-h">States</h3>
     <div class="states">
-      <div class="state s-ok"><span class="badge" style="justify-self:start">Tu rattrapes</span><p>La pile baisse sur 28 jours, ou un objectif est atteint.</p></div>
-      <div class="state s-watch"><span class="badge" style="justify-self:start">Stable</span><p>Pente de la pile entre −0,1 et +0,1 item par jour.</p></div>
-      <div class="state s-plan"><span class="badge" style="justify-self:start">En retard</span><p>Objectif de la semaine hors d'atteinte au rythme actuel.</p></div>
-      <div class="state s-over"><span class="badge" style="justify-self:start">Ça s'accumule</span><p>La pile monte trois semaines de suite. Seul état en rouge, avec les suppressions.</p></div>
-      <div class="state s-unk"><span class="badge" style="justify-self:start">Inconnu</span><p>Métadonnées ou durée indisponibles : vignette en pointillés, « Réessayer ».</p></div>
+      <div class="state s-ok"><span class="badge" style="justify-self:start">You're catching up</span><p>The pile goes down over 28 days, or a goal is reached.</p></div>
+      <div class="state s-watch"><span class="badge" style="justify-self:start">Stable</span><p>Pile slope between −0.1 and +0.1 items per day.</p></div>
+      <div class="state s-plan"><span class="badge" style="justify-self:start">Behind</span><p>The week's goal is out of reach at the current pace.</p></div>
+      <div class="state s-over"><span class="badge" style="justify-self:start">It's piling up</span><p>The pile rises three weeks in a row. The only red state, together with deletions.</p></div>
+      <div class="state s-unk"><span class="badge" style="justify-self:start">Unknown</span><p>Metadata or duration unavailable: dashed thumbnail, “Retry”.</p></div>
     </div>
 
-    <h3 class="f-h">Confiance</h3>
+    <h3 class="f-h">Confidence</h3>
     <div class="comps">
-      <span class="conf">mesuré</span><span class="sub">vient de la plateforme</span>
-      <span class="conf">estimé</span><span class="sub">calculé (230 mots/min)</span>
-      <span class="conf">partiel</span><span class="sub">une partie des données manque</span>
-      <span class="conf">inconnu</span><span class="sub">aucune donnée, rien n'est inventé</span>
+      <span class="conf">measured</span><span class="sub">comes from the platform</span>
+      <span class="conf">estimated</span><span class="sub">computed (230 words/min)</span>
+      <span class="conf">partial</span><span class="sub">part of the data is missing</span>
+      <span class="conf">unknown</span><span class="sub">no data, nothing is made up</span>
     </div>
 
-    <h3 class="f-h">Typographie · Geologica</h3>
+    <h3 class="f-h">Typography · Geologica</h3>
     <div style="border-top:1px solid var(--line)">
-      <div class="type-r"><div class="t-xl">87 à voir</div><div class="spec">Valeur clé · 500 · −0,03 em · 44 à 64&nbsp;px · tabulaires</div></div>
-      <div class="type-r"><div class="t-h">Bibliothèque</div><div class="spec">Titre d'écran · 500 · −0,02 em · 30&nbsp;px mobile, 34&nbsp;px desktop</div></div>
-      <div class="type-r"><div style="font-size:14.5px;font-weight:500">How SQLite scales read-heavy workloads</div><div class="spec">Titre de carte · 500 · 14,5&nbsp;px · 2 lignes max</div></div>
-      <div class="type-r"><div class="t-l">Visionnage</div><div class="spec">Libellé · 500 · 15&nbsp;px</div></div>
-      <div class="type-r"><div class="t-b">Camille verra ton nom et ton mot, jamais tes notes ni tes tags.</div><div class="spec">Texte · 400 · 15&nbsp;px</div></div>
-      <div class="type-r"><div class="t-c">Du lundi 2 au dimanche 8 novembre</div><div class="spec">Légende · 400 · 12,5&nbsp;px · Secondaire</div></div>
+      <div class="type-r"><div class="t-xl">87 to watch</div><div class="spec">Key value · 500 · −0.03 em · 44 to 64&nbsp;px · tabular</div></div>
+      <div class="type-r"><div class="t-h">Library</div><div class="spec">Screen title · 500 · −0.02 em · 30&nbsp;px mobile, 34&nbsp;px desktop</div></div>
+      <div class="type-r"><div style="font-size:14.5px;font-weight:500">How SQLite scales read-heavy workloads</div><div class="spec">Card title · 500 · 14.5&nbsp;px · 2 lines max</div></div>
+      <div class="type-r"><div class="t-l">Watch time</div><div class="spec">Label · 500 · 15&nbsp;px</div></div>
+      <div class="type-r"><div class="t-b">Camille will see your name and your note, never your notes or tags.</div><div class="spec">Text · 400 · 15&nbsp;px</div></div>
+      <div class="type-r"><div class="t-c">Monday 2 to Sunday 8 November</div><div class="spec">Caption · 400 · 12.5&nbsp;px · Secondary</div></div>
     </div>
 
-    <h3 class="f-h">Composants</h3>
+    <h3 class="f-h">Components</h3>
     <div class="comps">
-      <button class="btn btn-accent"><svg class="i"><use href="#s-add"/></svg>Ajouter</button>
-      <button class="btn btn-2"><svg class="i"><use href="#s-restart"/></svg>Réessayer</button>
-      <button class="btn btn-ghost"><svg class="i"><use href="#s-export"/></svg>Exporter</button>
-      <button class="btn btn-danger"><svg class="i"><use href="#s-trash-bin-minimalistic"/></svg>Supprimer</button>
-      <div class="seg" role="group" aria-label="Exemple"><button aria-pressed="true">Semaine</button><button aria-pressed="false">Mois</button><button aria-pressed="false">Année</button></div>
+      <button class="btn btn-accent"><svg class="i"><use href="#s-add"/></svg>Add</button>
+      <button class="btn btn-2"><svg class="i"><use href="#s-restart"/></svg>Retry</button>
+      <button class="btn btn-ghost"><svg class="i"><use href="#s-export"/></svg>Export</button>
+      <button class="btn btn-danger"><svg class="i"><use href="#s-trash-bin-minimalistic"/></svg>Delete</button>
+      <div class="seg" role="group" aria-label="Example"><button aria-pressed="true">Week</button><button aria-pressed="false">Month</button><button aria-pressed="false">Year</button></div>
       <span class="switch on" aria-hidden="true"></span><span class="switch" aria-hidden="true"></span>
-      <span class="chip" aria-pressed="true">À voir <b>87</b></span><span class="chip">#postgres</span>
+      <span class="chip" aria-pressed="true">To watch <b>87</b></span><span class="chip">#postgres</span>
       <span class="tag">#perf</span>
     </div>
 
     <div class="demo">
-      <div><h4>À voir · Vu · nouveau · inconnu</h4>
+      <div><h4>To watch · Seen · new · unknown</h4>
         <div class="list">
-          <div class="it"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div><div class="tt">Interaction to Next Paint, un an après</div><div class="meta">web.dev · 9 min</div></div></div>
-          <div class="it is-seen"><div class="th"><svg class="og"><use href="#og-flags"/></svg></div><div><div class="tt">The hidden cost of feature flags</div><div class="meta"><svg class="i"><use href="#s-check-circle"/></svg>Vu hier</div></div></div>
-          <div class="it"><div class="th"><svg class="og"><use href="#og-uring"/></svg></div><div><div class="tt">io_uring and the end of epoll</div><div class="meta"><span class="dot"></span>Léo Martin · non ouvert</div></div></div>
-          <div class="it is-unknown"><div class="th"><span class="mono">N</span></div><div><div class="tt">news.example.org/2026/11/edge-…</div><div class="meta">Métadonnées indisponibles · <u>Réessayer</u></div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-inp"/></svg></div><div><div class="tt">Interaction to Next Paint, one year on</div><div class="meta">web.dev · 9 min</div></div></div>
+          <div class="it is-seen"><div class="th"><svg class="og"><use href="#og-flags"/></svg></div><div><div class="tt">The hidden cost of feature flags</div><div class="meta"><svg class="i"><use href="#s-check-circle"/></svg>Seen yesterday</div></div></div>
+          <div class="it"><div class="th"><svg class="og"><use href="#og-uring"/></svg></div><div><div class="tt">io_uring and the end of epoll</div><div class="meta"><span class="dot"></span>Léo Martin · unopened</div></div></div>
+          <div class="it is-unknown"><div class="th"><span class="mono">N</span></div><div><div class="tt">news.example.org/2026/11/edge-…</div><div class="meta">Metadata unavailable · <u>Retry</u></div></div></div>
         </div>
       </div>
-      <div><h4>Réglage d'un module</h4>
+      <div><h4>Module setting</h4>
         <div style="display:grid;gap:8px">
-          <div class="row"><div><div class="t">File</div><div class="d">Vidéos à regarder ensuite</div></div><span class="switch on"></span></div>
-          <div class="row"><div><div class="t">Partage</div><div class="d">Envoyer un lien à quelqu'un</div></div><span class="switch on"></span></div>
-          <div class="row"><div><div class="t">Statistiques</div><div class="d">Rythme, séries, pile</div></div><span class="switch"></span></div>
+          <div class="row"><div><div class="t">Queue</div><div class="d">Videos to watch next</div></div><span class="switch on"></span></div>
+          <div class="row"><div><div class="t">Sharing</div><div class="d">Send a link to someone</div></div><span class="switch on"></span></div>
+          <div class="row"><div><div class="t">Statistics</div><div class="d">Pace, streaks, pile</div></div><span class="switch"></span></div>
         </div>
-        <div class="sub" style="margin-top:10px">S'applique au basculement. Désactiver masque, ne supprime rien.</div>
+        <div class="sub" style="margin-top:10px">Applies on toggle. Disabling hides, it deletes nothing.</div>
       </div>
-      <div><h4>État vide et retour</h4>
-        <div class="empty"><div class="ghost">— à voir</div><p>Tes liens apparaîtront ici. Ajoute le premier, ou reprends tes favoris, Pocket ou Instapaper.</p><div class="comps"><button class="btn btn-accent btn-sm"><svg class="i"><use href="#s-add"/></svg>Ajouter un lien</button><button class="btn btn-ghost btn-sm"><svg class="i"><use href="#s-import"/></svg>Importer</button></div></div>
-        <div class="toast" style="margin-top:12px"><span>Ajouté à ta bibliothèque</span><button>Annuler</button></div>
+      <div><h4>Empty state and feedback</h4>
+        <div class="empty"><div class="ghost">— to watch</div><p>Your links will appear here. Add the first one, or bring over your bookmarks, Pocket or Instapaper.</p><div class="comps"><button class="btn btn-accent btn-sm"><svg class="i"><use href="#s-add"/></svg>Add a link</button><button class="btn btn-ghost btn-sm"><svg class="i"><use href="#s-import"/></svg>Import</button></div></div>
+        <div class="toast" style="margin-top:12px"><span>Added to your library</span><button>Cancel</button></div>
       </div>
     </div>
 
-    <h3 class="f-h">Icônes · Solar</h3>
-    <p class="intro" style="margin-bottom:16px">Style linear partout, bold seulement pour l'onglet ou l'entrée active. Embarquées dans l'app, jamais chargées depuis un service.</p>
+    <h3 class="f-h">Icons · Solar</h3>
+    <p class="intro" style="margin-bottom:16px">Linear style everywhere, bold only for the active tab or entry. Embedded in the app, never loaded from a service.</p>
     <div class="icons">
-      <div><svg class="i"><use href="#s-layers-minimalistic"/></svg>Bibliothèque</div>
+      <div><svg class="i"><use href="#s-layers-minimalistic"/></svg>Library</div>
       <div><svg class="i"><use href="#s-layers-minimalistic-b"/></svg>… active</div>
-      <div><svg class="i"><use href="#s-playlist-minimalistic"/></svg>File</div>
-      <div><svg class="i"><use href="#s-plain"/></svg>Partagés</div>
+      <div><svg class="i"><use href="#s-playlist-minimalistic"/></svg>Queue</div>
+      <div><svg class="i"><use href="#s-plain"/></svg>Shared</div>
       <div><svg class="i"><use href="#s-radar-2"/></svg>Stats</div>
-      <div><svg class="i"><use href="#s-add"/></svg>Ajouter</div>
-      <div><svg class="i"><use href="#s-magnifier"/></svg>Rechercher</div>
-      <div><svg class="i"><use href="#s-link-minimalistic-2"/></svg>Lien</div>
-      <div><svg class="i"><use href="#s-clipboard"/></svg>Coller</div>
+      <div><svg class="i"><use href="#s-add"/></svg>Add</div>
+      <div><svg class="i"><use href="#s-magnifier"/></svg>Search</div>
+      <div><svg class="i"><use href="#s-link-minimalistic-2"/></svg>Link</div>
+      <div><svg class="i"><use href="#s-clipboard"/></svg>Paste</div>
       <div><svg class="i"><use href="#s-hashtag"/></svg>Tag</div>
       <div><svg class="i"><use href="#s-notes"/></svg>Note</div>
-      <div><svg class="i"><use href="#s-check-circle"/></svg>Vu</div>
-      <div><svg class="i"><use href="#s-play"/></svg>Regarder</div>
-      <div><svg class="i"><use href="#s-reorder"/></svg>Réordonner</div>
-      <div><svg class="i"><use href="#s-restart"/></svg>Réessayer</div>
+      <div><svg class="i"><use href="#s-check-circle"/></svg>Seen</div>
+      <div><svg class="i"><use href="#s-play"/></svg>Watch</div>
+      <div><svg class="i"><use href="#s-reorder"/></svg>Reorder</div>
+      <div><svg class="i"><use href="#s-restart"/></svg>Retry</div>
       <div><svg class="i"><use href="#s-user-plus"/></svg>Contact</div>
-      <div><svg class="i"><use href="#s-key"/></svg>Jetons</div>
-      <div><svg class="i"><use href="#s-import"/></svg>Importer</div>
-      <div><svg class="i"><use href="#s-settings"/></svg>Réglages</div>
-      <div><svg class="i"><use href="#s-x"/></svg>Fermer*</div>
+      <div><svg class="i"><use href="#s-key"/></svg>Tokens</div>
+      <div><svg class="i"><use href="#s-import"/></svg>Import</div>
+      <div><svg class="i"><use href="#s-settings"/></svg>Settings</div>
+      <div><svg class="i"><use href="#s-x"/></svg>Close*</div>
     </div>
-    <p class="sub" style="margin-top:10px">* Absente de Solar, dessinée dans sa grammaire (grille 24, trait 1,5, extrémités rondes).</p>
+    <p class="sub" style="margin-top:10px">* Missing from Solar, drawn in its grammar (24 grid, 1.5 stroke, round caps).</p>
   </section>
 
   <footer class="foot">
-    <p>Vigie · direction artistique v1 · novembre 2026</p>
-    <p>Inspirations : écrans de navigation marine de nuit, sonars, combinés d'instruments, sans reprise de logo ni d'élément de marque. Les vignettes des maquettes imitent des images de publications, elles ne viennent d'aucun site réel.</p>
-    <p>Icônes Solar par 480 Design (CC BY 4.0). Typographie Geologica (SIL Open Font License).</p>
+    <p>Vigie · art direction v1 · November 2026</p>
+    <p>Inspirations: marine navigation screens at night, sonars, instrument clusters, with no logo or brand element reused. The mock-up thumbnails imitate publication images; they come from no real site.</p>
+    <p>Solar icons by 480 Design (CC BY 4.0). Geologica typeface (SIL Open Font License).</p>
   </footer>
 </div>
 

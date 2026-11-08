@@ -8,6 +8,10 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    ignore:
+      # openapi-typescript only supports TypeScript 5 (peer dependency)
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directory: /backend
     schedule:
@@ -20,6 +24,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # A PostgreSQL major upgrade needs a dump/restore: 18 cannot open a 17 data directory
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

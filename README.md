@@ -17,7 +17,7 @@ It is a reading and viewing pile, not a news feed: what comes in is chosen, what
 
 It is a PWA: one site, installable on iPhone, Android and desktop. The interface is available in English and French.
 
-See [VISION.md](VISION.md) for the product vision (in French) and [backend/API.md](backend/API.md) for the API contract.
+See [VISION.md](VISION.md) for the product vision and [backend/API.md](backend/API.md) for the API contract.
 
 ## Features
 
