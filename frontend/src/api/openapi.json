@@ -1444,32 +1444,16 @@
       },
       "ShareOut": {
         "properties": {
-          "already_had": {
+          "sent": {
             "items": {
               "type": "string"
             },
-            "title": "Already Had",
-            "type": "array"
-          },
-          "not_found": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Not Found",
-            "type": "array"
-          },
-          "shared": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Shared",
+            "title": "Sent",
             "type": "array"
           }
         },
         "required": [
-          "shared",
-          "not_found",
-          "already_had"
+          "sent"
         ],
         "title": "ShareOut",
         "type": "object"

@@ -14,7 +14,7 @@ async def test_share_with_existing_user(alice, bob):
         json={"emails": ["BOB@example.com"], "message": "you should read this"},
     )
     assert r.status_code == 200
-    assert r.json() == {"shared": ["bob@example.com"], "not_found": [], "already_had": []}
+    assert r.json() == {"sent": ["bob@example.com"]}
 
     listing = (await bob.get("/api/items")).json()["items"]
     assert len(listing) == 1
@@ -39,7 +39,7 @@ async def test_share_unknown_email(alice):
     item = await add(alice, "https://example.com/a")
     r = await alice.post(f"/api/items/{item['id']}/share", json={"emails": ["ghost@example.com"]})
     assert r.status_code == 200
-    assert r.json() == {"shared": [], "not_found": ["ghost@example.com"], "already_had": []}
+    assert r.json() == {"sent": ["ghost@example.com"]}  # same shape as a known address
 
 
 async def test_share_when_recipient_already_has_resource(alice, bob):
@@ -48,7 +48,7 @@ async def test_share_when_recipient_already_has_resource(alice, bob):
     r = await alice.post(
         f"/api/items/{item['id']}/share", json={"emails": ["bob@example.com"], "message": "hi"}
     )
-    assert r.json() == {"shared": [], "not_found": [], "already_had": ["bob@example.com"]}
+    assert r.json() == {"sent": ["bob@example.com"]}
 
     after = (await bob.get(f"/api/items/{bobs['id']}")).json()
     assert after["shared_by"]["email"] == "alice@example.com"  # only shared_by is filled
@@ -56,12 +56,12 @@ async def test_share_when_recipient_already_has_resource(alice, bob):
     assert len((await bob.get("/api/items")).json()["items"]) == 1
 
 
-async def test_share_twice_reports_already_had(alice, bob):
+async def test_share_twice_is_idempotent(alice, bob):
     item = await add(alice, "https://example.com/a")
     url = f"/api/items/{item['id']}/share"
-    assert (await alice.post(url, json={"emails": ["bob@example.com"]})).json()["shared"]
+    assert (await alice.post(url, json={"emails": ["bob@example.com"]})).status_code == 200
     second = (await alice.post(url, json={"emails": ["bob@example.com"]})).json()
-    assert second == {"shared": [], "not_found": [], "already_had": ["bob@example.com"]}
+    assert second == {"sent": ["bob@example.com"]}
     assert len((await bob.get("/api/items")).json()["items"]) == 1
 
 
@@ -83,9 +83,12 @@ async def test_share_mixed_batch_dedupes_and_ignores_self(alice, bob):
             },
         )
         assert r.json() == {
-            "shared": ["bob@example.com"],
-            "not_found": ["nobody@example.com"],
-            "already_had": ["carol@example.com", "alice@example.com"],
+            "sent": [
+                "bob@example.com",
+                "carol@example.com",
+                "nobody@example.com",
+                "alice@example.com",
+            ]
         }
         assert len((await alice.get("/api/items")).json()["items"]) == 1
 

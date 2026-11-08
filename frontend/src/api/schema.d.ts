@@ -1014,12 +1014,8 @@ export interface components {
         };
         /** ShareOut */
         ShareOut: {
-            /** Already Had */
-            already_had: string[];
-            /** Not Found */
-            not_found: string[];
-            /** Shared */
-            shared: string[];
+            /** Sent */
+            sent: string[];
         };
         /** SharerCount */
         SharerCount: {

@@ -85,8 +85,7 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
       {
         onSuccess: (res) => {
           setResult(res)
-          if (res.shared.length) toast.success(t('share.shared_with', { names: res.shared.join(', ') }))
-          else toast(t('share.nobody'))
+          toast.success(t('share.shared_with', { names: res.sent.join(', ') }))
         },
         onError: (err) =>
           setError(errorMessage(err, t('share.failed'))),
@@ -97,21 +96,8 @@ function ShareForm({ item, onClose }: { item: Item; onClose: () => void }) {
   if (result) {
     return (
       <div className="space-y-3 text-sm">
-        {result.shared.length > 0 && (
-          <p className="text-ok">
-            {t('share.result.shared', { names: result.shared.join(', ') })}
-          </p>
-        )}
-        {result.already_had.length > 0 && (
-          <p className="text-muted-foreground">
-            {t('share.result.already', { names: result.already_had.join(', ') })}
-          </p>
-        )}
-        {result.not_found.length > 0 && (
-          <p className="text-destructive">
-            {t('share.result.not_found', { names: result.not_found.join(', ') })}
-          </p>
-        )}
+        <p className="text-ok">{t('share.result.sent', { names: result.sent.join(', ') })}</p>
+        <p className="text-muted-foreground">{t('share.result.note')}</p>
         <Button className="h-10 w-full rounded-xl" onClick={onClose}>
           {t('common.done')}
         </Button>

@@ -12,10 +12,8 @@ from app.services.events import record_event
 async def share_item(
     session: AsyncSession, sender: User, item: Item, emails: list[str], message: str | None
 ) -> ShareOut:
-    shared: list[str] = []
     recipient_ids: list[uuid.UUID] = []
-    not_found: list[str] = []
-    already_had: list[str] = []
+    sent: list[str] = []  # identical for known and unknown addresses (no account oracle)
 
     seen_emails: set[str] = set()
     for raw in emails:
@@ -23,13 +21,10 @@ async def share_item(
         if not email or email in seen_emails:
             continue
         seen_emails.add(email)
+        sent.append(email)
 
         recipient = await session.scalar(select(User).where(User.email == email))
-        if recipient is None:
-            not_found.append(email)
-            continue
-        if recipient.id == sender.id:
-            already_had.append(email)
+        if recipient is None or recipient.id == sender.id:
             continue
 
         existing = await session.scalar(
@@ -39,7 +34,6 @@ async def share_item(
             if existing.shared_by_user_id is None:
                 existing.shared_by_user_id = sender.id
                 existing.share_message = message
-            already_had.append(email)
             continue
 
         new_id = uuid.uuid4()
@@ -71,10 +65,9 @@ async def share_item(
             kind="added",
             other_user_id=sender.id,
         )
-        shared.append(email)
         recipient_ids.append(recipient.id)
 
     await session.commit()
     for recipient_id in recipient_ids:
         realtime.publish(recipient_id, ["items", "stats", "tags"])
-    return ShareOut(shared=shared, not_found=not_found, already_had=already_had)
+    return ShareOut(sent=sent)

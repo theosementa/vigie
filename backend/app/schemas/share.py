@@ -7,6 +7,6 @@ class ShareIn(BaseModel):
 
 
 class ShareOut(BaseModel):
-    shared: list[str]
-    not_found: list[str]
-    already_had: list[str]
+    # Every submitted address, whether or not it has an account: the response must never
+    # reveal which emails are registered (see SECURITY.md).
+    sent: list[str]
