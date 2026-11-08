@@ -28,6 +28,7 @@ import { useT, type MessageKey, type TFunction } from '@/lib/i18n'
 import { useLocalePreference } from '@/hooks/useLocale'
 import { useTheme } from '@/hooks/useTheme'
 import { useMobileLayout, type MobileLayout } from '@/lib/mobileLayout'
+import { useShowRepos } from '@/lib/showRepos'
 import { useZoomLock } from '@/lib/zoomLock'
 import type { IconBase } from '@/components/Icon'
 
@@ -119,6 +120,7 @@ function AppearanceSection() {
   const { theme, setTheme } = useTheme()
   const { preference, setPreference } = useLocalePreference()
   const [layout, setLayout] = useMobileLayout()
+  const [showRepos, setShowRepos] = useShowRepos()
   const [zoomLock, setZoomLock] = useZoomLock()
   return (
     <section className={sectionClass}>
@@ -154,6 +156,23 @@ function AppearanceSection() {
             {t(o.label)}
           </button>
         ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p id="repos-label" className="text-sm font-medium">
+            {t('repos.label')}
+          </p>
+          <p className="text-xs text-muted-foreground">{t('repos.help')}</p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={showRepos}
+          aria-labelledby="repos-label"
+          onClick={() => setShowRepos(!showRepos)}
+        >
+          <span className={showRepos ? 'switch on' : 'switch'} />
+        </button>
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="min-w-0">

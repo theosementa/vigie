@@ -935,6 +935,17 @@
               }
             ]
           },
+          "show_repos": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Show Repos"
+          },
           "theme": {
             "anyOf": [
               {
@@ -1819,6 +1830,10 @@
             "title": "Role",
             "type": "string"
           },
+          "show_repos": {
+            "title": "Show Repos",
+            "type": "boolean"
+          },
           "theme": {
             "$ref": "#/components/schemas/Theme"
           },
@@ -1837,6 +1852,7 @@
           "locale",
           "theme",
           "mobile_layout",
+          "show_repos",
           "created_at"
         ],
         "title": "UserOut",

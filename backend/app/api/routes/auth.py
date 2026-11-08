@@ -210,6 +210,8 @@ async def update_me(body: ProfileUpdate, user: CurrentUser, session: SessionDep)
         user.theme = body.theme
     if "mobile_layout" in fields and body.mobile_layout is not None:
         user.mobile_layout = body.mobile_layout
+    if "show_repos" in fields and body.show_repos is not None:
+        user.show_repos = body.show_repos
     await session.commit()
     return user
 

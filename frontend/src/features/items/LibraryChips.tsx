@@ -2,7 +2,7 @@ import { usePile } from '@/features/stats/queries'
 import type { ItemStatus, ResourceType, TagWithCount } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
-import { RESOURCE_TYPES } from './metadata'
+import { useResourceTypes } from './useResourceTypes'
 import type { LibraryFilters } from './useLibraryFilters'
 
 type Patch = { status?: ItemStatus; type?: ResourceType | 'all'; tag?: string | null }
@@ -30,6 +30,7 @@ export function LibraryChips({
 }) {
   const t = useT()
   const { pile } = usePile()
+  const types = useResourceTypes(filters.type === 'all' ? undefined : filters.type)
   return (
     <div className="chips" role="group" aria-label={t('filters.label')}>
       <Chip active={filters.status === 'to_watch'} onClick={() => onChange({ status: 'to_watch' })}>
@@ -39,7 +40,7 @@ export function LibraryChips({
       <Chip active={filters.status === 'seen'} onClick={() => onChange({ status: 'seen' })}>
         {t('filters.seen')}
       </Chip>
-      {RESOURCE_TYPES.map((type) => (
+      {types.map((type) => (
         <Chip key={type} active={filters.type === type} onClick={() => onChange({ type: filters.type === type ? 'all' : type })}>
           {t(`filters.${type}`)}
         </Chip>

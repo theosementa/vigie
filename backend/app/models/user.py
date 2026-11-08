@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import CheckConstraint, DateTime, Integer, String, func, text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -56,4 +56,6 @@ class User(Base):
     mobile_layout: Mapped[str] = mapped_column(
         String(10), server_default=text("'list'"), default=MobileLayout.LIST
     )
+    # whether the "Repository" type is offered (filter chip, type pickers); off for non-developers
+    show_repos: Mapped[bool] = mapped_column(Boolean, server_default=text("true"), default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

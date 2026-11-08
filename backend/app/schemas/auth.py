@@ -85,6 +85,7 @@ class ProfileUpdate(BaseModel):
     locale: Locale | None = None
     theme: Theme | None = None
     mobile_layout: MobileLayout | None = None
+    show_repos: bool | None = None
 
     @field_validator("timezone")
     @classmethod
@@ -128,6 +129,7 @@ class UserOut(BaseModel):
     locale: Locale
     theme: Theme
     mobile_layout: MobileLayout
+    show_repos: bool
     created_at: datetime
 
 

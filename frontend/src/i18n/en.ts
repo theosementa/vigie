@@ -44,6 +44,8 @@ export const en = {
   'layout.list': 'List',
   'layout.grid': 'Grid',
   'zoom.label': 'Lock zoom',
+  'repos.label': 'Show repositories',
+  'repos.help': 'Offers the Repository type in filters and when adding. Turn it off if you do not use code.',
   'zoom.help': 'Prevents pinch and double-tap zoom on this device.',
   'theme.label': 'Theme',
   'theme.dark': 'Dark',

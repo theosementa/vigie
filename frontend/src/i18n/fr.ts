@@ -46,6 +46,8 @@ export const fr: Record<keyof typeof en, string> = {
   'layout.list': 'Liste',
   'layout.grid': 'Grille',
   'zoom.label': 'Bloquer le zoom',
+  'repos.label': 'Afficher les dépôts',
+  'repos.help': 'Propose le type Dépôt dans les filtres et à l\'ajout. Désactive-le si tu n\'utilises pas de code.',
   'zoom.help': 'Empêche le zoom par pincement et double tap sur cet appareil.',
   'theme.label': 'Thème',
   'theme.dark': 'Sombre',

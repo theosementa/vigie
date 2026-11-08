@@ -10,7 +10,8 @@ import { errorMessage } from '@/lib/errors'
 import { formatDuration, formatMinutesShort } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { RESOURCE_TYPES, TYPE_ICON } from './metadata'
+import { TYPE_ICON } from './metadata'
+import { useResourceTypes } from './useResourceTypes'
 import { AddItemContext, useAddItem } from './addItemContext'
 import { ItemThumb } from './ItemThumb'
 import { siteOf } from './metadata'
@@ -97,6 +98,7 @@ function CaptureForm({
   const previewError = ready && preview.isError ? preview.error : null
 
   const effectiveType = override ?? data?.type ?? 'article'
+  const types = useResourceTypes(effectiveType)
   const existingId = data?.existing_item_id ?? null
 
   const openItem = (id: string) => {
@@ -237,7 +239,7 @@ function CaptureForm({
           ) : (
             <>
               <div className="seg full" role="group" aria-label={t('item.type')}>
-                {RESOURCE_TYPES.map((type) => (
+                {types.map((type) => (
                   <button key={type} type="button" aria-pressed={effectiveType === type} onClick={() => setOverride(type)}>
                     <Icon name={TYPE_ICON[type]} className="xs" />
                     {t(`type.${type}`)}

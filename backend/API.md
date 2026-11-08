@@ -84,7 +84,7 @@ link valid 1 hour, e.g. `docker compose exec api vigie reset-password alice@exam
 
 ```jsonc
 // ItemType = "article" | "video"      ItemStatus = "to_watch" | "seen"
-User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "created_at": "..." }
+User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "show_repos": true, "created_at": "..." }
 Tag      = { "id": "uuid", "name": "python" }
 Resource = {
   "id": "uuid", "url": "https://example.com/post",          // normalized
@@ -163,12 +163,13 @@ expired (1 h) or already used. Tokens are random, stored hashed (SHA-256), singl
 
 ### `PATCH /api/auth/me` -> 200 `User`
 ```json
-{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark", "mobile_layout": "grid" }
+{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark", "mobile_layout": "grid", "show_repos": false }
 ```
 All fields optional (omitted = unchanged). `422` for an empty / over-long name or a timezone that is not a
 known IANA name (`zoneinfo`). `locale` (`auto` | `en` | `fr`, default `auto`) and `theme` (`system` | `dark` | `light`, default `system`) and
 `mobile_layout` (`list` | `grid`, default `list`: how the library shows on a phone) are
-stored on the account; any other value is a `422`. The timezone drives "day", "week" and streaks in the statistics.
+stored on the account; any other value is a `422`. `show_repos` (boolean, default `true`) hides the
+"Repository" type from the filter chips and the type pickers (existing repository items stay in the library). The timezone drives "day", "week" and streaks in the statistics.
 
 ### `GET /api/auth/sessions` -> 200 `Session[]`
 The devices signed in to the account, most recently active first.

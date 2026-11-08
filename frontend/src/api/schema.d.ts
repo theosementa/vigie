@@ -849,6 +849,8 @@ export interface components {
             last_name?: string | null;
             locale?: components["schemas"]["Locale"] | null;
             mobile_layout?: components["schemas"]["MobileLayout"] | null;
+            /** Show Repos */
+            show_repos?: boolean | null;
             theme?: components["schemas"]["Theme"] | null;
             /** Timezone */
             timezone?: string | null;
@@ -1187,6 +1189,8 @@ export interface components {
              * @enum {string}
              */
             role: "admin" | "user";
+            /** Show Repos */
+            show_repos: boolean;
             theme: components["schemas"]["Theme"];
             /** Timezone */
             timezone: string;

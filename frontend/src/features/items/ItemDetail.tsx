@@ -9,7 +9,8 @@ import { TagInput } from '@/features/tags/TagInput'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemThumb } from './ItemThumb'
 import { useItemDialogs } from './itemDialogsContext'
-import { RESOURCE_TYPES, TYPE_ICON, isMetadataUnavailable, siteOf } from './metadata'
+import { TYPE_ICON, isMetadataUnavailable, siteOf } from './metadata'
+import { useResourceTypes } from './useResourceTypes'
 import { useItemEvents, useSetItemStatus, useUpdateItem } from './queries'
 import { useRefreshWithToast } from './useRefreshItem'
 
@@ -195,6 +196,7 @@ function History({ id }: { id: string }) {
 export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void }) {
   const t = useT()
   const { resource } = item
+  const types = useResourceTypes(resource.type)
   const setStatus = useSetItemStatus()
   const update = useUpdateItem()
   const refresh = useRefreshWithToast()
@@ -316,7 +318,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           {t('item.type')}
         </span>
         <div className="seg full stack" role="group" aria-labelledby="type-label">
-          {RESOURCE_TYPES.map((type) => (
+          {types.map((type) => (
             <button
               key={type}
               type="button"
