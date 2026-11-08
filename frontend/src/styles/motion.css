@@ -99,7 +99,7 @@
     animation: expand var(--dur-slow) var(--ease);
   }
   .expand > * { min-height: 0; overflow: hidden; }
-  .expand.leaving { display: grid; }
+  .expand.leaving { animation: leave 240ms var(--ease) forwards; }
 }
 
 @media (prefers-reduced-motion: reduce) {

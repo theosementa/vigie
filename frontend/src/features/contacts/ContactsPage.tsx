@@ -10,15 +10,8 @@ import { formatAgo } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { ContactDialog, type ContactDialogTarget } from './ContactDialog'
+import { ContactAvatar } from './ContactAvatar'
 import { contactLabel, useContacts, useDeleteContact } from './queries'
-
-export function ContactAvatar({ contact }: { contact: Pick<Contact, 'name' | 'email'> }) {
-  return (
-    <span className="av" aria-hidden="true">
-      {contactLabel(contact).charAt(0).toUpperCase()}
-    </span>
-  )
-}
 
 function ContactRow({
   contact,

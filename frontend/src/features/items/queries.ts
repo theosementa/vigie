@@ -21,6 +21,7 @@ import {
   type UpdateItemInput,
 } from '@/lib/api'
 import { t } from '@/lib/i18n'
+import { contactsKey } from '@/features/contacts/queries'
 import { statsKey } from '@/features/stats/queries'
 
 export const PAGE_SIZE = 24
@@ -185,6 +186,7 @@ export function useSetItemStatus() {
       qc.invalidateQueries({ queryKey: queueKey })
       qc.invalidateQueries({ queryKey: statsKey })
       qc.invalidateQueries({ queryKey: eventsKey(id) })
+      qc.invalidateQueries({ queryKey: contactsKey }) // new contacts, last-shared dates
     },
   })
 }
@@ -247,6 +249,7 @@ export function useShareItem() {
     onSuccess: (_res, { id }) => {
       qc.invalidateQueries({ queryKey: statsKey })
       qc.invalidateQueries({ queryKey: eventsKey(id) })
+      qc.invalidateQueries({ queryKey: contactsKey }) // new contacts, last-shared dates
     },
   })
 }
