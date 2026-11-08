@@ -14,7 +14,9 @@ Details (branches, ports, `ALLOWED_EMAILS`) are in "Environments" in `CONTRIBUTI
 
 ## UI quality bar: keep it smooth
 
-Every open/close, resize and reorder animates smoothly with no visible glitch (no jumping columns, no text re-wrapping mid-animation, no content blanking while something closes). Follow "Motion and smoothness" in `CONTRIBUTING.md`, and measure resize animations per frame rather than trusting a screenshot.
+Every open/close, resize and reorder animates smoothly with no visible glitch (no jumping columns, no text re-wrapping mid-animation, no content blanking while something closes). Follow "Motion and smoothness" in `CONTRIBUTING.md`.
+
+Do not spend time measuring animations frame by frame (rAF sampling, headless Chrome scripts) unless the user asks for it: write the motion by the rules, check lint and types, and let the user test it on preprod. Remember that preprod runs the production build: keep CSS times parsed with their unit (the minifier turns `200ms` into `.2s`) and keyframe names unique (no clash with `tw-animate-css`).
 
 ## Security
 
