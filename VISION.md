@@ -110,15 +110,13 @@ The **Core** is always on. The others are enabled **per account** in *Settings �
 
 **Effect**: creates a `To watch` item for the recipient with `shared_by` and the message; the sender's notes and tags are not copied. If the recipient already has the resource, their item gets the share mention without changing status.
 
-**Anti-enumeration**: to an address that is not a contact, the response is always `202` with "Sent if this address has an account and accepts your shares". To a contact, the share is confirmed with their name.
+**Anti-enumeration**: the response never depends on whether the address has an account. The same answer comes back for a registered and an unregistered address, and the sender never sees a delivery status.
 
-**Contacts** (symmetric): two accounts become contacts when
-- the recipient **opens** a received share (they see the sender's name, the sender now sees theirs), or
-- one accepts the other's **contact link** (single use, expires in 7 days, created in *Shared → Add a contact*).
-
-The recipient field suggests contacts by name. A contact can be removed at any time; items already received stay.
-
-**Receiving**: a "Who can send me links" setting (`everyone` / `my contacts` / `nobody`). Default at account creation: `everyone` if the instance is in `invite` or `closed`, `my contacts` if it is in `open`.
+**Contacts** (a private address book): each user keeps their own contacts, for any e-mail address, named whatever they type. Nobody else sees them, the name never comes from the other person's profile, and no link or acceptance is needed. They are managed in *Shared → Contacts*.
+- By default every address a user shares with is saved as a contact. An "Automatically save recipients" setting turns this off; the share dialog then offers "Save as contact?" for the new addresses.
+- The recipient field suggests contacts first (most recent first) and still accepts any e-mail address.
+- Each contact has a read-only conversation-style history: what the user sent (right) and what that person delivered to them (left), with dates. A share sent to an address before it had an account never shows as received.
+- A contact can be renamed or deleted at any time. Deleting keeps the history, which comes back if the address is added again; items already received stay.
 
 **Limits**: 50 shares per day per account.
 
@@ -203,8 +201,8 @@ Resource(id, url, url_hash, type, title, description, image_url, site_name, favi
 Item(id, user_id, resource_id, status, type_override, notes, seen_at, queue_position, shared_by_user_id, share_message, opened_at, created_at)   unique(user_id, resource_id)
 Tag(id, user_id, name)  ItemTag(item_id, tag_id)
 ItemEvent(id, user_id, item_id?, resource_id, kind, occurred_at)   kind ∈ added | seen | unseen | deleted | shared
-Contact(user_id, contact_id, created_at)            one row per direction
-ContactLink(id, user_id, token_hash, expires_at, used_at)
+Contact(id, owner_user_id, email, name?, created_at, updated_at)   private address book, unique(owner_user_id, email)
+ShareLog(id, sender_user_id, recipient_email, recipient_user_id?, resource_id, message, shared_at)   recipient_user_id never exposed to the sender
 InstanceSettings(registration_mode, updated_at, updated_by)
 Invitation(id, email, created_by, created_at, used_at)
 ApiToken(id, user_id, name, token_hash, scope, last_used_at, created_at)
@@ -241,7 +239,7 @@ The current code (a working MVP: library, queue, sharing, stats) is **taken over
 0. **Honest Git history**: initial commit (vision + art direction), then import of the existing code as is, then clean-up (dead code, duplicates, outdated docs).
 1. **Safe, self-hostable foundation**: refusal of default secrets, hardened compose (database not exposed, non-root, pinned images), Caddy + automatic HTTPS, rate limiting, registration mode editable by the admin + first admin + invite list + first / last name, revocable sessions, password change, account deletion, guard on the test database, network-outside-transaction fix, URL ≤ 2,048 / `url_hash`. LICENSE, English README, CONTRIBUTING, SECURITY, CI.
 2. **Front-end foundations**: art-direction tokens wired into the Tailwind theme (`@theme`) and components restyled to the art direction, mobile shell / rail / sidebar, `en` / `fr` i18n, generated `openapi-fetch` client, Dark / Light / System theme, service-worker cache cleared on sign-out. Library, capture and detail ported.
-3. **Modules**: `UserModule` table, Queue and Sharing ported (anti-enumeration, contacts and contact link, receiving), honest "Refresh".
+3. **Modules**: `UserModule` table, Queue and Sharing ported (anti-enumeration, private contacts and history), honest "Refresh".
 4. **Statistics on the journal**: computations of §5.4 as tested pure functions, goals on the account, explanation + confidence on every number.
 5. **Capture everywhere**: API tokens, bookmarklet, Web Share Target (Android), documented iOS shortcut.
 6. **Import and portability**: job queue, imports (§6), JSON / CSV export.
@@ -261,6 +259,6 @@ The current code (a working MVP: library, queue, sharing, stats) is **taken over
 - Name: **Vigie** (chosen together with the art direction), repository `vigie`.
 - Public instance: port `8101` by default, `invite` mode, its owner the only admin.
 - Pre-production: port `8102` by default, separate database and volumes (compose project `vigie-pp`), `ALLOWED_EMAILS` allow-list (the owner only; other addresses are added in the server's `.env`). The `preprod` branch deploys there, `main` goes to production: a feature goes through `preprod` first, then is merged into `main` once validated.
-- Sharing: contacts created when a share is opened or through a contact link; first and last name asked at sign-up, with the reason shown.
+- Sharing: contacts are a private address book, saved automatically when a share is sent (or on request); first and last name asked at sign-up, with the reason shown.
 - Translations: dictionaries in the repository; a community platform only when other languages are requested.
 - Stats after deletion: tags and source are not frozen into the event; the basis is shown.

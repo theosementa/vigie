@@ -63,6 +63,7 @@ rate_limited` with `Retry-After`.
 | `POST /auth/password` | 5 / min / user |
 | `POST /resources/preview`, `POST /items`, `POST /items/{id}/refresh` | 60 / min / user, each its own bucket |
 | `POST /items/{id}/share` | 50 recipients / day / user |
+| `POST /contacts` | 60 / min / user |
 
 ## Configuration
 
@@ -84,7 +85,7 @@ link valid 1 hour, e.g. `docker compose exec api vigie reset-password alice@exam
 
 ```jsonc
 // ItemType = "article" | "video" | "podcast" | "website" | "repo"      ItemStatus = "to_watch" | "seen"
-User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "hidden_types": [], "created_at": "..." }
+User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "hidden_types": [], "auto_create_contacts": true, "created_at": "..." }
 Tag      = { "id": "uuid", "name": "python" }
 Resource = {
   "id": "uuid", "url": "https://example.com/post",          // normalized
@@ -164,14 +165,15 @@ expired (1 h) or already used. Tokens are random, stored hashed (SHA-256), singl
 
 ### `PATCH /api/auth/me` -> 200 `User`
 ```json
-{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark", "mobile_layout": "grid", "hidden_types": ["repo"] }
+{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark", "mobile_layout": "grid", "hidden_types": ["repo"], "auto_create_contacts": false }
 ```
 All fields optional (omitted = unchanged). `422` for an empty / over-long name or a timezone that is not a
 known IANA name (`zoneinfo`). `locale` (`auto` | `en` | `fr`, default `auto`) and `theme` (`system` | `dark` | `light`, default `system`) and
 `mobile_layout` (`list` | `grid`, default `list`: how the library shows on a phone) are
 stored on the account; any other value is a `422`. `hidden_types` (list of `article` | `video` | `podcast` | `website` | `repo`, default `[]`) hides
 those types from the filter chips and the type pickers (existing items stay in the library); `422` if it
-would hide every type. The timezone drives "day", "week" and streaks in the statistics.
+would hide every type. `auto_create_contacts` (boolean, default `true`): sharing saves every address as a
+contact without asking (see Contacts). The timezone drives "day", "week" and streaks in the statistics.
 
 ### `GET /api/auth/sessions` -> 200 `Session[]`
 The devices signed in to the account, most recently active first.
@@ -206,7 +208,7 @@ event: sync      data: {"topics": ["items","queue"]}   (something changed on ano
 event: revoked   data: {}                              (this device was signed out; the stream then closes)
 : ping                                                  (comment, every 20 s: keeps proxies from closing it)
 ```
-Topics: `items`, `queue`, `tags`, `stats`, `me`, `sessions`, or `*` (refetch everything, sent when a slow
+Topics: `items`, `queue`, `tags`, `stats`, `me`, `sessions`, `contacts`, or `*` (refetch everything, sent when a slow
 client's backlog was dropped). A `sync` is sent to **all** of the user's open streams after any successful
 `POST`/`PUT`/`PATCH`/`DELETE` (the originating device included), and to the recipients of a share. Events
 are not replayed: after a reconnect the client refetches everything.
@@ -311,12 +313,63 @@ Re-fetches the metadata. If the re-fetch fails, existing data is kept and the an
 { "emails": ["bob@example.com", "ghost@example.com"], "message": "optional" }
 ```
 ```json
-{ "shared": ["bob@example.com"], "not_found": ["ghost@example.com"], "already_had": [] }
+{ "sent": ["bob@example.com", "ghost@example.com"], "unknown_contacts": [] }
 ```
-Recipients are matched by exact email (case-insensitive, deduplicated). A new `to_watch` item is created for
-each recipient with `shared_by` and `share_message` set (notes/tags are not copied). If the recipient already
-has the resource, nothing is created, `shared_by` is filled in if it was empty, and the email is listed in
-`already_had` (your own email also lands there).
+Recipients are matched by exact email (case-insensitive, deduplicated). An address that is not a valid email
+is a `422`, whoever owns it. A new `to_watch` item is created for each recipient who has an account, with
+`shared_by` and `share_message` set (notes/tags are not copied). If the recipient already has the resource,
+nothing is created and `shared_by` is filled in if it was empty. Addresses without an account, addresses that
+already have the resource and your own address are skipped silently.
+
+The response never tells whether an address has an account: `sent` lists every submitted address (deduplicated,
+your own included) and `unknown_contacts` depends only on your own address book. It lists the submitted
+addresses (your own excluded) that are not yet your contacts, and is always `[]` when `auto_create_contacts` is
+on, because they were just saved. Every address except your own is also recorded in a share log that feeds the
+contact history; whether it was delivered is never exposed to the sender.
+
+## Contacts
+
+A private address book: each user's contacts are their own, for any address, named whatever they typed. Nobody
+else sees them, and the name is never taken from a profile. Every route is scoped to the caller; another user's
+contact id answers `404 contact_not_found`. Live-update topic: `contacts`.
+
+### `GET /api/contacts` -> 200
+```json
+[ { "id": "uuid", "email": "dana@example.com", "name": "Dana" | null, "created_at": "...",
+    "last_shared_at": "..." | null, "share_count": 3 } ]
+```
+Most recent activity first (then newest created). `share_count` and `last_shared_at` cover what you shared with
+that address and what that account delivered to you.
+
+### `POST /api/contacts` -> 200
+```json
+{ "email": "dana@example.com", "name": "optional, up to 100 characters" }
+```
+Idempotent: if the address is already a contact, that contact comes back unchanged. The email is lower-cased
+and validated (`422`); a blank name means no name (the UI shows the address). Same answer whether or not the
+address has an account.
+
+### `PATCH /api/contacts/{id}` -> 200 `Contact`
+```json
+{ "name": "Dana B." }
+```
+A blank or `null` name clears it.
+
+### `DELETE /api/contacts/{id}` -> 204
+Removes the contact only. The share log is kept, so adding the address again brings its history back.
+
+### `GET /api/contacts/{id}/history?before=<timestamp>&limit=30` -> 200
+```json
+{ "entries": [ { "id": "uuid", "direction": "sent" | "received", "at": "...", "message": "..." | null,
+                 "resource": { "title": "...", "type": "article", "image_url": "..." | null, "url": "..." },
+                 "my_item_id": "uuid" | null } ],
+  "next_before": "..." | null }
+```
+Newest first; `limit` is 1-100. Pass `next_before` as `before` to get older entries (`null` = no more).
+`sent` entries are everything you shared with that address, delivered or not, re-shares included. `received`
+entries are items that the account with that address delivered to you; a share sent to your address before
+you had an account never appears. `my_item_id` is your own item for the resource, `null` if you do not have it
+any more. The title and type are the ones you see in your library.
 
 ## Queue
 
