@@ -19,3 +19,7 @@ Every open/close, resize and reorder animates smoothly with no visible glitch (n
 ## Security
 
 Before touching auth, sharing, invitations, outbound fetches, SQL or HTML rendering, read "Rules for contributors" in [`SECURITY.md`](SECURITY.md). In particular: never reveal whether an email has an account.
+
+## Pull requests from forks: the deploy runner is self-hosted
+
+`deploy.yml` runs on the maintainer's own server (`runs-on: [self-hosted, vigie]`). A fork PR can change a workflow file, so approving its Actions run executes its code on that server. Before approving a run, or merging, read the diff of anything touching `.github/` (workflows, `dependabot.yml`), the `Dockerfile`s, `docker-compose*.yml`, `Caddyfile` and `scripts/`. Never approve the run of a PR that edits `.github/` or adds a `runs-on` label you do not recognise. Keep `ci.yml` and any workflow triggered by `pull_request` on `ubuntu-latest`; only the push-triggered `deploy.yml` may use the self-hosted runner.
