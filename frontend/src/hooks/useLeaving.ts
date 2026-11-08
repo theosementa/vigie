@@ -29,7 +29,9 @@ export function useLeaving<T extends { id: string }>(items: T[]): Row<T>[] {
     arrived: new Set(),
   })
 
-  if (state.prev !== items) {
+  // Two empty lists are the same state: callers pass a fresh `[]` default while data loads, and
+  // updating state for it on every render would loop (React error #301).
+  if (state.prev !== items && (state.prev.length > 0 || items.length > 0)) {
     const ids = new Set(items.map((i) => i.id))
     const prevIds = new Set(state.prev.map((i) => i.id))
     const removed = state.prev.flatMap((item, index) => (ids.has(item.id) ? [] : [{ item, index }]))
