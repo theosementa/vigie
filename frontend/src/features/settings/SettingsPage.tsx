@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Icon } from '@/components/Icon'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -471,6 +472,58 @@ function AboutSection() {
   )
 }
 
+const REPO_URL = 'https://github.com/theosementa/vigie'
+
+/** Star count, fetched again every time Settings opens; stays hidden if GitHub is unreachable. */
+function useRepoStars() {
+  return useQuery({
+    queryKey: ['github', 'stars'],
+    queryFn: async () => {
+      const res = await fetch('https://api.github.com/repos/theosementa/vigie', {
+        headers: { Accept: 'application/vnd.github+json' },
+      })
+      if (!res.ok) throw new Error(`GitHub ${res.status}`)
+      const data = (await res.json()) as { stargazers_count?: number }
+      return data.stargazers_count ?? 0
+    },
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    retry: false,
+  })
+}
+
+function CommunitySection() {
+  const t = useT()
+  const { data: stars } = useRepoStars()
+  return (
+    <section className={sectionClass}>
+      <h2 className={headingClass}>{t('settings.community')}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{t('settings.community.body')}</p>
+      <Button
+        className="mt-3 h-10 w-full rounded-[10px]"
+        nativeButton={false}
+        render={<a href={`${REPO_URL}/issues/new`} target="_blank" rel="noopener noreferrer" />}
+      >
+        {t('settings.community.issue')}
+      </Button>
+      <Button
+        variant="outline"
+        className="mt-2 h-10 w-full rounded-[10px]"
+        nativeButton={false}
+        render={<a href={REPO_URL} target="_blank" rel="noopener noreferrer" />}
+      >
+        {t('settings.community.repo')}
+        {stars !== undefined && (
+          <span className="inline-flex items-center gap-1 text-muted-foreground">
+            · <Icon name="star" small /> {stars.toLocaleString()}
+          </span>
+        )}
+      </Button>
+    </section>
+  )
+}
+
 function DangerZone() {
   const t = useT()
   const [open, setOpen] = useState(false)
@@ -497,6 +550,7 @@ export function SettingsPage() {
       <PasswordSection />
       <SessionSection />
       <AboutSection />
+      <CommunitySection />
       {me?.role === 'admin' && (
         <Link
           to="/admin"
