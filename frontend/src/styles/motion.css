@@ -72,9 +72,10 @@
   .page-in { animation: page-in var(--dur-base) var(--ease); }
 
   /* Rows / cards / empty states rise in, staggered by --i (set inline, kept small) */
-  @keyframes enter { from { opacity: 0; translate: 0 8px; } }
+  /* Not `enter`: tw-animate-css defines that name too, and in the built CSS its (inert) version wins. */
+  @keyframes rise-in { from { opacity: 0; translate: 0 8px; } }
   .enter, .empty {
-    animation: enter var(--dur-slow) var(--ease) backwards;
+    animation: rise-in var(--dur-slow) var(--ease) backwards;
     animation-delay: calc(var(--i, 0) * 35ms);
   }
 

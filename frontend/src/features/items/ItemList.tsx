@@ -74,7 +74,8 @@ export function ItemList({
           data-id={item.id}
           // A row coming back (Undo) opens its height so the rows below slide down instead of jumping.
           className={cn('min-w-0', leaving ? 'leaving' : arrived && variant === 'list' ? 'expand' : 'enter')}
-          style={leaving ? undefined : ({ '--i': index % 8 } as CSSProperties)}
+          // A card that comes back (Undo) rises at once, in step with the neighbours making room.
+          style={leaving ? undefined : ({ '--i': arrived ? 0 : index % 8 } as CSSProperties)}
           inert={leaving}
         >
           {variant === 'list' ? (

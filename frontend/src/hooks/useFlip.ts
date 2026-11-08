@@ -16,6 +16,9 @@ function measure(container: HTMLElement): Positions {
   return positions
 }
 
+/** A CSS time ("200ms"; the production build minifies it to ".2s"). */
+const toMs = (time: string) => parseFloat(time) * (time.trim().endsWith('ms') ? 1 : 1000)
+
 const prefersReducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
 
 const isSliding = (container: HTMLElement) =>
@@ -54,7 +57,7 @@ export function useFlip(ref: RefObject<HTMLElement | null>, ids: string[], enabl
     if (changed > MAX_CHANGED) return
 
     const style = getComputedStyle(document.documentElement)
-    const duration = parseFloat(style.getPropertyValue('--dur-base'))
+    const duration = toMs(style.getPropertyValue('--dur-base'))
     const easing = style.getPropertyValue('--ease').trim()
     for (const child of Array.from(container.children) as HTMLElement[]) {
       const from = before.get(child.dataset.id ?? '')
