@@ -10,6 +10,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="system"
       className="toaster group"
       closeButton
+      offset={{ bottom: "var(--toast-bottom)" }}
+      mobileOffset={{ bottom: "var(--toast-bottom)" }}
       icons={{
         success: (
           <Icon name="check-circle" className="size-4" />
@@ -29,10 +31,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          // The DA toast is inverted: text colour as background (base.css, "Toasts")
+          "--normal-bg": "var(--text)",
+          "--normal-text": "var(--bg)",
+          "--normal-border": "transparent",
+          "--border-radius": "12px",
         } as React.CSSProperties
       }
       toastOptions={{

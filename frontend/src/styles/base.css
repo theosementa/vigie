@@ -280,13 +280,6 @@
 .empty .ghost{font-size:48px;font-weight:500;letter-spacing:-.04em;color:var(--line);line-height:1}
 .empty p{margin:0;color:var(--muted);max-width:26em}
 
-[data-sonner-toaster]{--normal-bg:var(--text);--normal-text:var(--bg);--normal-border:transparent;--border-radius:12px;font-family:var(--font)}
-[data-sonner-toast]{font-size:14px;font-weight:400;box-shadow:0 8px 24px var(--shadow)}
-[data-sonner-toast] [data-icon]{display:none}
-[data-sonner-toast] [data-close-button]{left:auto;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:inherit;opacity:.6;width:20px;height:20px}
-[data-sonner-toast] [data-close-button]:hover{opacity:1;background:none}
-[data-sonner-toast]{padding-right:36px}
-[data-sonner-toast] [data-button]{background:none;color:inherit;font-weight:500;font-size:14px;height:auto;padding:0;text-decoration:none}
 
 /* Charts */
 .hist{display:block;width:100%;height:auto}
@@ -430,5 +423,19 @@ a.bub-link:active{opacity:.7}
 .save-contact-row .addr{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:480px){.save-contact-row{grid-template-columns:minmax(0,1fr)}}
 }
+
+/* Toasts (sonner). Sonner injects unlayered CSS, so the DA toast of `.toast` lives outside the
+   layers with a higher specificity; the colours come from components/ui/sonner.tsx. The bottom
+   offset clears the tab bar wherever it shows. */
+:root{--toast-bottom:calc(68px + var(--safe-bottom) + 12px)}
+@media (min-width:768px){:root{--toast-bottom:24px}}
+[data-sonner-toaster]{font-family:var(--font)}
+[data-sonner-toaster] [data-sonner-toast][data-styled=true]{font-size:14px;font-weight:400;gap:12px;padding:10px 40px 10px 14px;box-shadow:0 8px 24px var(--shadow)}
+[data-sonner-toaster] [data-sonner-toast][data-styled=true] [data-title]{font-weight:400}
+[data-sonner-toaster] [data-sonner-toast][data-styled=true] [data-icon]{display:none}
+[data-sonner-toaster] [data-sonner-toast][data-styled=true] [data-close-button]{left:auto;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;color:inherit;opacity:.6;width:20px;height:20px}
+[data-sonner-toaster] [data-sonner-toast][data-styled=true]:hover [data-close-button]:hover{opacity:1;background:none}
+[data-sonner-toaster] [data-sonner-toast][data-styled=true] [data-button]{background:none;color:inherit;font-weight:500;font-size:14px;height:auto;padding:4px 6px;margin-right:-6px;border-radius:6px;text-decoration:none}
+[data-sonner-toaster] [data-sonner-toast][data-styled=true] [data-button]:focus-visible{box-shadow:0 0 0 2px currentColor}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}

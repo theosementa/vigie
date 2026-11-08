@@ -158,8 +158,8 @@ export const en = {
 
   // Bibliothèque
   'library.sub': '{formatted} to watch · {date}',
-  'library.length_unknown_one': '{count} item without a known length is hidden',
-  'library.length_unknown_other': '{count} items without a known length are hidden',
+  'library.length_unknown_one': '{formatted} item without a known length is hidden',
+  'library.length_unknown_other': '{formatted} items without a known length are hidden',
   'library.error': 'Couldn’t load your library.',
   'search.label': 'Search',
   'search.placeholder': 'Search…',

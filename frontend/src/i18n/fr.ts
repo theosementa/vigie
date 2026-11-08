@@ -160,8 +160,8 @@ export const fr: Record<keyof typeof en, string> = {
 
   // Bibliothèque
   'library.sub': '{formatted} à voir · {date}',
-  'library.length_unknown_one': '{count} lien sans durée connue est masqué',
-  'library.length_unknown_other': '{count} liens sans durée connue sont masqués',
+  'library.length_unknown_one': '{formatted} lien sans durée connue est masqué',
+  'library.length_unknown_other': '{formatted} liens sans durée connue sont masqués',
   'library.error': 'Impossible de charger ta bibliothèque.',
   'search.label': 'Rechercher',
   'search.placeholder': 'Rechercher…',

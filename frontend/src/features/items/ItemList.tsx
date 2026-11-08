@@ -61,10 +61,11 @@ export function ItemList({
   const rows = useLeaving(items)
   return (
     <ul className={variant === 'list' ? 'list' : 'cards'}>
-      {rows.map(({ item, leaving }, index) => (
+      {rows.map(({ item, leaving, arrived }, index) => (
         <li
           key={item.id}
-          className={cn('min-w-0', leaving ? 'leaving' : 'enter')}
+          // A row coming back (Undo) opens its height so the rows below slide down instead of jumping.
+          className={cn('min-w-0', leaving ? 'leaving' : arrived && variant === 'list' ? 'expand' : 'enter')}
           style={leaving ? undefined : ({ '--i': index % 8 } as CSSProperties)}
           inert={leaving}
         >

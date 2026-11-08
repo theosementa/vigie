@@ -13,6 +13,8 @@ interface Gone<T> {
 export interface Row<T> {
   item: T
   leaving: boolean
+  /** Came back on its own (an Undo, a new item): open its place instead of popping in. */
+  arrived: boolean
 }
 
 /**
@@ -21,7 +23,11 @@ export interface Row<T> {
  * one or two rows counts: anything else (new filter, new page, reorder) is a plain swap.
  */
 export function useLeaving<T extends { id: string }>(items: T[]): Row<T>[] {
-  const [state, setState] = useState<{ prev: T[]; gone: Gone<T>[] }>({ prev: items, gone: [] })
+  const [state, setState] = useState<{ prev: T[]; gone: Gone<T>[]; arrived: ReadonlySet<string> }>({
+    prev: items,
+    gone: [],
+    arrived: new Set(),
+  })
 
   if (state.prev !== items) {
     const ids = new Set(items.map((i) => i.id))
@@ -32,7 +38,13 @@ export function useLeaving<T extends { id: string }>(items: T[]): Row<T>[] {
       typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
     const animate = onlyRemovals && !reduced && removed.length > 0 && removed.length <= MAX_LEAVING
     const still = state.gone.filter((g) => !ids.has(g.item.id))
-    setState({ prev: items, gone: animate ? [...still, ...removed] : still })
+    // Same rule for additions; a row keeps the flag while mounted so its class never changes.
+    const added = items.filter((i) => !prevIds.has(i.id))
+    const arrive =
+      state.prev.length > 0 && !reduced && added.length > 0 && added.length <= MAX_LEAVING && removed.length === 0
+    const arrived = new Set([...state.arrived].filter((id) => ids.has(id)))
+    if (arrive) added.forEach((i) => arrived.add(i.id))
+    setState({ prev: items, gone: animate ? [...still, ...removed] : still, arrived })
   }
 
   useEffect(() => {
@@ -41,9 +53,9 @@ export function useLeaving<T extends { id: string }>(items: T[]): Row<T>[] {
     return () => clearTimeout(timer)
   }, [state.gone])
 
-  const rows: Row<T>[] = items.map((item) => ({ item, leaving: false }))
+  const rows: Row<T>[] = items.map((item) => ({ item, leaving: false, arrived: state.arrived.has(item.id) }))
   for (const g of [...state.gone].sort((a, b) => a.index - b.index)) {
-    rows.splice(Math.min(g.index, rows.length), 0, { item: g.item, leaving: true })
+    rows.splice(Math.min(g.index, rows.length), 0, { item: g.item, leaving: true, arrived: false })
   }
   return rows
 }

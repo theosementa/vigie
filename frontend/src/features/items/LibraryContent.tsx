@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Icon } from '@/components/Icon'
 import { useDelayedFlag } from '@/hooks/useDelayedFlag'
+import { formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { useAddItem } from './addItemContext'
 import { ItemList } from './ItemList'
@@ -107,8 +108,11 @@ export function LibraryContent({ lib, variant }: { lib: Library; variant: 'list'
       </div>
     )
   // A length filter says what it leaves out, so the list never looks complete when it is not.
+  // It mounts with the list (a new filter is a new query), so it rises in with the rows.
   const unknown = lib.lengthUnknown ? (
-    <p className="sub mb-3">{t('library.length_unknown', { count: lib.lengthUnknown })}</p>
+    <p className="sub enter mb-3">
+      {t('library.length_unknown', { count: lib.lengthUnknown, formatted: formatNumber(lib.lengthUnknown) })}
+    </p>
   ) : null
   if (lib.items.length === 0)
     return (
