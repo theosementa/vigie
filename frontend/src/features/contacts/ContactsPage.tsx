@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useDeferredValue, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -62,7 +62,12 @@ function ContactRow({
   )
 }
 
-/** The private address book: rename, delete, and open the history of each contact. */
+/** Lowercase and strip accents, so "zoe" finds "Zoé". */
+function fold(s: string) {
+  return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+}
+
+/** The private address book: search, rename, delete, and open the history of each contact. */
 export function ContactsPage() {
   const t = useT()
   const { data, isPending, isError, refetch } = useContacts()
@@ -71,7 +76,17 @@ export function ContactsPage() {
   // The contact stays set while the confirmation fades out, so its text does not blank.
   const [toDelete, setToDelete] = useState<Contact | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const rows = useLeaving(data ?? [])
+  const [query, setQuery] = useState('')
+  const q = fold(useDeferredValue(query).trim())
+  const filtered = useMemo(
+    () =>
+      q
+        ? (data ?? []).filter((c) => fold(`${c.name ?? ''} ${c.email}`).includes(q))
+        : (data ?? []),
+    [data, q],
+  )
+  const rows = useLeaving(filtered)
+  const hasContacts = (data?.length ?? 0) > 0
 
   if (isPending) {
     return <div role="status" aria-label={t('common.loading')} className="ct-skeleton" />
@@ -89,13 +104,30 @@ export function ContactsPage() {
 
   return (
     <div className="lib form-page mx-auto w-full max-w-xl">
-      <div className="flex justify-end">
-        <Button className="btn btn-accent btn-sm" onClick={() => setDialog('new')}>
+      <div className="flex items-center gap-2">
+        {hasContacts && (
+          <label className="in min-w-0 flex-1">
+            <Icon name="magnifier" className="xs" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('contacts.search.placeholder')}
+              aria-label={t('contacts.search.label')}
+              autoComplete="off"
+            />
+          </label>
+        )}
+        <Button className="btn btn-accent btn-sm ml-auto flex-none" onClick={() => setDialog('new')}>
           <Icon name="add" small />
           {t('contacts.add')}
         </Button>
       </div>
-      {rows.length === 0 ? (
+      {rows.length === 0 && hasContacts ? (
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          {t('contacts.search.empty', { query: query.trim() })}
+        </p>
+      ) : rows.length === 0 ? (
         <div className="empty">
           <div className="ghost">{t('title.contacts')}</div>
           <p>{t('contacts.empty.body')}</p>
