@@ -105,7 +105,8 @@ def _fake_metadata(request, monkeypatch):
         return
 
     async def fake(url: str) -> Metadata:
-        is_video = (urlparse(url).hostname or "").endswith("youtube.com")
+        host = urlparse(url).hostname or ""
+        is_video = host == "youtube.com" or host.endswith(".youtube.com")
         return Metadata(
             url=url,
             type="video" if is_video else "article",
