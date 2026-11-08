@@ -19,7 +19,7 @@ function ItemRowBase({ item, onOpen }: { item: Item; onOpen: (item: Item) => voi
       <ItemThumb resource={resource} />
       <div>
         <button type="button" className="open tt" onClick={() => onOpen(item)}>
-          {resource.title || siteOf(resource)}
+          <span>{resource.title || siteOf(resource)}</span>
         </button>
         <ItemMeta item={item} />
       </div>

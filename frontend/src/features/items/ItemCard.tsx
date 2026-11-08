@@ -61,7 +61,7 @@ function ItemCardBase({
         </div>
         <div className="cb">
           <button type="button" className="open tt" onClick={() => onOpen(item)}>
-            {resource.title || siteOf(resource)}
+            <span>{resource.title || siteOf(resource)}</span>
           </button>
           <ItemMeta item={item} />
         </div>
