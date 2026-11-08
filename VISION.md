@@ -21,6 +21,7 @@ Spirit: **a watch screen, not a news feed**: what comes in is chosen, what goes 
 
 - **No social network**: no public profiles, feed, followers, likes, or user directory.
 - **No algorithm**: no recommendations, no "for you" ranking. The order comes from you (date, queue, filters).
+- **No import for now**: no import from Pocket, Instapaper, Raindrop or browser bookmarks. Vigie starts empty and fills from capture. The export (§6.5) stays.
 - **No content archiving**: Vigie keeps a link and its metadata, not a copy of the article (rights, storage). No offline reading in the MVP.
 - **No telemetry**: no analytics, no outgoing call except fetching metadata and e-mail if configured.
 - **No AI in the MVP**: no summaries, no automatic sorting.
@@ -92,7 +93,24 @@ The **Core** is always on. The others are enabled **per account** in *Settings �
 
 **Quick capture**: a URL field pre-filled from the clipboard **only on action** (a "Paste" button), never read on open. Live card preview, "Add to Vigie" button.
 
-**Search**: title, site, URL, notes, tags (`ILIKE` + `pg_trgm`). Filters: status, type, tag, source, shared with me, in the queue. Filters live in the URL.
+**Search**: title, site, URL, notes, tags (`ILIKE` + `pg_trgm`). Filters: status, type, tag, source, shared with me, in the queue, length. Filters live in the URL.
+
+**Length filter ("I have 20 minutes")**: `length=short|medium|long` in the URL, computed by the API in a pure, tested function.
+- Effective length = `duration_seconds` for a video or podcast, `reading_time_minutes × 60` for an article; repositories and websites have none.
+- `short` = under 10 min (< 600 s), `medium` = 10 to 30 min (600 s ≤ x ≤ 1,800 s), `long` = over 30 min (> 1,800 s).
+- An item without a known length never matches a length bucket, and the filter says what it leaves out ("4 items without a known length are hidden"). It is a filter the user chooses, never a ranking.
+
+**Saved views**: a named set of library filters, i.e. the library URL query (status, type, tag, source, shared, queue, length, search).
+- Stored on the account (`SavedView`), so every device sees the same views; 20 per account at most, name 1 to 40 characters, unique per account.
+- Created from the library when at least one filter is active: "Save this view" asks for a name (prefilled from the filters, e.g. "Videos · short"). Applying a view replaces the current filters; the active view is marked as selected.
+- **Desktop and tablet landscape**: listed in the left sidebar under Library, in the user's order (drag to reorder), rename and delete from the row's menu.
+- **Mobile and tablet portrait**: a horizontal row of chips at the top of the library, hidden when there is no view; long press opens rename / delete.
+- A view never stores results: it is re-run every time. A view whose tag was deleted shows an empty result with "This tag no longer exists".
+
+**Delete and Seen without confirmation, with Undo**
+- **Delete** removes the card at once and shows a toast "Removed · Undo" for 5 s. The `DELETE` request is sent when the toast ends, or right away (`keepalive`) if the page is hidden or closed. Undo therefore never needs a server-side restore. If the request fails, the card comes back with an error toast.
+- **Mark as seen** applies at once (request sent immediately) and shows "Marked as seen · Undo" for 5 s; Undo sends the item back to To watch. The journal records `seen` then `unseen`, so the statistics stay right (§5.4: a `seen` followed by an `unseen` in the same period does not count).
+- Deleting a saved view uses the same Undo toast. A confirmation stays only where an Undo cannot work: deleting the account, revoking an API token, deleting a contact (its history is involved).
 
 **Display**: card grid (image, title, site + favicon, duration or reading time, tags, state). Missing image → the art-direction thumbnail (no random gradient). Detail: metadata, note, tags, item history (added, seen, shared by…).
 
@@ -137,23 +155,41 @@ Period `week` (Monday → Sunday) / `month` / `year`, navigable, in the **accoun
 
 **Display**: goal rings, articles / videos histogram with the previous period as a ghost, key figures with delta, streak, pile trend, tops (click → filtered library). Every chart has its table alternative.
 
-## 6. History import
+## 6. Capture from anywhere and portability
 
-An empty app has nothing to show: the import is part of onboarding.
+The goal "capture in under 3 seconds from anywhere" (§2) is met by four doors, all ending in the same `POST /api/items` (same normalisation, same duplicate rule, same refusal of invalid URLs).
 
-| Source | Format | What is imported |
-|---|---|---|
-| Browser bookmarks (Chrome, Firefox, Safari) | Netscape HTML | URL, title, date added, folders → tags |
-| Pocket (export) | CSV | URL, title, date, tags, status (`archive` → Seen) |
-| Instapaper | CSV | URL, title, folder → tag, date |
-| Raindrop.io | CSV | URL, title, tags, date, note |
-| Link list | Text, one URL per line | URL |
+### 6.1 Personal API tokens
 
-- The import creates the items **right away** (title from the export or host name), then fetches metadata **in the background** (queue in the database, processed by the API, 2 simultaneous requests per host, resumes after a restart). Progress is shown ("412 / 1,280 cards completed").
-- Original dates feed the journal (dated `added` / `seen`), so stats start with your real history.
-- Duplicates are skipped and counted in the summary. Limit: 20,000 rows per import.
+- Created in *Settings → Capture*: a name (1 to 50 characters) and a scope, `capture` (add a link and read back the item it created, nothing else) or `full` (the whole API of the account).
+- The token (`vig_` + 32 random bytes, base64url) is **shown once**, with a Copy button; only its SHA-256 hash is stored. The list shows name, scope, creation date and last use ("Used 2 h ago", "Never used").
+- Sent as `Authorization: Bearer vig_…`. A revoked token, a token of a deleted account, or a `capture` token on another route answers **401**, never a hint of what exists. 20 tokens per account at most; the same rate limits as a session.
+- "Sign me out everywhere" and a password change do **not** revoke tokens (they are for devices without a session); deleting the account does. Revoking asks for a confirmation (it breaks a shortcut somewhere).
 
-**Export**: full JSON (items, notes, tags, journal) and Pocket-compatible CSV, in one click in *Settings → Data*.
+### 6.2 Android: Web Share Target
+
+- The installed PWA declares a `share_target` (`GET /share?title&text&url`). Vigie appears in Android's share sheet.
+- Android always opens a PWA to receive a share; Vigie cannot add in the background. So `/share` is a small "Added" screen that adds **on arrival, with no button to press**: it shows the card (title, site, length), "Added to your library" (or "Already in your library"), and three actions: Undo, Add to queue, Open. The user goes back to the app they came from with the system Back.
+- The URL is taken from `url`, otherwise the first `http(s)` link found in `text`, then in `title` (apps put it in different fields). No link found → "This share has no link" and a field to paste one.
+- Not signed in → sign-in, then the share is added (the URL survives the sign-in).
+- Accepted risk: a third-party page could open `/share?url=…` and add a link to a signed-in user's library. Nothing leaks, the result is on screen with Undo, and the add is rate-limited like any capture.
+
+### 6.3 iPhone and iPad: Shortcut
+
+- iOS PWAs cannot be share targets. *Settings → Capture → iPhone shortcut* gives a step-by-step guide (with the instance address and a "Create a capture token" button) to build an Apple Shortcut that appears in the share sheet, calls `POST /api/items` with the token and shows a system notification "Added to Vigie" or "Already in your library", **without opening Vigie**.
+- The guide is text and screenshots of the Shortcuts app; no shortcut file is distributed (the instance address and the token differ for everyone).
+
+### 6.4 Bookmarklet (desktop)
+
+- *Settings → Capture → Bookmarklet*: a link to drag into the bookmarks bar, with the instance address baked in.
+- Clicking it opens a small window (420 × 560) on `/share?url=<current page>`: the same "Added" screen as Android, signed in with the session cookie (no token). The window closes itself 2 s after a successful add unless the pointer is over it.
+
+### 6.5 Export
+
+- *Settings → Data*: two buttons, **JSON** and **CSV**, one click each, downloaded at once (generated on the fly, no job, no e-mail).
+- **JSON** (`vigie-export-YYYY-MM-DD.json`, `"format": "vigie-export", "version": 1`): account (name, e-mail, language, time zone, modules and goals), items (URL, original title, custom title, type, status, note, tags, queue position, sender's name and message, added / seen / opened dates), the journal (`item_events`), contacts, saved views. Never: password hash, tokens, sessions, other accounts' data.
+- **CSV** (`vigie-export-YYYY-MM-DD.csv`): Pocket's columns, so other apps can read it: `title,url,time_added,tags,status`; `time_added` = Unix seconds, `tags` joined with `|`, `status` = `unread` (To watch) or `archive` (Seen).
+- Rate-limited (10 exports per hour per account).
 
 ## 7. Home (Library)
 
@@ -167,14 +203,14 @@ An empty app has nothing to show: the import is part of onboarding.
 
 No push notifications in the MVP. Badges in the navigation:
 - **Unopened received shares**: counter on the Shared tab.
-- **Import in progress**: progress in Settings → Data.
 - **Pile building up**: one line on home when the trend is "it's piling up" three weeks in a row, with the "See the oldest" action.
 
 ## 9. Settings
 
-**Account**: first and last name (50 characters each), e-mail, password, language (`auto` / `en` / `fr`), theme (`system` / `dark` / `light`), time zone, sign me out everywhere, API tokens, bookmarklet, delete my account.
+**Account**: first and last name (50 characters each), e-mail, password, language (`auto` / `en` / `fr`), theme (`system` / `dark` / `light`), time zone, sign me out everywhere, delete my account.
+**Capture**: API tokens, iPhone shortcut guide, bookmarklet (§6).
 **Modules**: Queue, Sharing, Statistics (switches, saved on toggle), goals, who can send me shares.
-**Data**: import, export.
+**Data**: export JSON / CSV (§6.5).
 **Administration** (admin): registration mode, invitees, accounts.
 
 ## 10. Tech stack
@@ -183,7 +219,6 @@ No push notifications in the MVP. Badges in the navigation:
 |---|---|
 | Front end | React 19 + Vite + strict TypeScript, **PWA** (`vite-plugin-pwa`), TanStack Query, `openapi-fetch` + generated types, React Router, **Tailwind CSS v4** whose theme (`@theme`) reuses the art-direction tokens as they are (`tokens.css`), in-house SVG for charts, in-house i18n (`lib/i18n.ts`, typed `en` / `fr` dictionaries, `Intl` for numbers and dates) |
 | Back end | Python 3.13 **FastAPI**, SQLAlchemy 2 async (asyncpg), Alembic, Pydantic v2, `pydantic-settings`, `httpx` + `selectolax`, Argon2 (`pwdlib`), PyJWT, managed with `uv` |
-| Jobs | Task queue in a Postgres table (`jobs`, `SELECT … FOR UPDATE SKIP LOCKED`), loop in the API lifespan, can be disabled (`JOBS_ENABLED=false`) |
 | Database | **PostgreSQL 17** (`pg_trgm`) |
 | E-mail | Optional SMTP (`SMTP_*`): verification, reset, invitations. Without SMTP, everything works through links generated by the admin |
 | Infra | Docker Compose: `web` (**Caddy**: SPA, `/api` proxy, automatic HTTPS if `VIGIE_DOMAIN` is set, security headers), `api` (non-root), `db` (not exposed). Images published on `ghcr.io` |
@@ -207,8 +242,7 @@ InstanceSettings(registration_mode, updated_at, updated_by)
 Invitation(id, email, created_by, created_at, used_at)
 ApiToken(id, user_id, name, token_hash, scope, last_used_at, created_at)
 PasswordReset(id, user_id, token_hash, expires_at, used_at)
-Job(id, kind, payload_json, status, attempts, run_after, locked_at, error)
-ImportRun(id, user_id, source, total, done, duplicates, failed, created_at, finished_at)
+SavedView(id, user_id, name, query, position, created_at, updated_at)   unique(user_id, name)
 ```
 
 `Resource.url` is no longer indexed directly: uniqueness is on `url_hash` (SHA-256), which lifts the btree index size limit.
@@ -241,12 +275,19 @@ The current code (a working MVP: library, queue, sharing, stats) is **taken over
 2. **Front-end foundations**: art-direction tokens wired into the Tailwind theme (`@theme`) and components restyled to the art direction, mobile shell / rail / sidebar, `en` / `fr` i18n, generated `openapi-fetch` client, Dark / Light / System theme, service-worker cache cleared on sign-out. Library, capture and detail ported.
 3. **Modules**: `UserModule` table, Queue and Sharing ported (anti-enumeration, private contacts and history), honest "Refresh".
 4. **Statistics on the journal**: computations of §5.4 as tested pure functions, goals on the account, explanation + confidence on every number.
-5. **Capture everywhere**: API tokens, bookmarklet, Web Share Target (Android), documented iOS shortcut.
-6. **Import and portability**: job queue, imports (§6), JSON / CSV export.
-7. **Public instance**: SMTP (verification, reset, e-mail invitations), image proxy (hides visitors' IPs from third-party CDNs), Privacy and Terms pages, administration.
+Phases 0 to 4 are done (v1.1.0). Next, in build order:
+
+5. **Faster library**: import removed (button, copy, docs), Delete and Seen with Undo instead of a confirmation, length filter (§5.1).
+6. **Saved views**: `SavedView` table and routes, sidebar list on desktop, chip row on mobile (§5.1).
+7. **Capture everywhere**: API tokens, Web Share Target (Android), iPhone shortcut guide, bookmarklet (§6.1 to §6.4).
+8. **Export**: JSON and CSV (§6.5).
+9. **Triage mode and dusty links** (to be specified before it starts): one card at a time, swipe right = queue, left = delete, up = Seen (keys too); "23 links added more than 3 months ago: keep them?" opens triage on those.
+10. **Public instance**: SMTP (verification, reset, e-mail invitations), image proxy (hides visitors' IPs from third-party CDNs), Privacy and Terms pages, administration.
 → `unslop` pass on the real app, `ghcr.io` images, public instance deployment, self-hosting guide.
 
-**V1.1**: `tsvector` full-text search (`english` / `french`), browser extension, RSS import (feed → To watch items), Web Push notifications for shares.
+**Parked** (kept, not scheduled): keyboard shortcuts (`j`/`k`, `s` Seen, `q` queue, `e` send, `/` search, `?` help) and a `⌘K` palette (add + search); multiple selection (tag, Seen, queue, delete in bulk); chained queue playback (embedded `youtube-nocookie` player, "Mark as seen and play next"); partial progress ("resume at 12 min").
+
+**V1.1**: `tsvector` full-text search (`english` / `french`), browser extension, RSS feeds (feed → To watch items), Web Push notifications for shares.
 
 **V2**: shared collections, optional AI summaries (key provided by the instance), offline reading in reader mode.
 
