@@ -5,13 +5,10 @@ import { formatMinutesShort, formatRelativeDay, fullName } from '@/lib/format'
 import { providerOf } from '@/lib/providers'
 import { useT } from '@/lib/i18n'
 import { isMetadataUnavailable, siteOf } from './metadata'
-
-/** Types whose link is a plain web page: they get a globe when the site has no known logo. */
-const isWebLink = (type: string) => type === 'article' || type === 'website'
 import { useRefreshWithToast } from './useRefreshItem'
 
 /**
- * Meta line of a row or a card: `site · 12 min`, led by the provider's logo when it has one. A seen
+ * Meta line of a row or a card: `site · 12 min`, led by the provider's logo, or a globe when the site has none. A seen
  * item says when it was seen (with a check instead of the logo), and unavailable metadata offers « Réessayer ».
  */
 export function ItemMeta({ item }: { item: Item }) {
@@ -52,7 +49,7 @@ export function ItemMeta({ item }: { item: Item }) {
 
   return (
     <div className="meta">
-      {seen ? <Icon name="check-circle" /> : brand ? <BrandIcon name={brand} /> : isWebLink(resource.type) && <Icon name="global" />}
+      {seen ? <Icon name="check-circle" /> : brand ? <BrandIcon name={brand} /> : <Icon name="global" />}
       <span className="min-w-0 truncate">{parts.join(' · ')}</span>
       {item.queue_position !== null && (
         <span className="inline-flex shrink-0 items-center gap-1" title={t('item.in_queue', { position: item.queue_position + 1 })}>
