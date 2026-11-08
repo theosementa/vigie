@@ -60,6 +60,7 @@
 .chip{height:32px;padding:0 12px;border-radius:999px;border:0;background:var(--surface-2);color:var(--muted);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--text);color:var(--bg)}
 .chip b{font-weight:500}
+.type-picker{display:flex;flex-wrap:wrap;gap:6px}
 
 /* Panels, numbers */
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0}

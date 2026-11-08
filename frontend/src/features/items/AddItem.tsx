@@ -10,7 +10,8 @@ import { errorMessage } from '@/lib/errors'
 import { formatDuration, formatMinutesShort } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
-import { TYPE_ICON, hasDuration } from './metadata'
+import { hasDuration } from './metadata'
+import { TypePicker } from './TypePicker'
 import { useResourceTypes } from './useResourceTypes'
 import { AddItemContext, useAddItem } from './addItemContext'
 import { ItemThumb } from './ItemThumb'
@@ -237,14 +238,7 @@ function CaptureForm({
             </div>
           ) : (
             <>
-              <div className="seg full" role="group" aria-label={t('item.type')}>
-                {types.map((type) => (
-                  <button key={type} type="button" aria-pressed={effectiveType === type} onClick={() => setOverride(type)}>
-                    <Icon name={TYPE_ICON[type]} className="xs" />
-                    {t(`type.${type}`)}
-                  </button>
-                ))}
-              </div>
+              <TypePicker value={effectiveType} types={types} onChange={setOverride} label={t('item.type')} />
               <label className="check">
                 <input type="checkbox" checked={queue} onChange={(e) => setQueue(e.target.checked)} />
                 {t('item.queue.add')}

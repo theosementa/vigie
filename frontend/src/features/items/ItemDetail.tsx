@@ -10,6 +10,7 @@ import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemThumb } from './ItemThumb'
 import { useItemDialogs } from './itemDialogsContext'
 import { TYPE_ICON, hasDuration, isMetadataUnavailable, siteOf } from './metadata'
+import { TypePicker } from './TypePicker'
 import { useResourceTypes } from './useResourceTypes'
 import { useItemEvents, useSetItemStatus, useUpdateItem } from './queries'
 import { useRefreshWithToast } from './useRefreshItem'
@@ -323,19 +324,12 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
         <span className="h-label" id="type-label">
           {t('item.type')}
         </span>
-        <div className="seg full stack" role="group" aria-labelledby="type-label">
-          {types.map((type) => (
-            <button
-              key={type}
-              type="button"
-              aria-pressed={resource.type === type}
-              onClick={() => resource.type !== type && update.mutate({ id: item.id, input: { type } })}
-            >
-              <Icon name={TYPE_ICON[type]} className="xs" />
-              {t(`type.${type}`)}
-            </button>
-          ))}
-        </div>
+        <TypePicker
+          value={resource.type}
+          types={types}
+          onChange={(type) => resource.type !== type && update.mutate({ id: item.id, input: { type } })}
+          labelledBy="type-label"
+        />
       </div>
 
       {/* keyed: editors keep local draft state per item */}
