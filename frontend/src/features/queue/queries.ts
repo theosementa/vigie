@@ -1,4 +1,5 @@
 /** Data hooks for the watch queue, backed by the real API (src/lib/api.ts). */
+import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { api, type Item, type QueueList } from '@/lib/api'
 import { t } from '@/lib/i18n'
@@ -12,15 +13,25 @@ import {
   restore,
   snapshot,
 } from '@/features/items/queries'
+import { usePendingDeletes } from '@/features/items/pendingDeletes'
 
 export { queueKey }
 
 /** Ordered list of queued videos (no pagination). */
 export function useQueue() {
+  const pending = usePendingDeletes()
+  const select = useCallback(
+    (data: QueueList): QueueList =>
+      pending.size === 0
+        ? data
+        : { items: data.items.filter((i) => !pending.has(i.id)).map((i, idx) => ({ ...i, queue_position: idx })) },
+    [pending],
+  )
   return useQuery({
     queryKey: queueKey,
     queryFn: () => api.queue.list(),
     staleTime: 30_000,
+    select,
   })
 }
 

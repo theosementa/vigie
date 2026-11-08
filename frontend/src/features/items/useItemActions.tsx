@@ -4,6 +4,7 @@ import type { Item } from '@/lib/api'
 import { useT } from '@/lib/i18n'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { useItemDialogs } from './itemDialogsContext'
+import { useDeleteItem } from './useDeleteItem'
 
 export interface Action {
   key: string
@@ -17,6 +18,7 @@ export function useItemActions(item: Item, onOpenDetail: () => void): Action[] {
   const t = useT()
   const dialogs = useItemDialogs()
   const queue = useQueueToggle(item)
+  const deleteItem = useDeleteItem()
   return [
     {
       key: 'open',
@@ -42,7 +44,7 @@ export function useItemActions(item: Item, onOpenDetail: () => void): Action[] {
       label: t('common.delete'),
       icon: <Icon name="trash-bin-minimalistic" />,
       destructive: true,
-      run: () => dialogs.confirmDelete(item),
+      run: () => deleteItem(item),
     },
   ]
 }

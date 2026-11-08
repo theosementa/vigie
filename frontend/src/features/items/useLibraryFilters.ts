@@ -1,17 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import type { ItemStatus, ResourceType } from '@/lib/api'
-import { RESOURCE_TYPES } from './metadata'
+import type { ItemStatus, LengthBucket, ResourceType } from '@/lib/api'
+import { LENGTH_BUCKETS, RESOURCE_TYPES } from './metadata'
 
 export interface LibraryFilters {
   status: ItemStatus
   type: ResourceType | 'all'
+  length: LengthBucket | null
   tag: string | null
   q: string
 }
 
 /**
- * Filters live in the URL (?status=&type=&tag=&q=) so they are shared by mobile, sidebar and toolbar.
+ * Filters live in the URL (?status=&type=&length=&tag=&q=) so they are shared by mobile, sidebar and toolbar.
  * The opened item is `?item=<id>` so any component (add flow, cards) can open one.
  */
 export function useLibraryFilters() {
@@ -23,6 +24,7 @@ export function useLibraryFilters() {
     return {
       status,
       type: RESOURCE_TYPES.find((x) => x === t) ?? 'all',
+      length: LENGTH_BUCKETS.find((x) => x === params.get('length')) ?? null,
       tag: params.get('tag'),
       q: params.get('q') ?? '',
     }
@@ -31,7 +33,7 @@ export function useLibraryFilters() {
   const itemId = params.get('item')
 
   const update = useCallback(
-    (patch: Partial<Record<'status' | 'type' | 'tag' | 'q' | 'item', string | null>>) => {
+    (patch: Partial<Record<'status' | 'type' | 'length' | 'tag' | 'q' | 'item', string | null>>) => {
       setParams(
         (prev) => {
           const next = new URLSearchParams(prev)

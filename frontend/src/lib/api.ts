@@ -39,6 +39,8 @@ export type RefreshResult = Schemas['RefreshOut']
 /** Query of GET /items; empty values are dropped before the request. */
 export type ItemsQuery = NonNullable<paths['/api/items']['get']['parameters']['query']>
 
+export type LengthBucket = NonNullable<ItemsQuery['length']>
+
 /** `status` and `queue` have server defaults, so the screens may omit them. */
 export type CreateItemInput = Omit<Schemas['ItemCreate'], 'status' | 'queue'> &
   Partial<Pick<Schemas['ItemCreate'], 'status' | 'queue'>>
@@ -116,8 +118,8 @@ export const api = {
     get: (id: string) => ok(client.GET('/api/items/{item_id}', { params: { path: { item_id: id } } })),
     update: (id: string, input: UpdateItemInput) =>
       ok(client.PATCH('/api/items/{item_id}', { params: { path: { item_id: id } }, body: input })),
-    remove: (id: string) =>
-      ok(client.DELETE('/api/items/{item_id}', { params: { path: { item_id: id } } })),
+    remove: (id: string, { keepalive }: { keepalive?: boolean } = {}) =>
+      ok(client.DELETE('/api/items/{item_id}', { params: { path: { item_id: id } }, keepalive })),
     refresh: (id: string) =>
       ok(client.POST('/api/items/{item_id}/refresh', { params: { path: { item_id: id } } })),
     share: (id: string, input: ShareInput) =>

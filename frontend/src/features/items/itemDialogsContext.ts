@@ -6,8 +6,6 @@ export interface ItemDialogsApi {
   share: (item: Item) => void
   /** Open the rename dialog for an item. */
   rename: (item: Item) => void
-  /** Ask for confirmation, then delete. `onDeleted` runs after success. */
-  confirmDelete: (item: Item, onDeleted?: () => void) => void
 }
 
 export const ItemDialogsContext = createContext<ItemDialogsApi | null>(null)

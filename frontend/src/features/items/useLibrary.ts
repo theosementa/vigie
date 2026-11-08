@@ -10,6 +10,7 @@ export function useLibrary(sharedOnly: boolean) {
     () => ({
       status: filters.status,
       type: filters.type === 'all' ? undefined : filters.type,
+      length: filters.length ?? undefined,
       tag: filters.tag ?? undefined,
       q: filters.q.trim() || undefined,
       shared: sharedOnly ? true : undefined,
@@ -19,6 +20,9 @@ export function useLibrary(sharedOnly: boolean) {
 
   const query = useItems(filter)
   const items = useMemo(() => query.data?.pages.flatMap((p) => p.items) ?? [], [query.data])
+
+  // Same on every page; null when no length is filtered.
+  const lengthUnknown = query.data?.pages[0]?.length_unknown ?? null
 
   const detail = useItem(itemId)
   const selected: Item | null = detail.isError ? null : (detail.data ?? null)
@@ -35,8 +39,10 @@ export function useLibrary(sharedOnly: boolean) {
     hasNextPage: query.hasNextPage,
     isFetchingNextPage: query.isFetchingNextPage,
     fetchNextPage: () => query.fetchNextPage(),
+    lengthUnknown,
     sharedOnly,
-    hasActiveFilters: filters.type !== 'all' || filters.tag !== null || filters.q.trim() !== '',
+    hasActiveFilters:
+      filters.type !== 'all' || filters.length !== null || filters.tag !== null || filters.q.trim() !== '',
     filters,
     update,
     selected,

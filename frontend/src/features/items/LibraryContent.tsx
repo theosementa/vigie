@@ -106,10 +106,21 @@ export function LibraryContent({ lib, variant }: { lib: Library; variant: 'list'
         </div>
       </div>
     )
-  if (lib.items.length === 0) return <EmptyState lib={lib} />
+  // A length filter says what it leaves out, so the list never looks complete when it is not.
+  const unknown = lib.lengthUnknown ? (
+    <p className="sub mb-3">{t('library.length_unknown', { count: lib.lengthUnknown })}</p>
+  ) : null
+  if (lib.items.length === 0)
+    return (
+      <>
+        {unknown}
+        <EmptyState lib={lib} />
+      </>
+    )
 
   return (
     <>
+      {unknown}
       <ItemList items={lib.items} selectedId={lib.selected?.id} onOpen={lib.open} variant={variant} />
       <InfiniteSentinel
         enabled={lib.hasNextPage && !lib.isFetchingNextPage}

@@ -12,6 +12,7 @@ import { useItemDialogs } from './itemDialogsContext'
 import { TYPE_ICON, hasDuration, isMetadataUnavailable, siteOf } from './metadata'
 import { TypePicker } from './TypePicker'
 import { useResourceTypes } from './useResourceTypes'
+import { useDeleteItem } from './useDeleteItem'
 import { useItemEvents, useSetItemStatus, useUpdateItem } from './queries'
 import { useRefreshWithToast } from './useRefreshItem'
 
@@ -208,6 +209,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
   const update = useUpdateItem()
   const refresh = useRefreshWithToast()
   const dialogs = useItemDialogs()
+  const deleteItem = useDeleteItem()
   const queue = useQueueToggle(item)
   const seen = item.status === 'seen'
   const unavailable = isMetadataUnavailable(resource)
@@ -350,7 +352,7 @@ export function ItemDetail({ item, onClose }: { item: Item; onClose?: () => void
           <Icon name="refresh" className={refresh.pending ? 'animate-spin' : undefined} />
           {t('item.refresh')}
         </button>
-        <button type="button" className="btn btn-danger" onClick={() => dialogs.confirmDelete(item, onClose)}>
+        <button type="button" className="btn btn-danger" onClick={() => deleteItem(item, onClose)}>
           <Icon name="trash-bin-minimalistic" />
           {t('common.delete')}
         </button>

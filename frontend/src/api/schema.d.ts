@@ -849,6 +849,8 @@ export interface components {
         ItemList: {
             /** Items */
             items: components["schemas"]["ItemOut"][];
+            /** Length Unknown */
+            length_unknown?: number | null;
             /** Next Cursor */
             next_cursor: string | null;
         };
@@ -2452,6 +2454,7 @@ export interface operations {
                 q?: string | null;
                 shared?: boolean | null;
                 queued?: boolean | null;
+                length?: ("short" | "medium" | "long") | null;
                 cursor?: string | null;
                 limit?: number;
             };

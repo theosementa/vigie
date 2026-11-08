@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMe } from '@/features/auth/useAuth'
+import { usePendingDeletes } from '@/features/items/pendingDeletes'
 import { addDays, todayIn } from './dates'
 import { api, type StatsPeriod, type TimeseriesQuery } from '@/lib/api'
 
@@ -60,16 +61,22 @@ export function usePile() {
   const { data: me } = useMe()
   const [now] = useState(() => Date.now())
   const to = todayIn(me?.timezone ?? 'UTC', now)
+  const pending = usePendingDeletes()
   const query = useTimeseries(me ? { metric: 'backlog', granularity: 'day', from: addDays(to, -27), to } : null)
   const pile = useMemo<Pile | null>(() => {
     const values = query.data?.points.map((p) => p.value)
     if (!values || values.length === 0) return null
+    // Items waiting for their Undo toast to end are already gone for the user.
+    values[values.length - 1] = Math.max(
+      0,
+      values[values.length - 1] - [...pending.values()].filter(Boolean).length,
+    )
     const s = slope(values)
     return {
       count: values[values.length - 1],
       delta: values[values.length - 1] - values[0],
       state: s < -0.1 ? 'ok' : s > 0.1 ? 'over' : 'watch',
     }
-  }, [query.data])
+  }, [query.data, pending])
   return { pile, isError: query.isError }
 }

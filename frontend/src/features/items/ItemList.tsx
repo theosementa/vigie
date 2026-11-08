@@ -7,14 +7,14 @@ import { useT } from '@/lib/i18n'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemCard } from './ItemCard'
 import { ItemRow } from './ItemRow'
-import { useItemDialogs } from './itemDialogsContext'
 import { useSetItemStatus } from './queries'
 import { SwipeableRow } from './SwipeableRow'
+import { useDeleteItem } from './useDeleteItem'
 
 function SwipeableItem({ item, onOpen }: { item: Item; onOpen: (item: Item) => void }) {
   const t = useT()
   const setStatus = useSetItemStatus()
-  const dialogs = useItemDialogs()
+  const deleteItem = useDeleteItem()
   const queue = useQueueToggle(item)
   const seen = item.status === 'seen'
   return (
@@ -38,7 +38,7 @@ function SwipeableItem({ item, onOpen }: { item: Item; onOpen: (item: Item) => v
         label: t('common.delete'),
         icon: <Icon name="trash-bin-minimalistic" />,
         className: 'bg-over text-bg',
-        onTrigger: () => dialogs.confirmDelete(item),
+        onTrigger: () => deleteItem(item),
       }}
     >
       <ItemRow item={item} onOpen={onOpen} />

@@ -1,6 +1,8 @@
 import type { IconBase } from '@/components/Icon'
-import type { Item, Resource, ResourceType } from '@/lib/api'
+import type { Item, LengthBucket, Resource, ResourceType } from '@/lib/api'
 import { hostname } from '@/lib/format'
+
+export const LENGTH_BUCKETS: readonly LengthBucket[] = ['short', 'medium', 'long']
 
 type Meta = Pick<Resource, 'url' | 'title' | 'site_name' | 'description' | 'image_url'>
 

@@ -683,6 +683,17 @@
             "title": "Items",
             "type": "array"
           },
+          "length_unknown": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length Unknown"
+          },
           "next_cursor": {
             "anyOf": [
               {
@@ -3614,6 +3625,27 @@
                 }
               ],
               "title": "Queued"
+            }
+          },
+          {
+            "in": "query",
+            "name": "length",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "short",
+                    "medium",
+                    "long"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Length"
             }
           },
           {

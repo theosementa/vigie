@@ -118,10 +118,7 @@ export function QueuePage() {
   )
   const onSeen = useCallback(
     (item: Item) =>
-      setStatus.mutate(
-        { id: item.id, status: 'seen' },
-        { onSuccess: () => toast(t('queue.seen_removed')) },
-      ),
+      setStatus.mutate({ id: item.id, status: 'seen', seenMessage: t('queue.seen_removed') }),
     [setStatus, t],
   )
   const onRemove = useCallback(

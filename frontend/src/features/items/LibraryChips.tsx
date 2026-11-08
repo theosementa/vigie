@@ -1,11 +1,12 @@
 import { usePile } from '@/features/stats/queries'
-import type { ItemStatus, ResourceType, TagWithCount } from '@/lib/api'
+import type { ItemStatus, LengthBucket, ResourceType, TagWithCount } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
+import { LENGTH_BUCKETS } from './metadata'
 import { useResourceTypes } from './useResourceTypes'
 import type { LibraryFilters } from './useLibraryFilters'
 
-type Patch = { status?: ItemStatus; type?: ResourceType | 'all'; tag?: string | null }
+type Patch = { status?: ItemStatus; type?: ResourceType | 'all'; length?: LengthBucket | null; tag?: string | null }
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -15,7 +16,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   )
 }
 
-/** Filter chips of the DA: À voir (with the exact count), Vu, type, tags. They drive the URL filters. */
+/** Filter chips of the DA: À voir (with the exact count), Vu, type, length, tags. They drive the URL filters. */
 export function LibraryChips({
   filters,
   tags,
@@ -43,6 +44,15 @@ export function LibraryChips({
       {types.map((type) => (
         <Chip key={type} active={filters.type === type} onClick={() => onChange({ type: filters.type === type ? 'all' : type })}>
           {t(`filters.${type}`)}
+        </Chip>
+      ))}
+      {LENGTH_BUCKETS.map((length) => (
+        <Chip
+          key={length}
+          active={filters.length === length}
+          onClick={() => onChange({ length: filters.length === length ? null : length })}
+        >
+          {t(`filters.length.${length}`)}
         </Chip>
       ))}
       {tags.map((tag) => (
