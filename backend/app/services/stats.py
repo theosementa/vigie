@@ -303,7 +303,7 @@ _BACKLOG_SQL = """
 """
 
 
-def _series_sql(granularity: Granularity, data_sql: str, columns: str, joined: str) -> str:
+def _series_sql(granularity: str, data_sql: str, columns: str, joined: str) -> str:
     step = _STEP[granularity]
     return f"""
         WITH series AS (
@@ -321,6 +321,29 @@ def _series_sql(granularity: Granularity, data_sql: str, columns: str, joined: s
     """
 
 
+# Every query is assembled once at import time from the constants above: nothing a request carries
+# is ever interpolated into SQL (the request only picks a ready-made statement). Values go through
+# bound parameters.
+_SERIES_SQL: dict[tuple[str, str], str] = {}
+for _g in _STEP:
+    _SERIES_SQL["seen", _g] = _series_sql(
+        _g,
+        _SEEN_SQL,
+        "COALESCE(d.articles, 0) AS articles, COALESCE(d.videos, 0) AS videos, "
+        "COALESCE(d.watch, 0) AS watch",
+        "LEFT JOIN data d ON d.b = s.b",
+    )
+    _SERIES_SQL["added", _g] = _series_sql(
+        _g, _ADDED_SQL, "COALESCE(d.n, 0) AS n", "LEFT JOIN data d ON d.b = s.b"
+    )
+    _SERIES_SQL["backlog", _g] = _series_sql(
+        _g,
+        _BACKLOG_SQL,
+        "COALESCE((SELECT SUM(d.n) FROM data d WHERE d.b <= s.b), 0) AS n",
+        "",
+    )
+
+
 async def timeseries(
     session: AsyncSession,
     user: User,
@@ -335,13 +358,7 @@ async def timeseries(
     params = {"tz": user.timezone, "uid": user.id, "lo": lo, "last": last, "hi": hi}
 
     if metric == "seen" or metric == "watch_time":
-        sql = _series_sql(
-            granularity,
-            _SEEN_SQL,
-            "COALESCE(d.articles, 0) AS articles, COALESCE(d.videos, 0) AS videos, "
-            "COALESCE(d.watch, 0) AS watch",
-            "LEFT JOIN data d ON d.b = s.b",
-        )
+        sql = _SERIES_SQL["seen", granularity]
         rows = (await session.execute(text(sql), params)).all()
         if metric == "seen":
             points = [
@@ -356,18 +373,11 @@ async def timeseries(
         else:
             points = [TimeseriesPoint(bucket=r.bucket, value=int(r.watch)) for r in rows]
     elif metric == "added":
-        sql = _series_sql(
-            granularity, _ADDED_SQL, "COALESCE(d.n, 0) AS n", "LEFT JOIN data d ON d.b = s.b"
-        )
+        sql = _SERIES_SQL["added", granularity]
         rows = (await session.execute(text(sql), params)).all()
         points = [TimeseriesPoint(bucket=r.bucket, value=int(r.n)) for r in rows]
     else:  # backlog: cumulative sum of the deltas up to the end of each bucket
-        sql = _series_sql(
-            granularity,
-            _BACKLOG_SQL,
-            "COALESCE((SELECT SUM(d.n) FROM data d WHERE d.b <= s.b), 0) AS n",
-            "",
-        )
+        sql = _SERIES_SQL["backlog", granularity]
         rows = (await session.execute(text(sql), params)).all()
         points = [TimeseriesPoint(bucket=r.bucket, value=int(r.n)) for r in rows]
 

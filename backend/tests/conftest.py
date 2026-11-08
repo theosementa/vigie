@@ -1,6 +1,7 @@
 import asyncio
 import os
 from collections.abc import AsyncIterator
+from urllib.parse import urlparse
 
 # Point the app at the test database BEFORE importing it.
 TEST_DATABASE_URL = os.environ.get(
@@ -104,7 +105,7 @@ def _fake_metadata(request, monkeypatch):
         return
 
     async def fake(url: str) -> Metadata:
-        is_video = "youtube.com" in url
+        is_video = (urlparse(url).hostname or "").endswith("youtube.com")
         return Metadata(
             url=url,
             type="video" if is_video else "article",
