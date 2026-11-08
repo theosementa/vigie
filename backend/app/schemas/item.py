@@ -54,6 +54,9 @@ class RefreshOut(BaseModel):
 class ItemList(BaseModel):
     items: list[ItemOut]
     next_cursor: str | None
+    # only when `length` is filtered: how many items matching the other filters were left out
+    # because their length is unknown
+    length_unknown: int | None = None
 
 
 class QueueAdd(BaseModel):

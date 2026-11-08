@@ -231,7 +231,11 @@ async def test_isolation_between_users(alice, bob):
         # indistinguishable from an item that does not exist
         assert other.json() == nonexistent.json()
 
-    assert (await bob.get("/api/items")).json() == {"items": [], "next_cursor": None}
+    assert (await bob.get("/api/items")).json() == {
+        "items": [],
+        "next_cursor": None,
+        "length_unknown": None,
+    }
     assert (await bob.get("/api/tags")).json() == []
     # untouched for alice
     still = (await alice.get(f"/api/items/{iid}")).json()

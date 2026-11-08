@@ -24,11 +24,14 @@ from app.schemas.resource import ItemType
 from app.schemas.share import ShareIn, ShareOut
 from app.services.events import record_event
 from app.services.items import (
+    LengthBucket,
     apply_metadata,
     decode_cursor,
     encode_cursor,
     get_or_create_resource,
     item_to_out,
+    length_bucket_sql,
+    length_seconds_sql,
     resolve_tags,
 )
 from app.services.metadata import fetch_metadata
@@ -73,6 +76,7 @@ async def list_items(
     q: str | None = None,
     shared: bool | None = None,
     queued: bool | None = None,
+    length: LengthBucket | None = None,
     cursor: str | None = None,
     limit: int = Query(default=20, ge=1, le=100),
 ) -> ItemList:
@@ -116,6 +120,13 @@ async def list_items(
                 Item.notes.ilike(pattern, escape="\\"),
             )
         )
+    length_unknown = None
+    if length:
+        # counted under the other filters, before the length one narrows them
+        length_unknown = await session.scalar(
+            select(func.count()).select_from(stmt.where(length_seconds_sql().is_(None)).subquery())
+        )
+        stmt = stmt.where(length_bucket_sql(length))
     if cursor:
         try:
             c_ts, c_id = decode_cursor(cursor)
@@ -136,7 +147,11 @@ async def list_items(
         last = rows[-1]
         next_cursor = encode_cursor(last.created_at, last.id)
     await refresh_stale_stars(session, rows)
-    return ItemList(items=[item_to_out(i) for i in rows], next_cursor=next_cursor)
+    return ItemList(
+        items=[item_to_out(i) for i in rows],
+        next_cursor=next_cursor,
+        length_unknown=length_unknown,
+    )
 
 
 @router.post(

@@ -260,12 +260,17 @@ Metadata failures never error: the title falls back to the hostname. `422` for a
 Query params (all optional): `status` (`to_watch|seen`), `type` (`article|video|podcast|website|repo`), `tag` (tag name,
 case-insensitive, or tag id), `q` (substring search on title, description, site name and your notes),
 `shared` (`true` = only items shared with me, `false` = only my own), `queued` (`true` = only items in the
-watch queue, `false` = only items not in it), `cursor`, `limit` (1-100, default 20).
+watch queue, `false` = only items not in it), `length` (`short` under 10 min, `medium` 10 to 30 min
+inclusive, `long` over 30 min), `cursor`, `limit` (1-100, default 20).
 Sorted by `created_at` desc. Repositories whose `stars` are older than 6 h are refreshed from the host's
 public API before answering (at most 10 per request, 3 s in all; a failed lookup keeps the previous count).
 ```json
-{ "items": [Item], "next_cursor": "opaque-string-or-null" }
+{ "items": [Item], "next_cursor": "opaque-string-or-null", "length_unknown": 4 }
 ```
+`length` uses the effective type: videos and podcasts count their duration, articles their reading time;
+repositories, websites and items whose length is unknown never match a bucket. `length_unknown` is `null`
+unless `length` is set; then it is the number of items matching the other filters (not the cursor) that
+were left out for lack of a known length.
 Pass `next_cursor` back as `cursor` for the next page. `422` for a malformed cursor.
 
 ### `POST /api/items` -> 201 `Item`

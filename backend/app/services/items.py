@@ -1,8 +1,9 @@
 import base64
 import uuid
 from datetime import datetime
+from typing import Literal
 
-from sqlalchemy import func, select
+from sqlalchemy import ColumnElement, and_, case, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +12,49 @@ from app.schemas.item import ItemOut
 from app.schemas.resource import ResourceOut
 from app.services.metadata import Metadata, fetch_metadata
 from app.services.url import url_hash
+
+LengthBucket = Literal["short", "medium", "long"]
+
+SHORT_BELOW_SECONDS = 600
+LONG_ABOVE_SECONDS = 1800
+
+
+def effective_length_seconds(
+    item_type: str, duration_seconds: int | None, reading_time_minutes: int | None
+) -> int | None:
+    """Length in seconds from the effective type; None when the type has none or it is unknown."""
+    if item_type in ("video", "podcast"):
+        return duration_seconds
+    if item_type == "article" and reading_time_minutes is not None:
+        return reading_time_minutes * 60
+    return None
+
+
+def length_bucket(seconds: int | None) -> LengthBucket | None:
+    if seconds is None:
+        return None
+    if seconds < SHORT_BELOW_SECONDS:
+        return "short"
+    return "medium" if seconds <= LONG_ABOVE_SECONDS else "long"
+
+
+def length_seconds_sql() -> ColumnElement[int]:
+    """SQL twin of `effective_length_seconds`, over items joined to their resource."""
+    item_type = func.coalesce(Item.type_override, Resource.type)
+    return case(
+        (item_type.in_(("video", "podcast")), Resource.duration_seconds),
+        (item_type == "article", Resource.reading_time_minutes * 60),
+        else_=None,
+    )
+
+
+def length_bucket_sql(bucket: LengthBucket) -> ColumnElement[bool]:
+    seconds = length_seconds_sql()
+    if bucket == "short":
+        return seconds < SHORT_BELOW_SECONDS
+    if bucket == "medium":
+        return and_(seconds >= SHORT_BELOW_SECONDS, seconds <= LONG_ABOVE_SECONDS)
+    return seconds > LONG_ABOVE_SECONDS
 
 
 def item_to_out(item: Item) -> ItemOut:
