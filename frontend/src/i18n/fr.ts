@@ -439,6 +439,8 @@ export const fr: Record<keyof typeof en, string> = {
   'settings.about.build': 'Build n°{build}',
   'settings.about.reset': 'Réinitialiser le cache de l’app',
   'settings.about.reset.hint': 'Supprime le cache hors ligne et recharge la dernière version.',
+  'settings.tab.general': "Général",
+  'settings.tab.account': "Compte",
   'settings.community': "Contribuer",
   'settings.community.body': "Vigie est open source. Aide à l’améliorer : signale un bug, propose une fonctionnalité ou explore le code.",
   'settings.community.issue': "Demander une fonctionnalité / signaler un bug",

@@ -4,7 +4,7 @@ import { Icon } from '@/components/Icon'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -539,28 +539,52 @@ function DangerZone() {
   )
 }
 
+type SettingsTab = 'general' | 'account'
+const TABS: { value: SettingsTab; label: MessageKey }[] = [
+  { value: 'general', label: 'settings.tab.general' },
+  { value: 'account', label: 'settings.tab.account' },
+]
+
 export function SettingsPage() {
   const t = useT()
   const { data: me } = useMe()
+  const [params, setParams] = useSearchParams()
+  const tab: SettingsTab = params.get('tab') === 'account' ? 'account' : 'general'
   return (
     <div className="lib form-page mx-auto max-w-xl">
-      {me && <ProfileSection key={`${me.first_name}|${me.last_name}`} me={me} />}
-      <AppearanceSection />
-      {me && <TimezoneSection timezone={me.timezone} />}
-      <PasswordSection />
-      <SessionSection />
-      <AboutSection />
-      <CommunitySection />
-      {me?.role === 'admin' && (
-        <Link
-          to="/admin"
-          className="panel flex items-center gap-3 text-sm font-medium md:hidden"
-        >
-          <Icon name="shield-check" className="size-5" />
-          {t('nav.admin')}
-        </Link>
+      <div role="group" aria-label={t('nav.settings')} className="seg full">
+        {TABS.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={tab === o.value}
+            onClick={() => setParams(o.value === 'general' ? {} : { tab: o.value }, { replace: true })}
+          >
+            {t(o.label)}
+          </button>
+        ))}
+      </div>
+      {tab === 'general' ? (
+        <>
+          <AppearanceSection />
+          <CommunitySection />
+          <AboutSection />
+          {me?.role === 'admin' && (
+            <Link to="/admin" className="panel flex items-center gap-3 text-sm font-medium md:hidden">
+              <Icon name="shield-check" className="size-5" />
+              {t('nav.admin')}
+            </Link>
+          )}
+        </>
+      ) : (
+        <>
+          {me && <ProfileSection key={`${me.first_name}|${me.last_name}`} me={me} />}
+          {me && <TimezoneSection timezone={me.timezone} />}
+          <PasswordSection />
+          <SessionSection />
+          <DangerZone />
+        </>
       )}
-      <DangerZone />
     </div>
   )
 }

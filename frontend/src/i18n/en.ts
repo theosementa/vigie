@@ -437,6 +437,8 @@ export const en = {
   'settings.about.build': 'Build #{build}',
   'settings.about.reset': 'Reset the app cache',
   'settings.about.reset.hint': 'Clears the offline cache and reloads the latest version.',
+  'settings.tab.general': "General",
+  'settings.tab.account': "Account",
   'settings.community': "Contribute",
   'settings.community.body': "Vigie is open source. Help improve it: report a bug, suggest a feature, or browse the code.",
   'settings.community.issue': "Request a feature / report a bug",
