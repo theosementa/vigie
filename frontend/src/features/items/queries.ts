@@ -174,18 +174,32 @@ const UNDO_MS = 5000
 interface StatusVars {
   id: string
   status: ItemStatus
-  /** Text of the Undo toast shown when marking as seen (default: "Marked as seen"). */
-  seenMessage?: string
+  /** Undo of a Seen: put the item back in the queue at this position. */
+  restoreQueueAt?: number
+}
+
+interface StatusContext {
+  snap: Snapshot
+  /** Queue position the item had before being marked as seen. */
+  queuePosition: number | null
 }
 
 export function useSetItemStatus() {
   const qc = useQueryClient()
-  const mutation: UseMutationResult<Item, Error, StatusVars, { snap: Snapshot }> = useMutation({
+  const mutation: UseMutationResult<Item, Error, StatusVars, StatusContext> = useMutation({
     meta: { errorMessage: t('error.status_failed') },
-    mutationFn: ({ id, status }: StatusVars) => api.items.update(id, { status }),
+    mutationFn: async ({ id, status, restoreQueueAt }: StatusVars) => {
+      const item = await api.items.update(id, { status })
+      return restoreQueueAt === undefined ? item : api.queue.add(id, restoreQueueAt)
+    },
     onMutate: async ({ id, status }) => {
       await qc.cancelQueries({ queryKey: itemsKey })
       const snap = snapshot(qc)
+      const queuePosition =
+        qc.getQueryData<QueueList>(queueKey)?.items.find((i) => i.id === id)?.queue_position ??
+        qc.getQueryData<Item>(itemKey(id))?.queue_position ??
+        findInLists(qc, id)?.queue_position ??
+        null
       const seen_at = status === 'seen' ? new Date().toISOString() : null
       const patch = (i: Item): Item => (i.id === id ? { ...i, status, seen_at } : i)
       // Leaves the list right away when it is filtered on the other status.
@@ -200,17 +214,19 @@ export function useSetItemStatus() {
         mapLists(qc, (items) => items.map((i) => (i.id === id ? { ...i, queue_position: null } : i)))
         dropFromQueue(qc, id)
       }
-      return { snap }
+      return { snap, queuePosition }
     },
     onError: (_e, _v, ctx) => restore(qc, ctx?.snap),
-    onSuccess: (item, { id, status, seenMessage }) => {
+    onSuccess: (item, { id, status }, ctx) => {
+      const queuePosition = ctx?.queuePosition ?? null
       qc.setQueryData(itemKey(item.id), item)
       if (status === 'seen')
-        toast(seenMessage ?? t('item.marked_seen'), {
+        toast(t(queuePosition === null ? 'item.marked_seen' : 'queue.seen_removed'), {
           duration: UNDO_MS,
           action: {
             label: t('common.undo'),
-            onClick: () => mutation.mutate({ id, status: 'to_watch' }),
+            onClick: () =>
+              mutation.mutate({ id, status: 'to_watch', restoreQueueAt: queuePosition ?? undefined }),
           },
         })
     },
