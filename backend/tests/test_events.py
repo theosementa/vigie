@@ -92,7 +92,7 @@ async def test_share_emits_shared_and_added(alice, bob):
             f"/api/items/{item['id']}/share",
             json={"emails": ["bob@example.com", "carol@example.com", "ghost@example.com"]},
         )
-        assert len(r.json()["shared"]) == 2
+        assert len(r.json()["sent"]) == 3  # unknown addresses look the same
 
         sent = [e for e in await events(alice.user["id"]) if e["kind"] == "shared"]
         assert sorted(str(e["other_user_id"]) for e in sent) == sorted(
