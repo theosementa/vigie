@@ -100,7 +100,7 @@ The **Core** is always on. The others are enabled **per account** in *Settings �
 - `short` = under 10 min (< 600 s), `medium` = 10 to 30 min (600 s ≤ x ≤ 1,800 s), `long` = over 30 min (> 1,800 s).
 - An item without a known length never matches a length bucket, and the filter says what it leaves out ("4 items without a known length are hidden"). It is a filter the user chooses, never a ranking.
 
-**Saved views**: a named set of library filters, i.e. the library URL query (status, type, tag, source, shared, queue, length, search).
+**Saved views**: a named set of library filters, i.e. the library URL query (status, type, length, tag, search; canonical: known keys and values only, defaults dropped, keys sorted).
 - Stored on the account (`SavedView`), so every device sees the same views; 20 per account at most, name 1 to 40 characters, unique per account.
 - Created from the library when at least one filter is active: "Save this view" asks for a name (prefilled from the filters, e.g. "Videos · short"). Applying a view replaces the current filters; the active view is marked as selected.
 - **Desktop and tablet landscape**: listed in the left sidebar under Library, in the user's order (drag to reorder), rename and delete from the row's menu.
