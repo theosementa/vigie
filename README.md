@@ -1,6 +1,17 @@
+<p align="center">
+  <img src=".github/banner/banner.png" alt="Vigie: your watch list, self-hosted" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/theosementa/vigie/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/theosementa/vigie/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: AGPL v3" src="https://img.shields.io/badge/license-AGPL--3.0-B8F25C?labelColor=0A0C0E"></a>
+  <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-Docker%20Compose-B8F25C?labelColor=0A0C0E">
+  <img alt="PWA" src="https://img.shields.io/badge/PWA-iOS%20%C2%B7%20Android%20%C2%B7%20desktop-B8F25C?labelColor=0A0C0E">
+</p>
+
 # Vigie
 
-Vigie is a self-hosted, multi-user watch list for articles and videos. You paste a link (or share it from your phone); Vigie fetches its title, image and duration, and files it under **To watch**. You work through the pile at your own pace, mark things **Seen**, add notes and tags, send a link to a specific person, and see honestly whether you are catching up.
+Vigie is a self-hosted, multi-user watch list for articles, videos, podcasts, repositories and websites. You paste a link (or share it from your phone); Vigie fetches its title, image and duration, and files it under **To watch**. You work through the pile at your own pace, mark things **Seen**, add notes and tags, send a link to a specific person, and see honestly whether you are catching up.
 
 It is a reading and viewing pile, not a news feed: what comes in is chosen, what goes out is seen. There is no social network, no recommendation, no analytics, and no archived copy of the content (Vigie keeps the link and its metadata).
 
@@ -10,8 +21,8 @@ See [VISION.md](VISION.md) for the product vision (in French) and [backend/API.m
 
 ## Features
 
-- Capture a link and get a card with image, title, source, duration or reading time.
-- **To watch / Seen** statuses, a video queue, tags, personal notes, search.
+- Capture a link and get a card with image, title, source, duration or reading time. Content types: article, video, podcast, repository, website.
+- **To watch / Seen** statuses, a watch queue, tags, personal notes, search.
 - Send a link to another user by exact e-mail address, with an optional message.
 - Statistics: items seen, viewing time, streak, backlog trend, each figure with its base.
 - Accounts with e-mail and password, admin and user roles, revocable sessions.

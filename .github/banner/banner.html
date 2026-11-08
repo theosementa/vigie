@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300..700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1280px;height:640px;overflow:hidden}
+body{background:#0A0C0E;color:#E6ECE9;font-family:Geologica,system-ui,sans-serif;position:relative}
+.glow{position:absolute;left:-200px;top:-240px;width:900px;height:900px;background:radial-gradient(closest-side,rgba(184,242,92,.16),transparent);}
+.grid{position:absolute;inset:0;background-image:linear-gradient(#252A2F55 1px,transparent 1px),linear-gradient(90deg,#252A2F55 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(100deg,transparent 30%,#000 100%);-webkit-mask-image:linear-gradient(100deg,transparent 30%,#000 100%)}
+.left{position:absolute;left:84px;top:0;bottom:0;width:600px;display:flex;flex-direction:column;justify-content:center}
+.brand{display:flex;align-items:center;gap:22px}
+.brand img{width:112px;height:112px;object-fit:contain}
+h1{font-size:104px;font-weight:700;letter-spacing:-4px;line-height:1}
+.tag{margin-top:34px;font-size:38px;font-weight:500;line-height:1.2;letter-spacing:-.8px}
+.tag b{color:#B8F25C;font-weight:600}
+.sub{margin-top:18px;font-size:22px;color:#8A949A;font-weight:400;line-height:1.4}
+.chips{margin-top:40px;display:flex;gap:10px}
+.chip{border:1px solid #252A2F;background:#111417;border-radius:999px;padding:8px 18px;font-size:18px;color:#E6ECE9;font-weight:500}
+.chip.a{background:#B8F25C;border-color:#B8F25C;color:#0A0C0E;font-weight:600}
+.cards{position:absolute;left:740px;top:70px;width:470px}
+.card{position:absolute;width:420px;background:#111417;border:1px solid #252A2F;border-radius:20px;padding:14px;display:flex;gap:16px;align-items:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.th{width:104px;height:78px;border-radius:12px;flex:none;position:relative}
+.meta{min-width:0}
+.src{font-size:14px;color:#8A949A;font-weight:500}
+.ti{font-size:19px;font-weight:600;line-height:1.25;margin-top:3px;letter-spacing:-.2px}
+.du{margin-top:7px;font-size:14px;color:#B8F25C;font-weight:600}
+.c1{top:20px;left:0}.c2{top:154px;left:50px}.c3{top:288px;left:10px}.c4{top:422px;left:60px}
+.play{position:absolute;right:8px;bottom:8px;background:#0A0C0Ecc;border-radius:6px;font-size:12px;padding:2px 7px;font-weight:600}
+.seen{opacity:.45}
+</style></head><body>
+<div class="glow"></div><div class="grid"></div>
+<div class="left">
+  <div class="brand"><img src="logo.png"><h1>Vigie</h1></div>
+  <div class="tag">Your <b>watch list</b>, self-hosted.</div>
+  <div class="sub">Capture links. Work through the pile.<br>See honestly whether you're catching up.</div>
+  <div class="chips"><span class="chip a">Articles</span><span class="chip">Videos</span><span class="chip">Podcasts</span><span class="chip">Repos</span></div>
+</div>
+<div class="cards">
+  <div class="card c1"><div class="th" style="background:linear-gradient(135deg,#2B3C4F,#14212E)"><span class="play">18 min</span></div><div class="meta"><div class="src">youtube.com</div><div class="ti">Postgres internals, explained</div><div class="du">To watch</div></div></div>
+  <div class="card c2"><div class="th" style="background:linear-gradient(135deg,#5b4a2b,#2a2112)"><span class="play">7 min read</span></div><div class="meta"><div class="src">lwn.net</div><div class="ti">Why queues beat feeds</div><div class="du">To watch</div></div></div>
+  <div class="card c3"><div class="th" style="background:linear-gradient(135deg,#3b6a00,#14260a)"><span class="play">52 min</span></div><div class="meta"><div class="src">Podcast</div><div class="ti">Building in the open</div><div class="du">To watch</div></div></div>
+  <div class="card c4 seen"><div class="th" style="background:linear-gradient(135deg,#2e3338,#171a1d)"><span class="play">★ 12k</span></div><div class="meta"><div class="src">github.com</div><div class="ti">A small, sharp tool</div><div class="du" style="color:#5AB0FF">Seen</div></div></div>
+</div>
+</body></html>
