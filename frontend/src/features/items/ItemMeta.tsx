@@ -1,13 +1,15 @@
 import { Icon } from '@/components/Icon'
 import type { Item } from '@/lib/api'
-import { formatMinutesShort, formatRelativeDay, fullName, isToday } from '@/lib/format'
+import { BrandIcon } from '@/components/BrandIcon'
+import { formatMinutesShort, formatRelativeDay, fullName } from '@/lib/format'
+import { providerOf } from '@/lib/providers'
 import { useT } from '@/lib/i18n'
 import { isMetadataUnavailable, siteOf } from './metadata'
 import { useRefreshWithToast } from './useRefreshItem'
 
 /**
- * Meta line of a row or a card: `site · 12 min`. The echo dot marks an item added today, a seen
- * item says when it was seen, and unavailable metadata offers « Réessayer ».
+ * Meta line of a row or a card: `site · 12 min`, led by the provider's logo when it has one. A seen
+ * item says when it was seen (with a check instead of the logo), and unavailable metadata offers « Réessayer ».
  */
 export function ItemMeta({ item }: { item: Item }) {
   const t = useT()
@@ -31,6 +33,7 @@ export function ItemMeta({ item }: { item: Item }) {
     )
 
   const seen = item.status === 'seen'
+  const brand = providerOf(resource.url)
   const detail = item.shared_by
     ? fullName(item.shared_by)
     : resource.type === 'article' && resource.reading_time_minutes != null
@@ -46,11 +49,7 @@ export function ItemMeta({ item }: { item: Item }) {
 
   return (
     <div className="meta">
-      {seen ? (
-        <Icon name="check-circle" />
-      ) : (
-        isToday(item.created_at) && <span className="dot" role="img" aria-label={t('item.new')} />
-      )}
+      {seen ? <Icon name="check-circle" /> : brand && <BrandIcon name={brand} />}
       <span className="min-w-0 truncate">{parts.join(' · ')}</span>
       {item.queue_position !== null && (
         <span className="inline-flex shrink-0 items-center gap-1" title={t('item.in_queue', { position: item.queue_position + 1 })}>

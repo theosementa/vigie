@@ -243,7 +243,6 @@ export const fr: Record<keyof typeof en, string> = {
   'item.seen_on': 'Vu le {date}',
   'item.seen_when': 'Vu {when}',
   'item.in_queue': 'Position {position} dans la file',
-  'item.new': 'Nouveau',
   'item.queue.add': 'Ajouter à la file',
   'item.queue.remove': 'Retirer de la file',
   'item.queue.add_short': 'À la file',

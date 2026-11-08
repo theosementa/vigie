@@ -100,8 +100,3 @@ export function formatAgo(iso: string, locale: Locale = getLocale()): string {
   if (abs < 86_400) return rtf.format(Math.round(seconds / 3600), 'hour')
   return rtf.format(Math.round(seconds / 86_400), 'day')
 }
-
-/** True when the ISO datetime falls on the user's current calendar day. */
-export function isToday(iso: string): boolean {
-  return new Date(iso).toDateString() === new Date().toDateString()
-}

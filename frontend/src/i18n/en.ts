@@ -241,7 +241,6 @@ export const en = {
   'item.seen_on': 'Seen on {date}',
   'item.seen_when': 'Seen {when}',
   'item.in_queue': 'Position {position} in the queue',
-  'item.new': 'New',
   'item.queue.add': 'Add to queue',
   'item.queue.remove': 'Remove from queue',
   'item.queue.add_short': 'Queue',
