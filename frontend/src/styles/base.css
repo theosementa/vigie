@@ -150,12 +150,16 @@
 .meta .i{width:14px;height:14px}
 .th svg.og,.th img.og{width:100%;height:100%;display:block}
 .th img.og{object-fit:cover}
+.th img.og.contain{object-fit:contain;position:relative}
+.th img.og-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px);transform:scale(1.3);opacity:.6}
 .th .dur{position:absolute;right:4px;bottom:4px;font-size:11px;font-weight:500;padding:0 4px;border-radius:4px;background:color-mix(in srgb,var(--bg) 82%,transparent);color:var(--text);line-height:16px}
-.th .dur{z-index:0}
+.th .dur{z-index:0;display:inline-flex;align-items:center;gap:3px}
+.th .dur svg{width:11px;height:11px}
 .mono{display:grid;place-items:center;width:100%;height:100%;font-weight:500;color:var(--muted);background:var(--surface-2);font-size:18px}
 /* What has been seen goes dark */
 .is-seen .tt{color:var(--muted)}
 .is-seen .th svg.og,.is-seen .th img.og{filter:grayscale(1);opacity:.45}
+.is-seen .th img.og-bg{filter:blur(16px) grayscale(1);opacity:.25}
 .is-unknown .th{background:transparent;border:1.5px dashed color-mix(in srgb,var(--muted) 60%,transparent)}
 .is-unknown .mono{background:transparent}
 .is-unknown .meta u,.link-btn{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
