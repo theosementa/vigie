@@ -63,7 +63,7 @@ function ViewChip({
         if (!opened.current) open()
       }}
     >
-      {view.name}
+      <span className="truncate">{view.name}</span>
     </Chip>
   )
 }
@@ -108,7 +108,7 @@ export function ViewChips() {
         </div>
       </div>
       <Sheet open={target !== null} onOpenChange={(o) => !o && setTarget(null)}>
-        <SheetContent side="bottom" showCloseButton={false} className="p-2 pb-[calc(0.5rem+var(--safe-bottom))]">
+        <SheetContent side="bottom" showCloseButton={false} className="rounded-t-[20px] p-2 pb-[calc(0.5rem+var(--safe-bottom))] duration-[var(--dur-slow)] ease-[var(--ease)] data-[side=bottom]:data-ending-style:translate-y-full data-[side=bottom]:data-starting-style:translate-y-full">
           <SheetHeader>
             <SheetTitle className="truncate">{shown?.name}</SheetTitle>
           </SheetHeader>

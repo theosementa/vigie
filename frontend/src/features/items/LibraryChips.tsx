@@ -76,10 +76,11 @@ export function LibraryChips({
     )),
     saveable
       ? [
-          <Chip key="save" active={false} className="enter" onClick={() => save(query)}>
+          // An action, not a toggle: a plain chip without aria-pressed.
+          <button key="save" type="button" className="chip enter" onClick={() => save(query)}>
             <Icon name="bookmark" />
             {t('view.save')}
-          </Chip>,
+          </button>,
         ]
       : [],
   ].filter((group) => group.length > 0)
