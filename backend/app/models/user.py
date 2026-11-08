@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import CheckConstraint, DateTime, Integer, String, func, text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, String, func, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -60,5 +60,9 @@ class User(Base):
     # resource types the user does not want offered (filter chips, type pickers); none by default
     hidden_types: Mapped[list[str]] = mapped_column(
         ARRAY(String(20)), server_default=text("'{}'"), default=list
+    )
+    # save every address shared with as a contact, without asking (on by default)
+    auto_create_contacts: Mapped[bool] = mapped_column(
+        Boolean, server_default=text("true"), default=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

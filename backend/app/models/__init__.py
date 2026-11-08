@@ -1,3 +1,4 @@
+from app.models.contact import Contact, ShareLog
 from app.models.event import ItemEvent
 from app.models.instance import InstanceSettings, Invitation, PasswordReset
 from app.models.item import Item
@@ -7,6 +8,7 @@ from app.models.tag import ItemTag, Tag
 from app.models.user import Locale, Theme, User
 
 __all__ = [
+    "Contact",
     "InstanceSettings",
     "Invitation",
     "Item",
@@ -15,6 +17,7 @@ __all__ = [
     "Locale",
     "PasswordReset",
     "Resource",
+    "ShareLog",
     "Tag",
     "Theme",
     "User",
