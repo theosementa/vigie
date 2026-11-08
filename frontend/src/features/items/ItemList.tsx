@@ -1,5 +1,6 @@
-import type { CSSProperties } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import type { Item } from '@/lib/api'
+import { useFlip } from '@/hooks/useFlip'
 import { useLeaving } from '@/hooks/useLeaving'
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/Icon'
@@ -59,11 +60,18 @@ export function ItemList({
   variant: 'list' | 'cards'
 }) {
   const rows = useLeaving(items)
+  const ref = useRef<HTMLUListElement>(null)
+  useFlip(
+    ref,
+    rows.map((r) => r.item.id),
+    variant === 'cards',
+  )
   return (
-    <ul className={variant === 'list' ? 'list' : 'cards'}>
+    <ul ref={ref} className={variant === 'list' ? 'list' : 'cards'}>
       {rows.map(({ item, leaving, arrived }, index) => (
         <li
           key={item.id}
+          data-id={item.id}
           // A row coming back (Undo) opens its height so the rows below slide down instead of jumping.
           className={cn('min-w-0', leaving ? 'leaving' : arrived && variant === 'list' ? 'expand' : 'enter')}
           style={leaving ? undefined : ({ '--i': index % 8 } as CSSProperties)}
