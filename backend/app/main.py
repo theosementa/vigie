@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 
-from app.api.routes import admin, auth, items, queue, resources, stats, stream, tags
+from app.api.routes import admin, auth, contacts, items, queue, resources, stats, stream, tags
 from app.core.config import check_secret_key, settings
 from app.core.errors import ErrorResponse
 from app.core.realtime import RealtimeMiddleware
@@ -22,6 +22,7 @@ api.include_router(resources.router)
 api.include_router(items.router)
 api.include_router(queue.router)
 api.include_router(tags.router)
+api.include_router(contacts.router)
 api.include_router(stats.router)
 api.include_router(stream.router)
 
