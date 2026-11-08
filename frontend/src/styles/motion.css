@@ -116,6 +116,16 @@
   .vchip > * { min-width: 0; overflow: hidden; }
   .vchip-in { animation: vchip-open var(--dur-slow) var(--ease); }
   .vchip-out { pointer-events: none; animation: vchip-close 240ms var(--ease) forwards; }
+
+  /* "Save this view": opens and closes its width (and the 6 px gap before it) and its height (and
+     the 4 px line margins of the wrapped desktop bar), so a line it was alone on closes too. */
+  @keyframes vsave-open { from { grid-template-columns: 0fr; grid-template-rows: 0fr; opacity: 0; margin-right: -6px; margin-block: 0; } }
+  @keyframes vsave-close { to { grid-template-columns: 0fr; grid-template-rows: 0fr; opacity: 0; margin-right: -6px; margin-block: 0; } }
+  .vsave { display: grid; grid-template: 1fr / 1fr; flex: none; }
+  .vsave > * { min-width: 0; min-height: 0; display: flex; align-items: center; gap: 6px; }
+  .vsave-in, .vsave-out { overflow: hidden; }
+  .vsave-in { animation: vsave-open var(--dur-slow) var(--ease); }
+  .vsave-out { pointer-events: none; animation: vsave-close 240ms var(--ease) forwards; }
 }
 
 @media (prefers-reduced-motion: reduce) {
