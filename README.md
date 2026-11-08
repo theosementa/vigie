@@ -217,7 +217,7 @@ Outside `localhost`, a PWA requires HTTPS.
 
 ## Roadmap
 
-Not built yet: history imports, personal API tokens, optional SMTP (verification, reset and invitation e-mails). See [VISION.md](VISION.md) for the plan.
+Not built yet: personal API tokens, optional SMTP (verification, reset and invitation e-mails). See [VISION.md](VISION.md) for the plan.
 
 ## Licence
 

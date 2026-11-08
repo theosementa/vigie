@@ -143,7 +143,6 @@ export const fr: Record<keyof typeof en, string> = {
   'common.close': 'Fermer',
   'common.delete': 'Supprimer',
   'common.undo': 'Annuler',
-  'common.soon': 'Bientôt',
   'common.save': 'Enregistrer',
   'common.cancel': 'Annuler',
   'common.done': 'Terminé',
@@ -182,12 +181,11 @@ export const fr: Record<keyof typeof en, string> = {
   'empty.ghost.to_watch': '— à voir',
   'empty.ghost.seen': '— vu',
   'empty.ghost.queue': '— file',
-  'empty.to_watch': 'Tes liens apparaîtront ici. Ajoute le premier, ou reprends tes favoris, Pocket ou Instapaper.',
+  'empty.to_watch': 'Tes liens apparaîtront ici. Ajoute le premier.',
   'empty.seen': 'Rien n’est encore marqué comme vu.',
   'empty.filtered': 'Aucun résultat avec ces filtres.',
   'empty.shared': 'Personne ne t’a encore envoyé de lien.',
   'empty.shared_seen': 'Aucun lien reçu n’est marqué comme vu.',
-  'empty.import': 'Importer',
 
   // Scope et indicateurs
   'scope.aria': 'Semaine : {seen} vus sur {goal}, {watch} de visionnage sur {goalWatch}, série de {streak} jours sur un record de {best}',

@@ -141,7 +141,6 @@ export const en = {
   'common.close': 'Close',
   'common.delete': 'Delete',
   'common.undo': 'Undo',
-  'common.soon': 'Soon',
   'common.save': 'Save',
   'common.cancel': 'Cancel',
   'common.done': 'Done',
@@ -180,12 +179,11 @@ export const en = {
   'empty.ghost.to_watch': '— to watch',
   'empty.ghost.seen': '— seen',
   'empty.ghost.queue': '— queue',
-  'empty.to_watch': 'Your links will show up here. Add the first one, or bring over your bookmarks, Pocket or Instapaper.',
+  'empty.to_watch': 'Your links will show up here. Add the first one.',
   'empty.seen': 'Nothing is marked as seen yet.',
   'empty.filtered': 'No result with these filters.',
   'empty.shared': 'Nobody has sent you a link yet.',
   'empty.shared_seen': 'None of the links you received is marked as seen.',
-  'empty.import': 'Import',
 
   // Scope et indicateurs
   'scope.aria': 'Week: {seen} seen out of {goal}, {watch} watched out of {goalWatch}, {streak}-day streak out of a record of {best}',

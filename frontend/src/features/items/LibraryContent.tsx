@@ -35,7 +35,7 @@ function InfiniteSentinel({
   return <div ref={ref} aria-hidden className="h-px" />
 }
 
-/** The DA empty state: ghost figure, one sentence, the primary action, import for later. */
+/** The DA empty state: ghost figure, one sentence, the primary action. */
 function EmptyState({ lib }: { lib: Library }) {
   const t = useT()
   const { open } = useAddItem()
@@ -51,11 +51,6 @@ function EmptyState({ lib }: { lib: Library }) {
           <button type="button" className="btn btn-accent btn-sm" onClick={() => open()}>
             <Icon name="add" />
             {t('nav.add')}
-          </button>
-          <button type="button" className="btn btn-ghost btn-sm" disabled title={t('common.soon')}>
-            <Icon name="import" />
-            {t('empty.import')}
-            <span className="conf">{t('common.soon')}</span>
           </button>
         </div>
       )}
