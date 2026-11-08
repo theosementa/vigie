@@ -47,8 +47,9 @@
 .scr-h .sub{margin-top:4px}
 .scr-h{padding-bottom:12px}
 .lib{display:grid;gap:14px;min-width:0}
-.lib-bar{display:flex;align-items:center;gap:12px;min-width:0}
-.lib-bar .chips{flex:1;min-width:0}
+.lib-bar{display:flex;align-items:flex-start;gap:12px;min-width:0}
+/* Desktop: the filters wrap onto a second line instead of scrolling or being cut */
+.lib-bar .chips{flex:1;min-width:0;flex-wrap:wrap;overflow:visible;margin:0;padding:0;row-gap:8px}
 .icon-btn{width:38px;height:38px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--surface-2);color:var(--text);cursor:pointer;flex:none}
 .icon-btns{display:flex;gap:8px}
 
@@ -56,6 +57,7 @@
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:0 18px}
 .chips::-webkit-scrollbar{display:none}
 .chips .chip{flex:none}
+.chips-sep{flex:none;align-self:center;width:1px;height:18px;margin:0 4px;background:var(--line)}
 .chip .i{width:16px;height:16px}
 .chip{height:32px;padding:0 12px;border-radius:999px;border:0;background:var(--surface-2);color:var(--muted);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--text);color:var(--bg)}

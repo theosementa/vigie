@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { usePile } from '@/features/stats/queries'
 import type { ItemStatus, LengthBucket, ResourceType, TagWithCount } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
@@ -32,33 +33,43 @@ export function LibraryChips({
   const t = useT()
   const { pile } = usePile()
   const types = useResourceTypes(filters.type === 'all' ? undefined : filters.type)
-  return (
-    <div className="chips" role="group" aria-label={t('filters.label')}>
-      <Chip active={filters.status === 'to_watch'} onClick={() => onChange({ status: 'to_watch' })}>
+  const groups = [
+    [
+      <Chip key="to_watch" active={filters.status === 'to_watch'} onClick={() => onChange({ status: 'to_watch' })}>
         {t('filters.to_watch')}
         {withCount && pile && <b>{formatNumber(pile.count)}</b>}
-      </Chip>
-      <Chip active={filters.status === 'seen'} onClick={() => onChange({ status: 'seen' })}>
+      </Chip>,
+      <Chip key="seen" active={filters.status === 'seen'} onClick={() => onChange({ status: 'seen' })}>
         {t('filters.seen')}
+      </Chip>,
+    ],
+    types.map((type) => (
+      <Chip key={type} active={filters.type === type} onClick={() => onChange({ type: filters.type === type ? 'all' : type })}>
+        {t(`filters.${type}`)}
       </Chip>
-      {types.map((type) => (
-        <Chip key={type} active={filters.type === type} onClick={() => onChange({ type: filters.type === type ? 'all' : type })}>
-          {t(`filters.${type}`)}
-        </Chip>
-      ))}
-      {LENGTH_BUCKETS.map((length) => (
-        <Chip
-          key={length}
-          active={filters.length === length}
-          onClick={() => onChange({ length: filters.length === length ? null : length })}
-        >
-          {t(`filters.length.${length}`)}
-        </Chip>
-      ))}
-      {tags.map((tag) => (
-        <Chip key={tag.id} active={filters.tag === tag.name} onClick={() => onChange({ tag: filters.tag === tag.name ? null : tag.name })}>
-          #{tag.name}
-        </Chip>
+    )),
+    LENGTH_BUCKETS.map((length) => (
+      <Chip
+        key={length}
+        active={filters.length === length}
+        onClick={() => onChange({ length: filters.length === length ? null : length })}
+      >
+        {t(`filters.length.${length}`)}
+      </Chip>
+    )),
+    tags.map((tag) => (
+      <Chip key={tag.id} active={filters.tag === tag.name} onClick={() => onChange({ tag: filters.tag === tag.name ? null : tag.name })}>
+        #{tag.name}
+      </Chip>
+    )),
+  ].filter((group) => group.length > 0)
+  return (
+    <div className="chips" role="group" aria-label={t('filters.label')}>
+      {groups.map((group, i) => (
+        <Fragment key={i}>
+          {i > 0 && <span className="chips-sep" aria-hidden />}
+          {group}
+        </Fragment>
       ))}
     </div>
   )
