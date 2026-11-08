@@ -63,6 +63,8 @@ function ViewChip({
         if (!opened.current) open()
       }}
     >
+      {/* Same icon as the sidebar entries: tells a view apart from the filter chips below. */}
+      <Icon name="bookmark" bold={active} />
       <span className="truncate">{view.name}</span>
     </Chip>
   )
