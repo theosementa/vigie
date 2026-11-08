@@ -3,6 +3,7 @@ import type { BrandName } from '@/components/brands'
 /** Host (and its subdomains) -> logo. A host not listed here has no logo. */
 const PROVIDER_HOSTS: Record<BrandName, string[]> = {
   youtube: ['youtube.com', 'youtu.be'],
+  anthropic: ['anthropic.com', 'claude.ai', 'claude.com'],
   github: ['github.com'],
   gitlab: ['gitlab.com'],
   codeberg: ['codeberg.org'],

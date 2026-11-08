@@ -5,6 +5,9 @@ import { formatMinutesShort, formatRelativeDay, fullName } from '@/lib/format'
 import { providerOf } from '@/lib/providers'
 import { useT } from '@/lib/i18n'
 import { isMetadataUnavailable, siteOf } from './metadata'
+
+/** Types whose link is a plain web page: they get a globe when the site has no known logo. */
+const isWebLink = (type: string) => type === 'article' || type === 'website'
 import { useRefreshWithToast } from './useRefreshItem'
 
 /**
@@ -49,7 +52,7 @@ export function ItemMeta({ item }: { item: Item }) {
 
   return (
     <div className="meta">
-      {seen ? <Icon name="check-circle" /> : brand && <BrandIcon name={brand} />}
+      {seen ? <Icon name="check-circle" /> : brand ? <BrandIcon name={brand} /> : isWebLink(resource.type) && <Icon name="global" />}
       <span className="min-w-0 truncate">{parts.join(' · ')}</span>
       {item.queue_position !== null && (
         <span className="inline-flex shrink-0 items-center gap-1" title={t('item.in_queue', { position: item.queue_position + 1 })}>
