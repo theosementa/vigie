@@ -28,7 +28,7 @@ import type { Locale, Theme, User } from '@/lib/api'
 import { useT, type MessageKey, type TFunction } from '@/lib/i18n'
 import { useLocalePreference } from '@/hooks/useLocale'
 import { useTheme } from '@/hooks/useTheme'
-import { useMobileLayout, type MobileLayout } from '@/lib/mobileLayout'
+import { useDesktopLayout, useMobileLayout, type MobileLayout } from '@/lib/mobileLayout'
 import { useAutoCreateContacts } from '@/lib/autoContacts'
 import { useHiddenTypes } from '@/lib/hiddenTypes'
 import { RESOURCE_TYPES, TYPE_ICON } from '@/features/items/metadata'
@@ -123,6 +123,7 @@ function AppearanceSection() {
   const { theme, setTheme } = useTheme()
   const { preference, setPreference } = useLocalePreference()
   const [layout, setLayout] = useMobileLayout()
+  const [desktopLayout, setDesktopLayout] = useDesktopLayout()
   const [hidden, setHidden] = useHiddenTypes()
   const [zoomLock, setZoomLock] = useZoomLock()
   return (
@@ -156,6 +157,16 @@ function AppearanceSection() {
       <div role="group" aria-labelledby="layout-label" className="seg full mt-2">
         {LAYOUTS.map((o) => (
           <button key={o.value} type="button" aria-pressed={layout === o.value} onClick={() => setLayout(o.value)}>
+            {t(o.label)}
+          </button>
+        ))}
+      </div>
+      <p id="desktop-layout-label" className="mt-3 text-sm font-medium">
+        {t('layout.desktop_label')}
+      </p>
+      <div role="group" aria-labelledby="desktop-layout-label" className="seg full mt-2">
+        {LAYOUTS.map((o) => (
+          <button key={o.value} type="button" aria-pressed={desktopLayout === o.value} onClick={() => setDesktopLayout(o.value)}>
             {t(o.label)}
           </button>
         ))}

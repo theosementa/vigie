@@ -41,6 +41,23 @@ async def test_invalid_mobile_layout_is_422(alice, value):
     assert (await alice.get("/api/auth/me")).json()["mobile_layout"] == "list"
 
 
+async def test_desktop_layout_defaults_to_grid_and_follows_the_account(alice):
+    assert (await alice.get("/api/auth/me")).json()["desktop_layout"] == "grid"
+    r = await alice.patch("/api/auth/me", json={"desktop_layout": "list"})
+    assert r.status_code == 200 and r.json()["desktop_layout"] == "list"
+    # independent of the phone layout
+    me = (await alice.get("/api/auth/me")).json()
+    assert (me["desktop_layout"], me["mobile_layout"]) == ("list", "list")
+    r = await alice.patch("/api/auth/me", json={"mobile_layout": "grid"})
+    assert r.json()["desktop_layout"] == "list"
+
+
+@pytest.mark.parametrize("value", ["table", "LIST", ""])
+async def test_invalid_desktop_layout_is_422(alice, value):
+    assert (await alice.patch("/api/auth/me", json={"desktop_layout": value})).status_code == 422
+    assert (await alice.get("/api/auth/me")).json()["desktop_layout"] == "grid"
+
+
 async def test_hidden_types_default_to_none_and_follow_the_account(alice):
     assert (await alice.get("/api/auth/me")).json()["hidden_types"] == []
     r = await alice.patch("/api/auth/me", json={"hidden_types": ["repo", "video", "repo"]})

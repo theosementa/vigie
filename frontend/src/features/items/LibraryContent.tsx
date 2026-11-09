@@ -4,7 +4,7 @@ import { useDelayedFlag } from '@/hooks/useDelayedFlag'
 import { formatNumber } from '@/lib/format'
 import { useT } from '@/lib/i18n'
 import { useAddItem } from './addItemContext'
-import { ItemList } from './ItemList'
+import { ItemList, type ItemVariant } from './ItemList'
 import { useTags } from './queries'
 import type { Library } from './useLibrary'
 
@@ -64,10 +64,10 @@ function EmptyState({ lib }: { lib: Library }) {
   )
 }
 
-function Skeletons({ variant }: { variant: 'list' | 'cards' }) {
+function Skeletons({ variant }: { variant: ItemVariant }) {
   const t = useT()
-  return variant === 'list' ? (
-    <div className="list" role="status" aria-label={t('common.loading')}>
+  return variant !== 'cards' ? (
+    <div className={variant === 'rows' ? 'list wide' : 'list'} role="status" aria-label={t('common.loading')}>
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className="it">
           <div className="th skel" />
@@ -94,7 +94,7 @@ function Skeletons({ variant }: { variant: 'list' | 'cards' }) {
 }
 
 /** List body: loading / error / empty states, items, infinite scroll. */
-export function LibraryContent({ lib, variant }: { lib: Library; variant: 'list' | 'cards' }) {
+export function LibraryContent({ lib, variant }: { lib: Library; variant: ItemVariant }) {
   const t = useT()
   // Skeletons only for a genuinely slow load: a fast empty answer must not flash one.
   const showSkeleton = useDelayedFlag(lib.isLoading)

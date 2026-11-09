@@ -43,6 +43,7 @@ export const fr: Record<keyof typeof en, string> = {
   'settings.appearance': 'Apparence',
   'settings.preferences': 'Préférences',
   'layout.label': 'Affichage sur mobile',
+  'layout.desktop_label': 'Affichage sur ordinateur et tablette',
   'layout.list': 'Liste',
   'layout.grid': 'Grille',
   'zoom.label': 'Bloquer le zoom',

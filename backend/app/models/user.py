@@ -28,6 +28,11 @@ class MobileLayout(StrEnum):
     GRID = "grid"
 
 
+class DesktopLayout(StrEnum):
+    LIST = "list"
+    GRID = "grid"
+
+
 class User(Base):
     __tablename__ = "users"
     __table_args__ = (
@@ -35,6 +40,7 @@ class User(Base):
         CheckConstraint("locale IN ('auto', 'en', 'fr')", name="ck_users_locale"),
         CheckConstraint("theme IN ('system', 'dark', 'light')", name="ck_users_theme"),
         CheckConstraint("mobile_layout IN ('list', 'grid')", name="ck_users_mobile_layout"),
+        CheckConstraint("desktop_layout IN ('list', 'grid')", name="ck_users_desktop_layout"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -56,6 +62,10 @@ class User(Base):
     )
     mobile_layout: Mapped[str] = mapped_column(
         String(10), server_default=text("'list'"), default=MobileLayout.LIST
+    )
+    # desktop and tablet keep the card grid unless the user picks the list
+    desktop_layout: Mapped[str] = mapped_column(
+        String(10), server_default=text("'grid'"), default=DesktopLayout.GRID
     )
     # resource types the user does not want offered (filter chips, type pickers); none by default
     hidden_types: Mapped[list[str]] = mapped_column(

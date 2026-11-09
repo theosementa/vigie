@@ -154,6 +154,14 @@
 /* Clamp on an inner span: a <button> ignores -webkit-line-clamp on mobile browsers. 2 lines on desktop, 4 below 1024px */
 .tt>span{display:-webkit-box;-webkit-line-clamp:var(--tt-lines,2);-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 @media (max-width:1023px){.it,.card{--tt-lines:4}}
+/* Wide list (desktop and tablet): thumbnail, one-line title and meta, actions at the right edge. The thumbnail sets the row height. */
+.list.wide .it{grid-template-columns:96px minmax(0,1fr) auto;gap:16px;padding:8px 12px;border-radius:12px;border-top-color:transparent;background:transparent;--tt-lines:1}
+.list.wide>li+li .it{border-top-color:var(--line)}
+.list.wide .it .th{width:96px;height:54px}
+.list.wide .it:hover,.list.wide .it[data-selected="true"]{background:var(--surface);border-top-color:transparent}
+.row-actions{display:flex;gap:4px;opacity:0;transition:opacity 150ms var(--ease)}
+.it:hover .row-actions,.it:focus-within .row-actions,.row-actions:has([data-popup-open]){opacity:1}
+@media (pointer:coarse){.row-actions{opacity:1}}
 .meta{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;margin-top:3px;white-space:nowrap;overflow:hidden}
 .meta .i{width:14px;height:14px}
 .th svg.og,.th img.og{width:100%;height:100%;display:block}

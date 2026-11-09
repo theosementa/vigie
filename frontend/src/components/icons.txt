@@ -64,3 +64,5 @@ microphone-3-linear
 star-linear
 bookmark-linear
 bookmark-bold
+list-linear
+widget-2-linear

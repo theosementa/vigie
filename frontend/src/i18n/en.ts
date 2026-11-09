@@ -41,6 +41,7 @@ export const en = {
   'settings.appearance': 'Appearance',
   'settings.preferences': 'Preferences',
   'layout.label': 'Mobile display',
+  'layout.desktop_label': 'Desktop and tablet display',
   'layout.list': 'List',
   'layout.grid': 'Grid',
   'zoom.label': 'Lock zoom',

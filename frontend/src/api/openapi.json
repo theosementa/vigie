@@ -329,6 +329,14 @@
         "title": "ContactUpdate",
         "type": "object"
       },
+      "DesktopLayout": {
+        "enum": [
+          "list",
+          "grid"
+        ],
+        "title": "DesktopLayout",
+        "type": "string"
+      },
       "ErrorDetail": {
         "additionalProperties": true,
         "description": "The `detail` of an error raised by the API. Some errors add fields (e.g. `item_id`).",
@@ -1152,6 +1160,16 @@
               }
             ],
             "title": "Auto Create Contacts"
+          },
+          "desktop_layout": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DesktopLayout"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "first_name": {
             "anyOf": [
@@ -2081,6 +2099,9 @@
             "title": "Created At",
             "type": "string"
           },
+          "desktop_layout": {
+            "$ref": "#/components/schemas/DesktopLayout"
+          },
           "email": {
             "title": "Email",
             "type": "string"
@@ -2144,6 +2165,7 @@
           "locale",
           "theme",
           "mobile_layout",
+          "desktop_layout",
           "hidden_types",
           "auto_create_contacts",
           "created_at"

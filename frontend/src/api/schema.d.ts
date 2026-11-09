@@ -753,6 +753,11 @@ export interface components {
             name?: string | null;
         };
         /**
+         * DesktopLayout
+         * @enum {string}
+         */
+        DesktopLayout: "list" | "grid";
+        /**
          * ErrorDetail
          * @description The `detail` of an error raised by the API. Some errors add fields (e.g. `item_id`).
          */
@@ -1015,6 +1020,7 @@ export interface components {
         ProfileUpdate: {
             /** Auto Create Contacts */
             auto_create_contacts?: boolean | null;
+            desktop_layout?: components["schemas"]["DesktopLayout"] | null;
             /** First Name */
             first_name?: string | null;
             /** Hidden Types */
@@ -1345,6 +1351,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            desktop_layout: components["schemas"]["DesktopLayout"];
             /** Email */
             email: string;
             /** First Name */

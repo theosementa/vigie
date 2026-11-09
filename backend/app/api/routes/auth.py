@@ -210,6 +210,8 @@ async def update_me(body: ProfileUpdate, user: CurrentUser, session: SessionDep)
         user.theme = body.theme
     if "mobile_layout" in fields and body.mobile_layout is not None:
         user.mobile_layout = body.mobile_layout
+    if "desktop_layout" in fields and body.desktop_layout is not None:
+        user.desktop_layout = body.desktop_layout
     if "hidden_types" in fields and body.hidden_types is not None:
         user.hidden_types = body.hidden_types
     if "auto_create_contacts" in fields and body.auto_create_contacts is not None:

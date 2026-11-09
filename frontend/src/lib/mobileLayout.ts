@@ -20,3 +20,18 @@ export function useMobileLayout(): [MobileLayout, (next: MobileLayout) => void] 
   )
   return [me?.mobile_layout ?? 'list', set]
 }
+
+/** How the library is shown on desktop and tablet (card grid by default). Also kept on the account. */
+export function useDesktopLayout(): [MobileLayout, (next: MobileLayout) => void] {
+  const qc = useQueryClient()
+  const { data: me } = useMe()
+  const { mutate } = useUpdateMe()
+  const set = useCallback(
+    (next: MobileLayout) => {
+      qc.setQueryData<User | null>(meKey, (u) => (u ? { ...u, desktop_layout: next } : u))
+      mutate({ desktop_layout: next })
+    },
+    [qc, mutate],
+  )
+  return [me?.desktop_layout ?? 'grid', set]
+}

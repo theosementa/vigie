@@ -89,7 +89,7 @@ link valid 1 hour, e.g. `docker compose exec api vigie reset-password alice@exam
 
 ```jsonc
 // ItemType = "article" | "video" | "podcast" | "website" | "repo"      ItemStatus = "to_watch" | "seen"
-User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "hidden_types": [], "auto_create_contacts": true, "created_at": "..." }
+User     = { "id": "uuid", "email": "a@b.com", "first_name": "Alice", "last_name": "Liddell", "role": "admin" | "user", "timezone": "Europe/Paris", "locale": "auto" | "en" | "fr", "theme": "system" | "dark" | "light", "mobile_layout": "list" | "grid", "desktop_layout": "list" | "grid", "hidden_types": [], "auto_create_contacts": true, "created_at": "..." }
 Tag      = { "id": "uuid", "name": "python" }
 Resource = {
   "id": "uuid", "url": "https://example.com/post",          // normalized
@@ -169,11 +169,12 @@ expired (1 h) or already used. Tokens are random, stored hashed (SHA-256), singl
 
 ### `PATCH /api/auth/me` -> 200 `User`
 ```json
-{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark", "mobile_layout": "grid", "hidden_types": ["repo"], "auto_create_contacts": false }
+{ "first_name": "Alicia", "last_name": "L", "timezone": "America/New_York", "locale": "fr", "theme": "dark", "mobile_layout": "grid", "desktop_layout": "list", "hidden_types": ["repo"], "auto_create_contacts": false }
 ```
 All fields optional (omitted = unchanged). `422` for an empty / over-long name or a timezone that is not a
 known IANA name (`zoneinfo`). `locale` (`auto` | `en` | `fr`, default `auto`) and `theme` (`system` | `dark` | `light`, default `system`) and
-`mobile_layout` (`list` | `grid`, default `list`: how the library shows on a phone) are
+`mobile_layout` (`list` | `grid`, default `list`: how the library shows on a phone) and
+`desktop_layout` (`list` | `grid`, default `grid`: on desktop and tablet) are
 stored on the account; any other value is a `422`. `hidden_types` (list of `article` | `video` | `podcast` | `website` | `repo`, default `[]`) hides
 those types from the filter chips and the type pickers (existing items stay in the library); `422` if it
 would hide every type. `auto_create_contacts` (boolean, default `true`): sharing saves every address as a

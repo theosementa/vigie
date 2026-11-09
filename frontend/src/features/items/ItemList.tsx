@@ -8,6 +8,7 @@ import { useT } from '@/lib/i18n'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
 import { ItemCard } from './ItemCard'
 import { ItemRow } from './ItemRow'
+import { ItemRowWide } from './ItemRowWide'
 import { useSetItemStatus } from './queries'
 import { SwipeableRow } from './SwipeableRow'
 import { useDeleteItem } from './useDeleteItem'
@@ -47,7 +48,9 @@ function SwipeableItem({ item, onOpen }: { item: Item; onOpen: (item: Item) => v
   )
 }
 
-/** Phone: the DA list with swipe actions. Desktop: the card grid. */
+export type ItemVariant = 'list' | 'rows' | 'cards'
+
+/** Phone: the DA list with swipe actions. Desktop and tablet: the card grid, or wide rows when the user prefers a list. */
 export function ItemList({
   items,
   selectedId,
@@ -57,7 +60,7 @@ export function ItemList({
   items: Item[]
   selectedId?: string | null
   onOpen: (item: Item) => void
-  variant: 'list' | 'cards'
+  variant: ItemVariant
 }) {
   const rows = useLeaving(items)
   const ref = useRef<HTMLUListElement>(null)
@@ -67,19 +70,21 @@ export function ItemList({
     variant === 'cards',
   )
   return (
-    <ul ref={ref} className={variant === 'list' ? 'list' : 'cards'}>
+    <ul ref={ref} key={variant} className={variant === 'cards' ? 'cards' : variant === 'rows' ? 'list wide' : 'list'}>
       {rows.map(({ item, leaving, arrived }, index) => (
         <li
           key={item.id}
           data-id={item.id}
           // A row coming back (Undo) opens its height so the rows below slide down instead of jumping.
-          className={cn('min-w-0', leaving ? 'leaving' : arrived && variant === 'list' ? 'expand' : 'enter')}
+          className={cn('min-w-0', leaving ? 'leaving' : arrived && variant !== 'cards' ? 'expand' : 'enter')}
           // A card that comes back (Undo) rises at once, in step with the neighbours making room.
           style={leaving ? undefined : ({ '--i': arrived ? 0 : index % 8 } as CSSProperties)}
           inert={leaving}
         >
           {variant === 'list' ? (
             <SwipeableItem item={item} onOpen={onOpen} />
+          ) : variant === 'rows' ? (
+            <ItemRowWide item={item} selected={item.id === selectedId} onOpen={onOpen} />
           ) : (
             <ItemCard item={item} selected={item.id === selectedId} onOpen={onOpen} />
           )}

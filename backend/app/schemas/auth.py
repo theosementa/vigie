@@ -8,7 +8,7 @@ from zoneinfo import available_timezones
 from email_validator import EmailNotValidError, validate_email
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
-from app.models.user import Locale, MobileLayout, Theme
+from app.models.user import DesktopLayout, Locale, MobileLayout, Theme
 from app.schemas.resource import ItemType
 
 # Not-so-private names (RFC 6761 / 8375 and homelab habits). Accepted in `invite` and `closed`
@@ -86,6 +86,7 @@ class ProfileUpdate(BaseModel):
     locale: Locale | None = None
     theme: Theme | None = None
     mobile_layout: MobileLayout | None = None
+    desktop_layout: DesktopLayout | None = None
     hidden_types: list[ItemType] | None = None
     auto_create_contacts: bool | None = None
 
@@ -141,6 +142,7 @@ class UserOut(BaseModel):
     locale: Locale
     theme: Theme
     mobile_layout: MobileLayout
+    desktop_layout: DesktopLayout
     hidden_types: list[ItemType]
     auto_create_contacts: bool
     created_at: datetime
