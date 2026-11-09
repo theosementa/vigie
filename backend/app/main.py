@@ -7,12 +7,14 @@ from app.api.routes import (
     admin,
     auth,
     contacts,
+    extension,
     items,
     queue,
     resources,
     stats,
     stream,
     tags,
+    tokens,
     views,
 )
 from app.core.config import check_secret_key, settings
@@ -35,6 +37,8 @@ api.include_router(queue.router)
 api.include_router(tags.router)
 api.include_router(contacts.router)
 api.include_router(views.router)
+api.include_router(tokens.router)
+api.include_router(extension.router)
 api.include_router(stats.router)
 api.include_router(stream.router)
 

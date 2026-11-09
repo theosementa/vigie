@@ -18,6 +18,8 @@ _TOPICS: tuple[tuple[str, list[str]], ...] = (
     ("/api/resources", ["items"]),
     ("/api/contacts", ["contacts"]),
     ("/api/views", ["views"]),
+    ("/api/tokens", ["tokens"]),
+    ("/api/extension", ["items", "queue", "tags", "stats"]),
     ("/api/auth/me", ["me", "stats"]),
     ("/api/auth/", ["sessions", "me"]),
 )

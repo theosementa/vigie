@@ -54,6 +54,8 @@ export type UpdateMeInput = Schemas['ProfileUpdate']
 export type ChangePasswordInput = Schemas['PasswordChangeIn']
 export type ResetPasswordInput = Schemas['ResetIn']
 export type Device = Schemas['SessionOut']
+export type ApiToken = Schemas['TokenOut']
+export type CreatedApiToken = Schemas['TokenCreated']
 
 // ---------- Administration ----------
 
@@ -178,6 +180,11 @@ export const api = {
       ok(client.PATCH('/api/views/{view_id}', { params: { path: { view_id: id } }, body: input })),
     remove: (id: string, { keepalive }: { keepalive?: boolean } = {}) =>
       ok(client.DELETE('/api/views/{view_id}', { params: { path: { view_id: id } }, keepalive })),
+  },
+  tokens: {
+    list: () => ok(client.GET('/api/tokens')),
+    create: (name: string) => ok(client.POST('/api/tokens', { body: { name } })),
+    revoke: (id: string) => ok(client.DELETE('/api/tokens/{token_id}', { params: { path: { token_id: id } } })),
   },
   stats: {
     summary: (query: { period: StatsPeriod; offset: number }) =>

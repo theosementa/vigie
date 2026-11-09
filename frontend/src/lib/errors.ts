@@ -27,6 +27,7 @@ const KNOWN: Partial<Record<MessageKey, true>> = {
   'error.view_name_taken': true,
   'error.view_empty': true,
   'error.views_limit': true,
+  'error.tokens_limit': true,
   'error.network_error': true,
 }
 

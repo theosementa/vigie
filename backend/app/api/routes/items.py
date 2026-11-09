@@ -1,13 +1,11 @@
 import uuid
-from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import and_, exists, func, or_, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, SessionDep
-from app.core.errors import ErrorResponse, api_error
+from app.core.errors import ErrorResponse
 from app.core.ratelimit import DAY, MINUTE, enforce, user_limit
 from app.models import Item, ItemEvent, ItemTag, Resource, Tag, User
 from app.schemas.item import (
@@ -25,20 +23,20 @@ from app.schemas.share import ShareIn, ShareOut
 from app.services.events import record_event
 from app.services.items import (
     LengthBucket,
+    add_item,
     apply_metadata,
     decode_cursor,
     encode_cursor,
-    get_or_create_resource,
     item_to_out,
     length_bucket_sql,
     length_seconds_sql,
     resolve_tags,
+    set_status,
 )
 from app.services.metadata import fetch_metadata
-from app.services.queue import next_position, remove_from_queue
+from app.services.queue import remove_from_queue
 from app.services.share import share_item
 from app.services.stars import refresh_stale_stars
-from app.services.url import InvalidUrlError, normalize_url
 
 router = APIRouter(prefix="/items", tags=["items"], responses={404: {"model": ErrorResponse}})
 
@@ -52,18 +50,6 @@ async def _get_owned(session: AsyncSession, user_id: uuid.UUID, item_id: uuid.UU
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Item not found")
     return item
-
-
-def _set_status(item: Item, new_status: ItemStatus) -> str | None:
-    """Apply a status change; returns the event kind of an actual transition (else None)."""
-    if new_status == item.status:
-        return None
-    previous = item.status
-    item.status = new_status
-    item.seen_at = datetime.now(UTC) if new_status == "seen" else None
-    if previous is None:  # brand new item, not a transition
-        return None
-    return "seen" if new_status == "seen" else "unseen"
 
 
 @router.get("", response_model=ItemList)
@@ -162,64 +148,7 @@ async def list_items(
     dependencies=[Depends(user_limit("item_create", 60, MINUTE))],
 )
 async def create_item(body: ItemCreate, user: CurrentUser, session: SessionDep) -> ItemOut:
-    try:
-        url = normalize_url(body.url)
-    except InvalidUrlError as exc:
-        raise HTTPException(422, str(exc)) from exc
-
-    resource = await get_or_create_resource(session, url)
-    existing = await session.scalar(
-        select(Item.id).where(Item.user_id == user.id, Item.resource_id == resource.id)
-    )
-    if existing is not None:
-        await session.rollback()
-        raise api_error(
-            status.HTTP_409_CONFLICT,
-            "already_in_library",
-            "Already in your library",
-            item_id=str(existing),
-        )
-
-    item = Item(
-        id=uuid.uuid4(),
-        user_id=user.id,
-        resource_id=resource.id,
-        notes=(body.notes or None),
-        type_override=body.type if body.type and body.type != resource.type else None,
-    )
-    item.tags = await resolve_tags(session, user.id, body.tags)
-    _set_status(item, "to_watch")
-    if body.status == "seen":
-        _set_status(item, "seen")
-    if body.queue and item.status != "seen":
-        item.queue_position = await next_position(session, user.id)
-    session.add(item)
-    record_event(session, user_id=user.id, item_id=item.id, resource_id=resource.id, kind="added")
-    if item.status == "seen":
-        record_event(
-            session,
-            user_id=user.id,
-            item_id=item.id,
-            resource_id=resource.id,
-            kind="seen",
-            occurred_at=item.seen_at,
-        )
-    user_id, resource_id = user.id, resource.id  # rollback expires ORM attributes
-    try:
-        await session.commit()
-    except IntegrityError:
-        await session.rollback()
-        existing = await session.scalar(
-            select(Item.id).where(Item.user_id == user_id, Item.resource_id == resource_id)
-        )
-        raise api_error(
-            status.HTTP_409_CONFLICT,
-            "already_in_library",
-            "Already in your library",
-            item_id=str(existing) if existing else None,
-        ) from None
-    await session.refresh(item)
-    return item_to_out(item)
+    return await add_item(session, user, body)
 
 
 @router.get("/{item_id}", response_model=ItemOut)
@@ -234,7 +163,7 @@ async def update_item(
     item = await _get_owned(session, user.id, item_id)
     fields = body.model_fields_set
     if "status" in fields and body.status:
-        kind = _set_status(item, body.status)
+        kind = set_status(item, body.status)
         if body.status == "seen":
             await remove_from_queue(session, item)
         if kind:

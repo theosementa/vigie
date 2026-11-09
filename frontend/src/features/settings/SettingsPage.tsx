@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Field } from '@/features/auth/Field'
+import { ExtensionSection } from './ExtensionSection'
 import {
   useChangePassword,
   useDeleteAccount,
@@ -622,6 +623,7 @@ export function SettingsPage() {
           {me && <TimezoneSection timezone={me.timezone} />}
           <PasswordSection />
           <SessionSection />
+          <ExtensionSection />
           <DangerZone />
         </>
       )}

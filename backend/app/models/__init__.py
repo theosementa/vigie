@@ -1,3 +1,4 @@
+from app.models.api_token import ApiToken
 from app.models.contact import Contact, ShareLog
 from app.models.event import ItemEvent
 from app.models.instance import InstanceSettings, Invitation, PasswordReset
@@ -9,6 +10,7 @@ from app.models.user import Locale, Theme, User
 from app.models.view import SavedView
 
 __all__ = [
+    "ApiToken",
     "Contact",
     "InstanceSettings",
     "Invitation",

@@ -329,7 +329,7 @@ async def test_duplicate_race_returns_same_conflict_object(alice, bob, monkeypat
         await other_engine.dispose()
         return await real(session, user_id, names)
 
-    monkeypatch.setattr("app.api.routes.items.resolve_tags", racing_resolve_tags)
+    monkeypatch.setattr("app.services.items.resolve_tags", racing_resolve_tags)
     r = await alice.post("/api/items", json={"url": url})
     assert r.status_code == 409
     assert r.json()["detail"] == {

@@ -417,6 +417,32 @@ cannot be changed (save a new view instead).
 ### `DELETE /api/views/{id}` -> 204
 Positions behind it are compacted.
 
+## API tokens and the browser extension
+
+A token is a revocable credential for a client that cannot hold the cookie session (the Chrome
+extension, `extension/`). Format `vgt_<43 chars>`. Only its SHA-256 is stored; the secret is returned
+once, at creation. Each token has a scope (today only `items:add`). Tokens are managed with the cookie
+session only, and a token never opens a cookie route (`/items`, `/auth/*`, `/tokens` answer 401 to it).
+Up to 10 tokens per user.
+
+### `GET /api/tokens` -> 200 `Token[]`
+`{ id, name, prefix, scope, created_at, last_used_at }`, newest first. Never the secret.
+
+### `POST /api/tokens` -> 201 `TokenCreated`
+```json
+{ "name": "Chrome on my laptop" }
+```
+Same as `Token` plus `token` (the secret, shown only here). `409 tokens_limit`; 20 creations / hour / user.
+
+### `DELETE /api/tokens/{id}` -> 204
+Revokes at once. `404 not_found` for an id that is not the caller's.
+
+### `POST /api/extension/items` -> 201 `Item`
+`Authorization: Bearer <token>` with scope `items:add`. Same body, answers and behaviour as
+`POST /api/items` (including `409 already_in_library` with `item_id`, `422` for a bad URL), same 60 /
+min / user budget. Any missing, malformed, unknown, revoked or wrong-scope token, or a user no longer
+allowed on the instance, gets the same `401 invalid_token`. Also limited to 120 requests / min / IP.
+
 ## Queue
 
 An ordered "watch next" list of the user's items (any type), independent from the `to_watch`/`seen` status. A queued

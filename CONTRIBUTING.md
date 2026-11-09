@@ -7,6 +7,7 @@ Thanks for helping. Vigie is a small self-hosted app; keep changes focused.
 - [`VISION.md`](VISION.md): product scope, accounts and instance, stack, roadmap. Read it before proposing a feature; the non-goals are firm.
 - [`vigie-da.html`](vigie-da.html): the art direction (tokens, components, mockups in light and dark). The UI follows it; Tailwind's theme reuses its tokens, with no hard-coded colour or size.
 - [`backend/API.md`](backend/API.md): the API contract.
+- [`extension/`](extension/README.md): the Chrome extension (Manifest V3, no build step); load it unpacked from `chrome://extensions`. It talks only to `POST /api/extension/items` with a scoped token.
 - Translations (English and French) live in this repository: `frontend/src/i18n/en.ts` (the keys) and `fr.ts` (typed on them, so a missing key fails the build); `lib/i18n.ts` holds `t()` and `useT()`. No hard-coded UI text in components.
 - Icons are Solar, vendored by `npm run icons` from the names in `frontend/src/components/icons.txt`; after an API change run `npm run gen:api` (both are plain Node scripts, fine on the host).
 

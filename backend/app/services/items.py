@@ -1,17 +1,21 @@
 import base64
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
+from fastapi import HTTPException, status
 from sqlalchemy import ColumnElement, and_, case, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Item, Resource, Tag
-from app.schemas.item import ItemOut
+from app.core.errors import api_error
+from app.models import Item, Resource, Tag, User
+from app.schemas.item import ItemCreate, ItemOut, ItemStatus
 from app.schemas.resource import ResourceOut
+from app.services.events import record_event
 from app.services.metadata import Metadata, fetch_metadata
-from app.services.url import url_hash
+from app.services.queue import next_position
+from app.services.url import InvalidUrlError, normalize_url, url_hash
 
 LengthBucket = Literal["short", "medium", "long"]
 
@@ -165,3 +169,77 @@ def decode_cursor(cursor: str) -> tuple[datetime, uuid.UUID]:
     raw = base64.urlsafe_b64decode(cursor.encode()).decode()
     ts, _, ident = raw.partition("|")
     return datetime.fromisoformat(ts), uuid.UUID(ident)
+
+
+def set_status(item: Item, new_status: ItemStatus) -> str | None:
+    """Apply a status change; returns the event kind of an actual transition (else None)."""
+    if new_status == item.status:
+        return None
+    previous = item.status
+    item.status = new_status
+    item.seen_at = datetime.now(UTC) if new_status == "seen" else None
+    if previous is None:  # brand new item, not a transition
+        return None
+    return "seen" if new_status == "seen" else "unseen"
+
+
+async def add_item(session: AsyncSession, user: User, body: ItemCreate) -> ItemOut:
+    """Add a URL to the library: the "add item" flow of the app and of the extension."""
+    try:
+        url = normalize_url(body.url)
+    except InvalidUrlError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+    resource = await get_or_create_resource(session, url)
+    existing = await session.scalar(
+        select(Item.id).where(Item.user_id == user.id, Item.resource_id == resource.id)
+    )
+    if existing is not None:
+        await session.rollback()
+        raise api_error(
+            status.HTTP_409_CONFLICT,
+            "already_in_library",
+            "Already in your library",
+            item_id=str(existing),
+        )
+
+    item = Item(
+        id=uuid.uuid4(),
+        user_id=user.id,
+        resource_id=resource.id,
+        notes=(body.notes or None),
+        type_override=body.type if body.type and body.type != resource.type else None,
+    )
+    item.tags = await resolve_tags(session, user.id, body.tags)
+    set_status(item, "to_watch")
+    if body.status == "seen":
+        set_status(item, "seen")
+    if body.queue and item.status != "seen":
+        item.queue_position = await next_position(session, user.id)
+    session.add(item)
+    record_event(session, user_id=user.id, item_id=item.id, resource_id=resource.id, kind="added")
+    if item.status == "seen":
+        record_event(
+            session,
+            user_id=user.id,
+            item_id=item.id,
+            resource_id=resource.id,
+            kind="seen",
+            occurred_at=item.seen_at,
+        )
+    user_id, resource_id = user.id, resource.id  # rollback expires ORM attributes
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        existing = await session.scalar(
+            select(Item.id).where(Item.user_id == user_id, Item.resource_id == resource_id)
+        )
+        raise api_error(
+            status.HTTP_409_CONFLICT,
+            "already_in_library",
+            "Already in your library",
+            item_id=str(existing) if existing else None,
+        ) from None
+    await session.refresh(item)
+    return item_to_out(item)

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n="optionsTitle"></title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <h1 data-i18n="optionsTitle"></h1>
+      <p data-i18n="optionsIntro"></p>
+      <form id="form" novalidate>
+        <label for="baseUrl" data-i18n="urlLabel"></label>
+        <input id="baseUrl" type="url" placeholder="https://vigie.example.org" autocomplete="off" required />
+        <label for="token" data-i18n="tokenLabel"></label>
+        <input id="token" type="password" placeholder="vgt_…" autocomplete="off" spellcheck="false" required />
+        <div class="row">
+          <button type="submit" data-i18n="save"></button>
+          <button type="button" id="disconnect" class="secondary" data-i18n="disconnect"></button>
+        </div>
+        <p id="status" role="status"></p>
+      </form>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>
