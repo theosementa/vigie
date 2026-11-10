@@ -4,6 +4,7 @@
 // user's token (Authorization header, no cookies) -> result shown as a badge on the toolbar icon.
 
 const MENU_ID = 'vigie-save'
+const DASHBOARD_ID = 'vigie-dashboard'
 const BADGE_MS = 4000
 
 // The toolbar icon of a page that is already in the library: the lighthouse with a green bookmark.
@@ -21,6 +22,12 @@ chrome.runtime.onInstalled.addListener(() => {
       title: chrome.i18n.getMessage('menuTitle'),
       contexts: ['page', 'link'],
     })
+    // Also in the right-click menu of the toolbar icon.
+    chrome.contextMenus.create({
+      id: DASHBOARD_ID,
+      title: chrome.i18n.getMessage('dashboardTitle'),
+      contexts: ['action', 'page'],
+    })
   })
 })
 
@@ -29,6 +36,7 @@ chrome.action.onClicked.addListener((tab) => {
 })
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === DASHBOARD_ID) return void openDashboard(tab?.id)
   if (info.menuItemId !== MENU_ID) return
   // A right-click on a link saves the link, anywhere else the page.
   void saveFrom(info.linkUrl || info.pageUrl || tab?.url, tab?.id)
@@ -84,6 +92,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.tabs.onActivated.addListener(({ tabId }) => {
   chrome.tabs.get(tabId).then((tab) => refreshSaved(tabId, tab.url)).catch(() => {})
 })
+
+/** Open the user's Vigie instance in a new tab. */
+async function openDashboard(tabId) {
+  const { baseUrl } = await chrome.storage.local.get('baseUrl')
+  if (!baseUrl) return needsSetup(tabId)
+  chrome.tabs.create({ url: baseUrl })
+}
 
 function needsSetup(tabId) {
   show('error', tabId, chrome.i18n.getMessage('notConfigured'))

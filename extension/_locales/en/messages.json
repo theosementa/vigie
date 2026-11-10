@@ -3,6 +3,7 @@
   "extDescription": { "message": "Send the current page or a link to your Vigie library with one click." },
   "actionTitle": { "message": "Save this page to Vigie" },
   "menuTitle": { "message": "Save to Vigie" },
+  "dashboardTitle": { "message": "Go to dashboard" },
   "saved": { "message": "Saved to Vigie" },
   "alreadySaved": { "message": "Already in your Vigie library" },
   "failed": { "message": "Could not save to Vigie" },

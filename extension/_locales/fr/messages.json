@@ -3,6 +3,7 @@
   "extDescription": { "message": "Envoie la page courante ou un lien vers ta bibliothèque Vigie en un clic." },
   "actionTitle": { "message": "Enregistrer cette page dans Vigie" },
   "menuTitle": { "message": "Enregistrer dans Vigie" },
+  "dashboardTitle": { "message": "Aller au tableau de bord" },
   "saved": { "message": "Enregistré dans Vigie" },
   "alreadySaved": { "message": "Déjà dans ta bibliothèque Vigie" },
   "failed": { "message": "Impossible d’enregistrer dans Vigie" },
