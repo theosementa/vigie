@@ -5,7 +5,7 @@
   "menuTitle": { "message": "Save to Vigie" },
   "dashboardTitle": { "message": "Go to dashboard" },
   "saved": { "message": "Saved to Vigie" },
-  "alreadySaved": { "message": "Already in your Vigie library" },
+  "alreadySaved": { "message": "Already in your Vigie library (click to remove it)" },
   "failed": { "message": "Could not save to Vigie" },
   "notConfigured": { "message": "Set your Vigie address and token first" },
   "unsupportedPage": { "message": "This page cannot be saved (only http and https addresses)" },

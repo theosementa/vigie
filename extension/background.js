@@ -105,6 +105,18 @@ function needsSetup(tabId) {
   chrome.runtime.openOptionsPage()
 }
 
+/** The page is already in the library: a second click takes it out. */
+async function removeFrom(baseUrl, token, url, tabId) {
+  const response = await fetch(`${baseUrl}/api/extension/items?url=${encodeURIComponent(url)}`, {
+    method: 'DELETE',
+    credentials: 'omit',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (response.status === 204) return markSaved(tabId, false)
+  if (response.status === 429) return show('error', tabId, chrome.i18n.getMessage('tooMany'))
+  show('error', tabId, chrome.i18n.getMessage('serverError', [String(response.status)]))
+}
+
 async function saveFrom(url, tabId) {
   if (!url || !/^https?:\/\//i.test(url)) {
     show('error', tabId, chrome.i18n.getMessage('unsupportedPage'))
@@ -123,7 +135,7 @@ async function saveFrom(url, tabId) {
       body: JSON.stringify({ url }),
     })
     if (response.status === 201) return markSaved(tabId, true)
-    if (response.status === 409) return markSaved(tabId, true)
+    if (response.status === 409) return removeFrom(baseUrl, token, url, tabId)
     if (response.status === 401) {
       show('error', tabId, chrome.i18n.getMessage('badToken'))
       chrome.runtime.openOptionsPage()

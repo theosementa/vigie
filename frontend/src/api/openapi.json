@@ -3716,6 +3716,56 @@
       }
     },
     "/api/extension/items": {
+      "delete": {
+        "description": "Remove `url` from the caller's library (the extension's click on an already saved page).",
+        "operationId": "remove_item_from_extension",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "url",
+            "required": true,
+            "schema": {
+              "maxLength": 2048,
+              "title": "Url",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Item From Extension",
+        "tags": [
+          "extension"
+        ]
+      },
       "post": {
         "description": "Same as `POST /items` (same body, same answers), with a token holding `items:add`.",
         "operationId": "add_item_from_extension",

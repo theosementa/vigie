@@ -14,7 +14,7 @@ from app.schemas.item import ItemCreate, ItemOut, ItemStatus
 from app.schemas.resource import ResourceOut
 from app.services.events import record_event
 from app.services.metadata import Metadata, fetch_metadata
-from app.services.queue import next_position
+from app.services.queue import next_position, remove_from_queue
 from app.services.url import InvalidUrlError, normalize_url, url_hash
 
 LengthBucket = Literal["short", "medium", "long"]
@@ -195,6 +195,33 @@ async def is_saved(session: AsyncSession, user: User, raw_url: str) -> bool:
         .where(Item.user_id == user.id, Resource.url_hash == digest)
     )
     return found is not None
+
+
+async def delete_item_by_url(session: AsyncSession, user: User, raw_url: str) -> bool:
+    """Remove `raw_url` from the user's library. False when it was not there."""
+    try:
+        digest = url_hash(normalize_url(raw_url))
+    except InvalidUrlError:
+        return False
+    item = await session.scalar(
+        select(Item)
+        .join(Resource, Resource.id == Item.resource_id)
+        .where(Item.user_id == user.id, Resource.url_hash == digest)
+    )
+    if item is None:
+        return False
+    record_event(
+        session,
+        user_id=user.id,
+        item_id=item.id,
+        resource_id=item.resource_id,
+        kind="deleted",
+        was_seen=item.status == "seen",
+    )
+    await remove_from_queue(session, item)
+    await session.delete(item)
+    await session.commit()
+    return True
 
 
 async def add_item(session: AsyncSession, user: User, body: ItemCreate) -> ItemOut:

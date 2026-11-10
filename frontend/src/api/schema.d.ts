@@ -353,7 +353,11 @@ export interface paths {
          * @description Same as `POST /items` (same body, same answers), with a token holding `items:add`.
          */
         post: operations["add_item_from_extension"];
-        delete?: never;
+        /**
+         * Remove Item From Extension
+         * @description Remove `url` from the caller's library (the extension's click on an already saved page).
+         */
+        delete: operations["remove_item_from_extension"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2653,6 +2657,44 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_item_from_extension: {
+        parameters: {
+            query: {
+                url: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

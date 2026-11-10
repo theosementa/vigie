@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.core.deps import ItemsAddUser, SessionDep
 from app.core.errors import ErrorResponse
 from app.core.ratelimit import MINUTE, enforce, ip_limit
 from app.schemas.item import ItemCreate, ItemOut
 from app.schemas.resource import MAX_URL_LENGTH
-from app.services.items import add_item, is_saved
+from app.services.items import add_item, delete_item_by_url, is_saved
 
 # Endpoints for the browser extension: authenticated by a scoped bearer token, not the cookie.
 router = APIRouter(
@@ -34,3 +34,13 @@ async def is_page_saved(
 ) -> dict[str, bool]:
     """Whether `url` is already in the caller's library (the extension's "saved" icon)."""
     return {"saved": await is_saved(session, user, url)}
+
+
+@router.delete("/items", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_item_from_extension(
+    user: ItemsAddUser, session: SessionDep, url: str = Query(max_length=MAX_URL_LENGTH)
+) -> Response:
+    """Remove `url` from the caller's library (the extension's click on an already saved page)."""
+    enforce(f"item_create:user:{user.id}", 60, MINUTE)
+    await delete_item_by_url(session, user, url)  # idempotent: absent is fine
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

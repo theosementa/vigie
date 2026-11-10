@@ -5,7 +5,7 @@
   "menuTitle": { "message": "Enregistrer dans Vigie" },
   "dashboardTitle": { "message": "Aller au tableau de bord" },
   "saved": { "message": "Enregistré dans Vigie" },
-  "alreadySaved": { "message": "Déjà dans ta bibliothèque Vigie" },
+  "alreadySaved": { "message": "Déjà dans ta bibliothèque Vigie (clic pour la retirer)" },
   "failed": { "message": "Impossible d’enregistrer dans Vigie" },
   "notConfigured": { "message": "Renseigne d’abord l’adresse de Vigie et ton jeton" },
   "unsupportedPage": { "message": "Cette page ne peut pas être enregistrée (adresses http et https seulement)" },
