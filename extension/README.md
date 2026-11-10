@@ -1,6 +1,8 @@
 # Vigie browser extension (Chrome, Manifest V3)
 
-Adds the current page (toolbar button) or a right-clicked link (context menu, "Save to Vigie") to your Vigie library, with the same behaviour as the app's add-item flow. A page already in your library shows the lighthouse with a green bookmark on the toolbar icon (saving it switches the icon at once; clicking the icon on such a page removes it from the library); "!" means the save failed (hover for the reason). "Go to dashboard" (right-click on the toolbar icon or on a page) opens your Vigie instance.
+Adds the current page (toolbar button) or a right-clicked link (context menu, "Save to Vigie") to your Vigie library, with the same behaviour as the app's add-item flow. A page already in your library shows the lighthouse with a green bookmark on the toolbar icon (saving it switches the icon at once; clicking the icon on such a page removes it from the library); "!" means the save failed (hover for the reason).
+
+**Go to dashboard:** right-click the toolbar icon (or the ⋮ menu of the extension in the puzzle list, or any page) and choose "Go to dashboard" ("Aller au tableau de bord"): it opens your Vigie instance in a new tab. Chrome does not allow a button in the hover tooltip, so the right-click menu is the place for it.
 
 ## Security model
 
