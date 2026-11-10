@@ -147,39 +147,42 @@ export function SidebarViews() {
   return (
     // Opens and closes its height as a block, so the entries below never jump.
     <div className={rows.every((r) => r.leaving) ? 'leaving' : 'expand'}>
-      <div className="nav-sep" />
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-        onDragEnd={onDragEnd}
-        accessibility={{ announcements: makeAnnouncements(views, t), screenReaderInstructions: makeInstructions(t) }}
-      >
-        <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          <ul className="nv-list" aria-label={t('views.label')}>
-            {rows.map(({ item: view, leaving, arrived }, index) => (
-              <ViewRow
-                key={view.id}
-                view={view}
-                index={index}
-                active={view.id === activeId}
-                leaving={leaving}
-                arrived={arrived}
-                actions={[
-                  { key: 'rename', label: t('view.rename'), icon: <Icon name="pen" />, run: () => dialogs.rename(view) },
-                  {
-                    key: 'delete',
-                    label: t('common.delete'),
-                    icon: <Icon name="trash-bin-minimalistic" />,
-                    destructive: true,
-                    run: () => deleteView(view),
-                  },
-                ]}
-              />
-            ))}
-          </ul>
-        </SortableContext>
-      </DndContext>
+      {/* One child only: the grid collapse above animates a single row. */}
+      <div>
+        <div className="nav-sep" />
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+          onDragEnd={onDragEnd}
+          accessibility={{ announcements: makeAnnouncements(views, t), screenReaderInstructions: makeInstructions(t) }}
+        >
+          <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+            <ul className="nv-list" aria-label={t('views.label')}>
+              {rows.map(({ item: view, leaving, arrived }, index) => (
+                <ViewRow
+                  key={view.id}
+                  view={view}
+                  index={index}
+                  active={view.id === activeId}
+                  leaving={leaving}
+                  arrived={arrived}
+                  actions={[
+                    { key: 'rename', label: t('view.rename'), icon: <Icon name="pen" />, run: () => dialogs.rename(view) },
+                    {
+                      key: 'delete',
+                      label: t('common.delete'),
+                      icon: <Icon name="trash-bin-minimalistic" />,
+                      destructive: true,
+                      run: () => deleteView(view),
+                    },
+                  ]}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
+      </div>
     </div>
   )
 }
