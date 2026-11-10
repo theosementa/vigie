@@ -119,7 +119,7 @@ function ViewRow({
   )
 }
 
-/** Desktop sidebar: the saved views under Library, in the user's order (drag, or Space and arrows). */
+/** Desktop sidebar: the saved views in their own section between the main entries and settings, in the user's order (drag, or Space and arrows). */
 export function SidebarViews() {
   const t = useT()
   const { data: views = [] } = useViews()
@@ -147,6 +147,7 @@ export function SidebarViews() {
   return (
     // Opens and closes its height as a block, so the entries below never jump.
     <div className={rows.every((r) => r.leaving) ? 'leaving' : 'expand'}>
+      <div className="nav-sep" />
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

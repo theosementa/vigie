@@ -145,16 +145,8 @@ export function Sidebar() {
   return (
     <aside className="side only-desktop" aria-label={t('nav.main')}>
       <nav className="nav" aria-label={t('nav.main')}>
-        {NAV.map((entry) =>
-          entry.end ? (
-            <div key={entry.to}>
-              {link(entry)}
-              <SidebarViews />
-            </div>
-          ) : (
-            link(entry)
-          ),
-        )}
+        {NAV.map(link)}
+        <SidebarViews />
         <div className="nav-sep" />
         {link(SETTINGS_ENTRY)}
         {me?.role === 'admin' && link(ADMIN_ENTRY)}
