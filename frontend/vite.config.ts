@@ -45,7 +45,7 @@ export default defineConfig({
       strategies: 'generateSW',
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
+      includeAssets: ['favicon.ico', 'favicon.png', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: appName,
         short_name: appName,
