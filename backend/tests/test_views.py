@@ -11,7 +11,9 @@ from app.services.views import canonical_query
         ("type=video&length=short", "length=short&type=video"),
         ("?tag=pos&status=seen", "status=seen&tag=pos"),
         ("status=to_watch&type=all&tag=pos", "tag=pos"),  # defaults are not filters
-        ("type=video&type=article", "type=video"),  # first one wins
+        ("type=video&type=article&type=video", "type=article&type=video"),  # several, sorted
+        ("tag=Pos&tag=ai&tag=pos", "tag=ai&tag=Pos"),  # deduplicated case-insensitively
+        ("length=short&length=long", "length=short"),  # first one wins
         ("type=movie&length=huge&status=done", ""),  # unknown values dropped
         ("item=abc&shared=true&utm=x&tag=a", "tag=a"),  # unknown keys dropped
         ("q=+hello+world+&tag=", "q=hello+world"),  # trimmed, blanks dropped

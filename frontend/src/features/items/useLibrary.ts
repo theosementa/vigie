@@ -9,9 +9,9 @@ export function useLibrary(sharedOnly: boolean) {
   const filter: ItemsFilter = useMemo(
     () => ({
       status: filters.status,
-      type: filters.type === 'all' ? undefined : filters.type,
+      type: filters.type.length ? filters.type : undefined,
       length: filters.length ?? undefined,
-      tag: filters.tag ?? undefined,
+      tag: filters.tag.length ? filters.tag : undefined,
       q: filters.q.trim() || undefined,
       shared: sharedOnly ? true : undefined,
     }),
@@ -42,7 +42,7 @@ export function useLibrary(sharedOnly: boolean) {
     lengthUnknown,
     sharedOnly,
     hasActiveFilters:
-      filters.type !== 'all' || filters.length !== null || filters.tag !== null || filters.q.trim() !== '',
+      filters.type.length > 0 || filters.length !== null || filters.tag.length > 0 || filters.q.trim() !== '',
     filters,
     update,
     selected,

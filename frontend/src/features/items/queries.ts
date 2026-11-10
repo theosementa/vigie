@@ -34,9 +34,9 @@ export const PAGE_SIZE = 24
 
 export interface ItemsFilter {
   status?: ItemStatus
-  type?: ResourceType
+  type?: ResourceType[]
   length?: LengthBucket
-  tag?: string
+  tag?: string[]
   q?: string
   shared?: boolean
 }

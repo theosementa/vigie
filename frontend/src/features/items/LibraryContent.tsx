@@ -42,9 +42,11 @@ function EmptyState({ lib }: { lib: Library }) {
   const t = useT()
   const { open } = useAddItem()
   const { data: tags } = useTags()
-  const tag = lib.filters.tag?.trim().toLowerCase()
-  // A saved view can outlive its tag.
-  const tagGone = Boolean(tag) && tags !== undefined && !tags.some((x) => x.name.toLowerCase() === tag)
+  // A saved view can outlive its tags.
+  const tagGone =
+    lib.filters.tag.length > 0 &&
+    tags !== undefined &&
+    lib.filters.tag.every((tag) => !tags.some((x) => x.name.toLowerCase() === tag.toLowerCase()))
   const seen = lib.filters.status === 'seen'
   const first = !lib.hasActiveFilters && !lib.sharedOnly && !seen
   const kind = tagGone ? 'tag_gone' : lib.hasActiveFilters ? 'filtered' : lib.sharedOnly ? (seen ? 'shared_seen' : 'shared') : seen ? 'seen' : 'to_watch'

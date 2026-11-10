@@ -286,7 +286,6 @@ export const fr: Record<keyof typeof en, string> = {
 
   // Capture
   'capture.title': 'Ajouter un lien',
-  'capture.field': 'Colle un lien…',
   'capture.link': 'Lien',
   'capture.paste': 'Coller',
   'capture.paste_failed': 'Impossible de lire le presse-papiers. Colle le lien à la main.',

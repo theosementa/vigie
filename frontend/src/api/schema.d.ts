@@ -359,6 +359,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/extension/items/saved": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Is Page Saved
+         * @description Whether `url` is already in the caller's library (the extension's "saved" icon).
+         */
+        get: operations["is_page_saved"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -2651,6 +2671,48 @@ export interface operations {
             };
         };
     };
+    is_page_saved: {
+        parameters: {
+            query: {
+                url: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_health: {
         parameters: {
             query?: never;
@@ -2686,8 +2748,8 @@ export interface operations {
         parameters: {
             query?: {
                 status?: ("to_watch" | "seen") | null;
-                type?: ("article" | "video" | "podcast" | "website" | "repo") | null;
-                tag?: string | null;
+                type?: ("article" | "video" | "podcast" | "website" | "repo")[] | null;
+                tag?: string[] | null;
                 q?: string | null;
                 shared?: boolean | null;
                 queued?: boolean | null;

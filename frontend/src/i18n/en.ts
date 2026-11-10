@@ -284,7 +284,6 @@ export const en = {
 
   // Capture
   'capture.title': 'Add a link',
-  'capture.field': 'Paste a link…',
   'capture.link': 'Link',
   'capture.paste': 'Paste',
   'capture.paste_failed': 'Can’t read the clipboard. Paste the link by hand.',

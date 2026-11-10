@@ -3782,6 +3782,69 @@
         ]
       }
     },
+    "/api/extension/items/saved": {
+      "get": {
+        "description": "Whether `url` is already in the caller's library (the extension's \"saved\" icon).",
+        "operationId": "is_page_saved",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "url",
+            "required": true,
+            "schema": {
+              "maxLength": 2048,
+              "title": "Url",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Is Page Saved",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Is Page Saved",
+        "tags": [
+          "extension"
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "operationId": "get_health",
@@ -3848,14 +3911,18 @@
             "schema": {
               "anyOf": [
                 {
-                  "enum": [
-                    "article",
-                    "video",
-                    "podcast",
-                    "website",
-                    "repo"
-                  ],
-                  "type": "string"
+                  "items": {
+                    "enum": [
+                      "article",
+                      "video",
+                      "podcast",
+                      "website",
+                      "repo"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 50,
+                  "type": "array"
                 },
                 {
                   "type": "null"
@@ -3871,7 +3938,11 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 50,
+                  "type": "array"
                 },
                 {
                   "type": "null"

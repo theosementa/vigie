@@ -4,9 +4,10 @@ import { RESOURCE_TYPES } from './metadata'
 
 /**
  * The resource types offered to this user: all of them except the ones turned off in the settings.
- * Pass the type already in play (an item's own, a detected one, the active filter) to keep it listed.
+ * Pass the types already in play (an item's own, a detected one, the active filters) to keep them listed.
  */
-export function useResourceTypes(current?: ResourceType): ResourceType[] {
+export function useResourceTypes(current?: ResourceType | readonly ResourceType[]): ResourceType[] {
   const [hidden] = useHiddenTypes()
-  return RESOURCE_TYPES.filter((type) => type === current || !hidden.includes(type))
+  const keep = current === undefined ? [] : typeof current === 'string' ? [current] : current
+  return RESOURCE_TYPES.filter((type) => keep.includes(type) || !hidden.includes(type))
 }

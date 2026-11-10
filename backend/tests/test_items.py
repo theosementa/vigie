@@ -129,6 +129,9 @@ async def test_list_filters(alice):
     assert await ids(tag=talk_id) == [b["id"]]
     assert await ids(tag="talk") == [b["id"]]
     assert await ids(tag="unknown") == []
+    assert await ids(type=["video", "article"]) == [c["id"], b["id"], a["id"]]  # any of the types
+    assert await ids(tag=["talk", "unknown"]) == [b["id"]]  # any of the tags
+    assert await ids(tag=["talk", "PYTHON"]) == [b["id"], a["id"]]
     assert await ids(q="rust") == [c["id"]]  # url-based title / site name
     assert await ids(q="LESSON") == [a["id"]]  # notes
     assert await ids(q="python-intro") == [a["id"]]

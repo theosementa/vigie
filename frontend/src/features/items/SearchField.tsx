@@ -25,6 +25,13 @@ export function SearchField({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounced])
 
+  // The URL can change the search from elsewhere (a saved view, back/forward): follow it.
+  const [seen, setSeen] = useState(value)
+  if (value !== seen) {
+    setSeen(value)
+    if (value !== debounced) setText(value)
+  }
+
   return (
     <label className={cn('in', className)}>
       <Icon name="magnifier" className="xs" />

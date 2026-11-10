@@ -52,13 +52,16 @@ async def _get_owned(session: AsyncSession, user_id: uuid.UUID, item_id: uuid.UU
     return item
 
 
+MAX_FILTER_VALUES = 50  # values of a repeated filter (type, tag)
+
+
 @router.get("", response_model=ItemList)
 async def list_items(
     user: CurrentUser,
     session: SessionDep,
     status_: ItemStatus | None = Query(default=None, alias="status"),
-    type: ItemType | None = None,
-    tag: str | None = None,
+    type: list[ItemType] | None = Query(default=None, max_length=MAX_FILTER_VALUES),
+    tag: list[str] | None = Query(default=None, max_length=MAX_FILTER_VALUES),
     q: str | None = None,
     shared: bool | None = None,
     queued: bool | None = None,
@@ -72,7 +75,8 @@ async def list_items(
     if status_:
         stmt = stmt.where(Item.status == status_)
     if type:
-        stmt = stmt.where(func.coalesce(Item.type_override, Resource.type) == type)
+        # several types: an item of any of them
+        stmt = stmt.where(func.coalesce(Item.type_override, Resource.type).in_(set(type)))
     if shared is True:
         stmt = stmt.where(Item.shared_by_user_id.is_not(None))
     elif shared is False:
@@ -81,12 +85,18 @@ async def list_items(
         stmt = stmt.where(Item.queue_position.is_not(None))
     elif queued is False:
         stmt = stmt.where(Item.queue_position.is_(None))
-    if tag:
-        conds = [func.lower(Tag.name) == tag.strip().lower()]
-        try:
-            conds.append(Tag.id == uuid.UUID(tag))
-        except ValueError:
-            pass
+    tags = [t.strip() for t in tag or [] if t.strip()]
+    if tags:
+        # several tags: an item carrying any of them (by name, case-insensitive, or by id)
+        conds = [func.lower(Tag.name).in_({t.lower() for t in tags})]
+        ids = []
+        for t in tags:
+            try:
+                ids.append(uuid.UUID(t))
+            except ValueError:
+                pass
+        if ids:
+            conds.append(Tag.id.in_(ids))
         stmt = stmt.where(
             exists().where(
                 ItemTag.item_id == Item.id,

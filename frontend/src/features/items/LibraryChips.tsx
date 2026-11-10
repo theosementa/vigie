@@ -14,7 +14,13 @@ import { LENGTH_BUCKETS, TYPE_ICON } from './metadata'
 import { useResourceTypes } from './useResourceTypes'
 import type { LibraryFilters } from './useLibraryFilters'
 
-type Patch = { status?: ItemStatus; type?: ResourceType | 'all'; length?: LengthBucket | null; tag?: string | null }
+type Patch = { status?: ItemStatus; type?: ResourceType[]; length?: LengthBucket | null; tag?: string[] }
+
+/** Adds `value` to the list, or removes it when it is already there. */
+const toggle = <T,>(list: readonly T[], value: T): T[] => (list.includes(value) ? list.filter((x) => x !== value) : [...list, value])
+
+/** "Vidéos", or "Vidéos +2" when several values are picked. */
+const summary = (labels: string[]) => (labels.length === 0 ? null : labels.length === 1 ? labels[0] : `${labels[0]} +${labels.length - 1}`)
 
 export function Chip({
   active,
@@ -85,7 +91,8 @@ function useWidthTween(key: string) {
 
 /**
  * One filter family as a single pill: "Type ⌄" when it does not filter, filled with its value and a
- * clear button ("Vidéos ×") when it does. The pill opens a popover with the family's choices.
+ * clear button ("Vidéos +1 ×") when it does. The pill opens a popover with the family's choices;
+ * types and tags take several values, so their popover stays open while you pick.
  */
 function FilterPill({
   label,
@@ -103,7 +110,7 @@ function FilterPill({
   clearLabel: string
   onClear: () => void
   popupClassName?: string
-  children: (close: () => void) => ReactNode
+  children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
   const ref = useWidthTween(value ?? '')
@@ -131,7 +138,7 @@ function FilterPill({
       </span>
       <Popover.Portal>
         <Popover.Positioner className="z-[60] outline-none" side="bottom" align="start" sideOffset={6} collisionPadding={12}>
-          <Popover.Popup className={cn('fpop', popupClassName)}>{children(() => setOpen(false))}</Popover.Popup>
+          <Popover.Popup className={cn('fpop', popupClassName)}>{children}</Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>
@@ -155,15 +162,15 @@ function Option({
   )
 }
 
-/** Searchable tag list, most used first. Enter picks the first match. */
+/** Searchable tag list, most used first. Enter toggles the first match. */
 function TagList({
   tags,
   active,
-  onPick,
+  onToggle,
 }: {
   tags: TagWithCount[]
-  active: string | null
-  onPick: (name: string) => void
+  active: string[]
+  onToggle: (name: string) => void
 }) {
   const t = useT()
   const [q, setQ] = useState('')
@@ -172,6 +179,7 @@ function TagList({
     [tags],
   )
   const needle = q.trim().replace(/^#/, '').toLocaleLowerCase()
+  const isActive = (name: string) => active.some((x) => x.toLowerCase() === name.toLowerCase())
   const shown = needle ? sorted.filter((tag) => tag.name.toLocaleLowerCase().includes(needle)) : sorted
   return (
     <>
@@ -185,7 +193,8 @@ function TagList({
           onKeyDown={(e) => {
             if (e.key === 'Enter' && shown[0]) {
               e.preventDefault()
-              onPick(shown[0].name)
+              onToggle(shown[0].name)
+              setQ('')
             }
           }}
           placeholder={t('filters.tags.search')}
@@ -194,7 +203,7 @@ function TagList({
       </label>
       <div className="fpop-list">
         {shown.map((tag) => (
-          <Option key={tag.id} active={active === tag.name} onClick={() => onPick(tag.name)}>
+          <Option key={tag.id} active={isActive(tag.name)} onClick={() => onToggle(tag.name)}>
             <span className="fopt-l">#{tag.name}</span>
             <span className="fopt-n">{formatNumber(tag.item_count)}</span>
           </Option>
@@ -229,8 +238,13 @@ export function LibraryChips({
   const query = canonicalQuery(params)
   // Offered for a set of filters that is not a saved view yet (the library only, not "shared with me").
   const saveable = withCount && query !== '' && !views.some((v) => canonicalQuery(v.query) === query)
-  const types = useResourceTypes(filters.type === 'all' ? undefined : filters.type)
-  const activeCount = [filters.type !== 'all', filters.length !== null, filters.tag !== null].filter(Boolean).length
+  const types = useResourceTypes(filters.type)
+  const activeCount = filters.type.length + (filters.length !== null ? 1 : 0) + filters.tag.length
+  // Toggled by name, case-insensitively (a view's URL may spell a tag differently).
+  const toggleTag = (name: string) => {
+    const has = filters.tag.some((x) => x.toLowerCase() === name.toLowerCase())
+    onChange({ tag: has ? filters.tag.filter((x) => x.toLowerCase() !== name.toLowerCase()) : [...filters.tag, name] })
+  }
 
   return (
     <div className="fbar" role="group" aria-label={t('filters.label')}>
@@ -247,26 +261,17 @@ export function LibraryChips({
       <div className="chips">
         <FilterPill
           label={t('filters.type')}
-          value={filters.type === 'all' ? null : t(`filters.${filters.type}`)}
-          icon={filters.type === 'all' ? undefined : <Icon name={TYPE_ICON[filters.type]} />}
+          value={summary(filters.type.map((type) => t(`filters.${type}`)))}
+          icon={filters.type.length === 1 ? <Icon name={TYPE_ICON[filters.type[0]]} /> : undefined}
           clearLabel={t('filters.clear_one', { name: t('filters.type') })}
-          onClear={() => onChange({ type: 'all' })}
+          onClear={() => onChange({ type: [] })}
         >
-          {(close) =>
-            types.map((type) => (
-              <Option
-                key={type}
-                active={filters.type === type}
-                onClick={() => {
-                  onChange({ type })
-                  close()
-                }}
-              >
-                <Icon name={TYPE_ICON[type]} />
-                <span className="fopt-l">{t(`filters.${type}`)}</span>
-              </Option>
-            ))
-          }
+          {types.map((type) => (
+            <Option key={type} active={filters.type.includes(type)} onClick={() => onChange({ type: toggle(filters.type, type) })}>
+              <Icon name={TYPE_ICON[type]} />
+              <span className="fopt-l">{t(`filters.${type}`)}</span>
+            </Option>
+          ))}
         </FilterPill>
         <FilterPill
           label={t('filters.length')}
@@ -274,43 +279,29 @@ export function LibraryChips({
           clearLabel={t('filters.clear_one', { name: t('filters.length') })}
           onClear={() => onChange({ length: null })}
         >
-          {(close) =>
-            LENGTH_BUCKETS.map((length) => (
-              <Option
-                key={length}
-                active={filters.length === length}
-                onClick={() => {
-                  onChange({ length })
-                  close()
-                }}
-              >
-                <span className="fopt-l">{t(`filters.length.${length}`)}</span>
-              </Option>
-            ))
-          }
+          {LENGTH_BUCKETS.map((length) => (
+            <Option
+              key={length}
+              active={filters.length === length}
+              onClick={() => onChange({ length: filters.length === length ? null : length })}
+            >
+              <span className="fopt-l">{t(`filters.length.${length}`)}</span>
+            </Option>
+          ))}
         </FilterPill>
-        {(tags.length > 0 || filters.tag !== null) && (
+        {(tags.length > 0 || filters.tag.length > 0) && (
           <FilterPill
             label={t('filters.tags')}
-            value={filters.tag === null ? null : `#${filters.tag}`}
+            value={summary(filters.tag.map((tag) => `#${tag}`))}
             clearLabel={t('filters.clear_one', { name: t('filters.tags') })}
-            onClear={() => onChange({ tag: null })}
+            onClear={() => onChange({ tag: [] })}
             popupClassName="fpop-tags"
           >
-            {(close) => (
-              <TagList
-                tags={tags}
-                active={filters.tag}
-                onPick={(tag) => {
-                  onChange({ tag })
-                  close()
-                }}
-              />
-            )}
+            <TagList tags={tags} active={filters.tag} onToggle={toggleTag} />
           </FilterPill>
         )}
         <Presence visible={activeCount >= 2}>
-          <button type="button" className="chip fclear" onClick={() => onChange({ type: 'all', length: null, tag: null })}>
+          <button type="button" className="chip fclear" onClick={() => onChange({ type: [], length: null, tag: [] })}>
             {t('filters.clear')}
           </button>
         </Presence>

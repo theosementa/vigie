@@ -29,26 +29,33 @@ _ENUMS: dict[str, tuple[str, ...]] = {
 }
 _TEXT_LIMITS = {"tag": MAX_TAG, "q": MAX_SEARCH}
 _DEFAULTS = {"status": "to_watch", "type": "all"}
+# Keys that may repeat (several types, several tags): kept sorted and deduplicated.
+_MULTI = {"type", "tag"}
 
 
 def canonical_query(raw: str) -> str:
     """Keep only the library filter keys with valid values, sorted, defaults removed.
 
-    Returns "" when no filter is left. The first occurrence of a repeated key wins.
+    Returns "" when no filter is left. `type` and `tag` may repeat (deduplicated, tags
+    case-insensitively, then sorted); for the other keys the first occurrence wins.
     """
-    kept: dict[str, str] = {}
+    kept: dict[str, list[str]] = {}
     for key, value in parse_qsl(raw.removeprefix("?"), max_num_fields=50):
-        if key in kept:
+        if key in kept and key not in _MULTI:
             continue
         value = value.strip()
         if not value or value == _DEFAULTS.get(key):
             continue
-        if key in _ENUMS:
-            if value in _ENUMS[key]:
-                kept[key] = value
-        elif key in _TEXT_LIMITS and len(value) <= _TEXT_LIMITS[key]:
-            kept[key] = value
-    return urlencode(sorted(kept.items()))
+        valid = (key in _ENUMS and value in _ENUMS[key]) or (
+            key in _TEXT_LIMITS and len(value) <= _TEXT_LIMITS[key]
+        )
+        if not valid:
+            continue
+        values = kept.setdefault(key, [])
+        if value.casefold() not in {v.casefold() for v in values}:
+            values.append(value)
+    pairs = [(key, value) for key in sorted(kept) for value in sorted(kept[key], key=str.casefold)]
+    return urlencode(pairs)
 
 
 async def load_views(session: AsyncSession, user_id: uuid.UUID) -> list[SavedView]:

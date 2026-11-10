@@ -9,19 +9,20 @@ export const MAX_NAME = 40
 
 /**
  * The library filters of a URL query in canonical form, the way the server stores a view's query:
- * only status / type / length / tag / q, sorted by key, defaults (To watch, all types) left out.
+ * only status / type / length / tag / q, sorted by key (types and tags repeated, sorted), defaults
+ * (To watch, all types) left out.
  * "" means no filter. Compare canonical forms, never raw strings (`item=` and the order differ).
  */
 export function canonicalQuery(source: string | URLSearchParams): string {
   const f = readFilters(new URLSearchParams(source))
-  const tag = f.tag?.trim() ?? ''
+  const byName = (a: string, b: string) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0)
   const q = f.q.trim()
   const out = new URLSearchParams()
   if (f.length) out.set('length', f.length)
   if (q && q.length <= MAX_SEARCH) out.set('q', q)
   if (f.status === 'seen') out.set('status', 'seen')
-  if (tag && tag.length <= MAX_TAG) out.set('tag', tag)
-  if (f.type !== 'all') out.set('type', f.type)
+  for (const tag of f.tag.filter((x) => x.length <= MAX_TAG).sort(byName)) out.append('tag', tag)
+  for (const type of [...f.type].sort()) out.append('type', type)
   return out.toString()
 }
 
@@ -29,9 +30,9 @@ export function canonicalQuery(source: string | URLSearchParams): string {
 export function defaultViewName(query: string): string {
   const f = readFilters(new URLSearchParams(query))
   const parts = [
-    f.type !== 'all' && t(`filters.${f.type}`),
+    ...f.type.map((type) => t(`filters.${type}`)),
     f.length && t(`filters.length.${f.length}`),
-    f.tag && `#${f.tag}`,
+    ...f.tag.map((tag) => `#${tag}`),
     f.q.trim() && `“${f.q.trim()}”`,
     f.status === 'seen' && t('filters.seen'),
   ].filter(Boolean)
