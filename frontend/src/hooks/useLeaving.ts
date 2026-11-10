@@ -21,10 +21,13 @@ export interface Row<T> {
  * Keeps rows that were just removed from `items` in the output for the length of their exit
  * animation, so the list can collapse them instead of dropping them. Only a pure removal of
  * one or two rows counts: anything else (new filter, new page, reorder) is a plain swap.
+ * Rows appearing in a list that had items before (an Undo of the last removal) still arrive;
+ * only the very first load does not.
  */
 export function useLeaving<T extends { id: string }>(items: T[]): Row<T>[] {
-  const [state, setState] = useState<{ prev: T[]; gone: Gone<T>[]; arrived: ReadonlySet<string> }>({
+  const [state, setState] = useState<{ prev: T[]; gone: Gone<T>[]; arrived: ReadonlySet<string>; seen: boolean }>({
     prev: items,
+    seen: items.length > 0,
     gone: [],
     arrived: new Set(),
   })
@@ -43,10 +46,10 @@ export function useLeaving<T extends { id: string }>(items: T[]): Row<T>[] {
     // Same rule for additions; a row keeps the flag while mounted so its class never changes.
     const added = items.filter((i) => !prevIds.has(i.id))
     const arrive =
-      state.prev.length > 0 && !reduced && added.length > 0 && added.length <= MAX_LEAVING && removed.length === 0
+      (state.prev.length > 0 || state.seen) && !reduced && added.length > 0 && added.length <= MAX_LEAVING && removed.length === 0
     const arrived = new Set([...state.arrived].filter((id) => ids.has(id)))
     if (arrive) added.forEach((i) => arrived.add(i.id))
-    setState({ prev: items, gone: animate ? [...still, ...removed] : still, arrived })
+    setState({ prev: items, seen: state.seen || items.length > 0, gone: animate ? [...still, ...removed] : still, arrived })
   }
 
   useEffect(() => {
