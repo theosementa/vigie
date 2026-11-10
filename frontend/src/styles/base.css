@@ -47,7 +47,7 @@
 .scr-h .sub{margin-top:4px}
 .scr-h{padding-bottom:12px}
 .lib{display:grid;gap:14px;min-width:0}
-.lib-bar{display:flex;align-items:flex-start;gap:12px;min-width:0}
+.lib-bar{display:flex;align-items:center;gap:12px;min-width:0}
 /* Desktop: the filters wrap onto a second line instead of scrolling or being cut */
 /* Line spacing as item margins (not row-gap), so a chip alone on the last line can close it fully */
 .lib-bar .chips{flex:1;min-width:0;flex-wrap:wrap;overflow:visible;margin:-4px 0;padding:0;row-gap:0}
@@ -65,6 +65,43 @@
 .chip[aria-pressed="true"]{background:var(--text);color:var(--bg)}
 .chip b{font-weight:500}
 .type-picker{display:flex;flex-wrap:wrap;gap:6px}
+
+/* Filter bar: À voir / Vu segmented, then one pill per family (type, length, tags) with a popover */
+.fbar{display:grid;gap:10px;min-width:0}
+.fsep{display:none}
+.lib-bar .fbar{display:flex;align-items:center;gap:8px;flex:1}
+.lib-bar .fsep{display:block}
+.fstatus{flex:none}
+.fstatus b{font-weight:500}
+.pill{display:inline-flex;align-items:center;flex:none;height:32px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;transition:background-color var(--dur-base) var(--ease),color var(--dur-base) var(--ease)}
+.pill[data-active]{background:var(--text);color:var(--bg)}
+.pill:has([data-popup-open]):not([data-active]){color:var(--text)}
+.pill:has(:focus-visible){outline:2px solid var(--accent-ink);outline-offset:2px}
+.pill-open{height:100%;display:inline-flex;align-items:center;gap:6px;padding:0 10px 0 12px;border:0;background:none;color:inherit;font:inherit;outline:0}
+.pill[data-active] .pill-open{padding-right:2px}
+.pill .i{width:16px;height:16px}
+.pill .pill-car{width:14px;height:14px;opacity:.75}
+.pill-x{width:24px;height:24px;margin:0 4px 0 2px;flex:none;border-radius:50%;border:0;padding:0;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 16%,transparent);color:inherit;outline:0;transition:background-color var(--dur-fast) var(--ease)}
+.pill .pill-x .i{width:14px;height:14px}
+@media (hover:hover){
+  .pill:not([data-active]):hover{color:var(--text);background:color-mix(in srgb,var(--surface-2) 82%,var(--text))}
+  .pill-x:hover{background:color-mix(in srgb,var(--bg) 30%,transparent)}
+}
+.fpop{min-width:200px;max-width:calc(100vw - 24px);background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 8px 24px var(--shadow);transform-origin:var(--transform-origin);outline:0;transition:opacity var(--dur-base) var(--ease),scale var(--dur-base) var(--ease)}
+.fpop[data-starting-style],.fpop[data-ending-style]{opacity:0;scale:.97}
+.fpop-tags{width:280px;display:flex;flex-direction:column;gap:6px;max-height:min(420px,var(--available-height))}
+.fpop-search{height:36px;flex:none}
+.fpop-list{overflow-y:auto;min-height:0;display:flex;flex-direction:column;overscroll-behavior:contain}
+.fopt{display:flex;align-items:center;gap:10px;width:100%;min-height:36px;padding:0 10px;border:0;border-radius:9px;background:none;color:var(--text);font-size:14px;text-align:left;flex:none}
+.fopt .i{width:18px;height:18px;color:var(--muted)}
+.fopt .fopt-ck{width:16px;height:16px;flex:none;color:var(--text)}
+.fopt[aria-pressed="true"]{font-weight:500}
+.fopt:focus-visible{outline-offset:-2px}
+.fopt-l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fopt-n{color:var(--muted);font-size:12.5px;font-weight:400}
+@media (hover:hover){.fopt:hover{background:var(--surface-2)}}
+@media (pointer:coarse){.fopt{min-height:44px}}
+.fpop-empty{margin:0;padding:10px;color:var(--muted);font-size:13px}
 
 /* Panels, numbers */
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0}
