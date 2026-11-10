@@ -6,9 +6,11 @@
 const MENU_ID = 'vigie-save'
 const BADGE_MS = 4000
 
+// The toolbar icon of a page that is already in the library: the lighthouse with a green bookmark.
+const SAVED_ICON = { 16: 'icons/saved-16.png', 32: 'icons/saved-32.png' }
+const DEFAULT_ICON = { 16: 'icons/icon-16.png', 32: 'icons/icon-32.png' }
+
 const BADGES = {
-  ok: { text: '✓', color: '#2f9e44', message: 'saved' },
-  exists: { text: '✓', color: '#1c7ed6', message: 'alreadySaved' },
   error: { text: '!', color: '#e03131', message: 'failed' },
 }
 
@@ -43,8 +45,45 @@ function show(kind, tabId, detail) {
   setTimeout(() => {
     chrome.action.setBadgeText({ text: '', ...target })
     chrome.action.setTitle({ title: chrome.i18n.getMessage('actionTitle'), ...target })
+    if (tabId !== undefined) chrome.tabs.get(tabId).then((tab) => refreshSaved(tabId, tab.url)).catch(() => {})
   }, BADGE_MS)
 }
+
+/** Persistent state of a tab: the bookmark icon while its page is in the library. */
+function markSaved(tabId, saved) {
+  chrome.action.setIcon({ path: saved ? SAVED_ICON : DEFAULT_ICON, tabId }).catch(() => {})
+  chrome.action.setTitle({
+    title: chrome.i18n.getMessage(saved ? 'alreadySaved' : 'actionTitle'),
+    tabId,
+  }).catch(() => {})
+}
+
+/** Ask the instance whether this tab's page is already saved; silent on any failure. */
+async function refreshSaved(tabId, url) {
+  if (!url || !/^https?:\/\//i.test(url)) return markSaved(tabId, false)
+  const { baseUrl, token } = await chrome.storage.local.get(['baseUrl', 'token'])
+  if (!baseUrl || !token) return
+  if (!(await chrome.permissions.contains({ origins: [`${baseUrl}/*`] }))) return
+  try {
+    const response = await fetch(`${baseUrl}/api/extension/items/saved?url=${encodeURIComponent(url)}`, {
+      credentials: 'omit',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) return
+    const { saved } = await response.json()
+    markSaved(tabId, saved === true)
+  } catch {
+    // offline or unreachable: leave the icon as it is
+  }
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' || changeInfo.url) void refreshSaved(tabId, tab.url)
+})
+
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  chrome.tabs.get(tabId).then((tab) => refreshSaved(tabId, tab.url)).catch(() => {})
+})
 
 function needsSetup(tabId) {
   show('error', tabId, chrome.i18n.getMessage('notConfigured'))
@@ -68,8 +107,8 @@ async function saveFrom(url, tabId) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ url }),
     })
-    if (response.status === 201) return show('ok', tabId)
-    if (response.status === 409) return show('exists', tabId)
+    if (response.status === 201) return markSaved(tabId, true)
+    if (response.status === 409) return markSaved(tabId, true)
     if (response.status === 401) {
       show('error', tabId, chrome.i18n.getMessage('badToken'))
       chrome.runtime.openOptionsPage()

@@ -183,6 +183,20 @@ def set_status(item: Item, new_status: ItemStatus) -> str | None:
     return "seen" if new_status == "seen" else "unseen"
 
 
+async def is_saved(session: AsyncSession, user: User, raw_url: str) -> bool:
+    """Whether `raw_url` is already in the user's library. Never fetches the page."""
+    try:
+        digest = url_hash(normalize_url(raw_url))
+    except InvalidUrlError:
+        return False
+    found = await session.scalar(
+        select(Item.id)
+        .join(Resource, Resource.id == Item.resource_id)
+        .where(Item.user_id == user.id, Resource.url_hash == digest)
+    )
+    return found is not None
+
+
 async def add_item(session: AsyncSession, user: User, body: ItemCreate) -> ItemOut:
     """Add a URL to the library: the "add item" flow of the app and of the extension."""
     try:

@@ -443,6 +443,10 @@ Revokes at once. `404 not_found` for an id that is not the caller's.
 min / user budget. Any missing, malformed, unknown, revoked or wrong-scope token, or a user no longer
 allowed on the instance, gets the same `401 invalid_token`. Also limited to 120 requests / min / IP.
 
+### `GET /api/extension/items/saved?url=<url>` -> 200 `{ "saved": bool }`
+Same token and 401 as above. Whether the normalised URL is already in the caller's library (no page
+fetch; an invalid URL is simply `false`). The extension uses it to show its "saved" icon.
+
 ## Queue
 
 An ordered "watch next" list of the user's items (any type), independent from the `to_watch`/`seen` status. A queued

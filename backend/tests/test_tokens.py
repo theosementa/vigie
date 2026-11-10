@@ -127,3 +127,21 @@ async def test_extension_route_is_rate_limited_per_ip(rate_limits):
             for _ in range(125)
         ]
     assert codes[0] == 401 and codes[-1] == 429
+
+
+async def test_extension_tells_whether_a_page_is_saved(alice):
+    token = (await make_token(alice))["token"]
+
+    async def saved(url: str):
+        async with make_client() as c:
+            return await c.get(
+                "/api/extension/items/saved", params={"url": url}, headers=bearer(token)
+            )
+
+    assert (await saved(URL)).json() == {"saved": False}
+    assert (await add(token)).status_code == 201
+    assert (await saved(URL)).json() == {"saved": True}
+    assert (await saved(URL + "/?utm_source=x")).json() == {"saved": True}  # same normalised page
+    assert (await saved("ftp://example.com/x")).json() == {"saved": False}
+    async with make_client() as c:
+        assert (await c.get("/api/extension/items/saved", params={"url": URL})).status_code == 401
