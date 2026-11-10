@@ -28,6 +28,8 @@ See [VISION.md](VISION.md) for the product vision and [backend/API.md](backend/A
 - Accounts with e-mail and password, admin and user roles, revocable sessions.
 - Registration modes (invite, open, closed) and an invite list managed by the admin.
 - Mobile layout (tab bar, bottom sheets) under 768 px, desktop layout (sidebar, inspector) above.
+- Saved views (filters you keep in the sidebar), filters by type, length and tags, list or card display, undo on delete and seen.
+- **Chrome extension (dev mode, not on the Web Store yet)**: save the current page or a right-clicked link with a scoped, revocable API token. See [Browser extension](#browser-extension-chrome).
 - English and French interface.
 
 ## Quick start
@@ -215,9 +217,19 @@ A failed fetch never blocks saving: the title falls back to the host name.
 
 Outside `localhost`, a PWA requires HTTPS.
 
+### Browser extension (Chrome)
+
+The extension in [`extension/`](extension/README.md) (Manifest V3, no build step) is only available in developer mode for now:
+
+1. In Vigie, open Settings, **Browser extension**, and create a token (shown once, revocable).
+2. In Chrome, open `chrome://extensions`, enable **Developer mode**, **Load unpacked**, and pick the `extension/` folder.
+3. In the extension options, enter your instance address and the token.
+
+The toolbar button and the "Save to Vigie" context menu add a page or link; the icon shows a bookmark on pages already in your library. The token can only add items.
+
 ## Roadmap
 
-Not built yet: personal API tokens, optional SMTP (verification, reset and invitation e-mails). See [VISION.md](VISION.md) for the plan.
+Not built yet: Chrome Web Store publication of the extension, optional SMTP (verification, reset and invitation e-mails). See [VISION.md](VISION.md) for the plan.
 
 ## Licence
 
