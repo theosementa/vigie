@@ -175,6 +175,7 @@ export const en = {
   'filters.length.short': 'Under 10 min',
   'filters.length.medium': '10–30 min',
   'filters.length.long': 'Over 30 min',
+  'filters.status': 'Status',
   'filters.type': 'Type',
   'filters.length': 'Length',
   'filters.tags': 'Tags',

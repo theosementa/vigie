@@ -177,6 +177,7 @@ export const fr: Record<keyof typeof en, string> = {
   'filters.length.short': 'Moins de 10 min',
   'filters.length.medium': '10 à 30 min',
   'filters.length.long': 'Plus de 30 min',
+  'filters.status': 'Statut',
   'filters.type': 'Type',
   'filters.length': 'Durée',
   'filters.tags': 'Tags',

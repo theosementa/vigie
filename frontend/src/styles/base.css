@@ -68,11 +68,7 @@
 
 /* Filter bar: À voir / Vu segmented, then one pill per family (type, length, tags) with a popover */
 .fbar{display:grid;gap:10px;min-width:0}
-.fsep{display:none}
 .lib-bar .fbar{display:flex;align-items:center;gap:8px;flex:1}
-.lib-bar .fsep{display:block}
-.fstatus{flex:none}
-.fstatus b{font-weight:500}
 .pill{display:inline-flex;align-items:center;flex:none;height:32px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;transition:background-color var(--dur-base) var(--ease),color var(--dur-base) var(--ease)}
 .pill[data-active]{background:var(--text);color:var(--bg)}
 .pill:has([data-popup-open]):not([data-active]){color:var(--text)}

@@ -215,8 +215,7 @@ function TagList({
 }
 
 /**
- * Library filters: À voir / Vu as a segmented control (with the exact count), then one pill per
- * family (type, length, tags) that shows its value when it filters. They drive the URL filters.
+ * Library filters: one pill per family (status, type, length, tags) that shows its value when it filters. They drive the URL filters.
  */
 export function LibraryChips({
   filters,
@@ -248,17 +247,21 @@ export function LibraryChips({
 
   return (
     <div className="fbar" role="group" aria-label={t('filters.label')}>
-      <div className="seg full fstatus">
-        <button type="button" aria-pressed={filters.status === 'to_watch'} onClick={() => onChange({ status: 'to_watch' })}>
-          {t('filters.to_watch')}
-          {withCount && pile && <b>{formatNumber(pile.count)}</b>}
-        </button>
-        <button type="button" aria-pressed={filters.status === 'seen'} onClick={() => onChange({ status: 'seen' })}>
-          {t('filters.seen')}
-        </button>
-      </div>
-      <span className="chips-sep fsep" aria-hidden />
       <div className="chips">
+        <FilterPill
+          label={t('filters.status')}
+          value={filters.status === 'seen' ? t('filters.seen') : null}
+          clearLabel={t('filters.clear_one', { name: t('filters.status') })}
+          onClear={() => onChange({ status: 'to_watch' })}
+        >
+          <Option active={filters.status === 'to_watch'} onClick={() => onChange({ status: 'to_watch' })}>
+            <span className="fopt-l">{t('filters.to_watch')}</span>
+            {withCount && pile && <span className="fopt-n">{formatNumber(pile.count)}</span>}
+          </Option>
+          <Option active={filters.status === 'seen'} onClick={() => onChange({ status: 'seen' })}>
+            <span className="fopt-l">{t('filters.seen')}</span>
+          </Option>
+        </FilterPill>
         <FilterPill
           label={t('filters.type')}
           value={summary(filters.type.map((type) => t(`filters.${type}`)))}
