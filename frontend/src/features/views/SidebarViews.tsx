@@ -56,6 +56,7 @@ function ViewRow({
   index,
   active,
   leaving,
+  blockLeaving,
   arrived,
   actions,
 }: {
@@ -63,6 +64,8 @@ function ViewRow({
   index: number
   active: boolean
   leaving: boolean
+  /** The whole block is closing: the rows stay still instead of collapsing a second time inside it. */
+  blockLeaving: boolean
   arrived: boolean
   actions: Action[]
 }) {
@@ -78,7 +81,7 @@ function ViewRow({
     <li
       ref={setNodeRef}
       style={style}
-      className={cn('min-w-0', leaving ? 'leaving' : arrived ? 'expand' : 'enter', isDragging && 'z-10')}
+      className={cn('min-w-0', leaving ? (blockLeaving ? undefined : 'leaving') : arrived ? 'expand' : 'enter', isDragging && 'z-10')}
       inert={leaving}
     >
       <ContextMenu>
@@ -143,10 +146,11 @@ export function SidebarViews() {
     if (to >= 0) move.mutate({ id: String(active.id), position: to })
   }
 
+  const blockLeaving = rows.length > 0 && rows.every((r) => r.leaving)
   if (rows.length === 0) return null
   return (
     // Opens and closes its height as a block, so the entries below never jump.
-    <div className={rows.every((r) => r.leaving) ? 'leaving' : 'expand'}>
+    <div className={blockLeaving ? 'leaving' : 'expand'}>
       {/* One child only: the grid collapse above animates a single row. */}
       <div>
         <div className="nav-sep" />
@@ -166,6 +170,7 @@ export function SidebarViews() {
                   index={index}
                   active={view.id === activeId}
                   leaving={leaving}
+                  blockLeaving={blockLeaving}
                   arrived={arrived}
                   actions={[
                     { key: 'rename', label: t('view.rename'), icon: <Icon name="pen" />, run: () => dialogs.rename(view) },
