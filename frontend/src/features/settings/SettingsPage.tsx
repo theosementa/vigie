@@ -274,6 +274,7 @@ function TimezoneSection({ timezone }: { timezone: string }) {
       <Label htmlFor="timezone" className="mt-3">
         {t('settings.timezone.current')}
       </Label>
+      <div className="set-select mt-1.5">
       <select
         id="timezone"
         value={timezone}
@@ -287,6 +288,8 @@ function TimezoneSection({ timezone }: { timezone: string }) {
           </option>
         ))}
       </select>
+      <Icon name="alt-arrow-down" small />
+      </div>
       {browserTz !== timezone && (
         <Button
           variant="outline"
@@ -546,8 +549,9 @@ function CommunitySection() {
     <section className={sectionClass}>
       <h2 className={headingClass}>{t('settings.community')}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{t('settings.community.body')}</p>
+      <div className="mt-3 flex flex-col gap-3 md:flex-row">
       <Button
-        className="mt-3 h-10 w-full rounded-[10px] md:w-auto"
+        className="h-10 w-full rounded-[10px] md:w-auto"
         nativeButton={false}
         render={<a href={`${REPO_URL}/issues/new/choose`} target="_blank" rel="noopener noreferrer" />}
       >
@@ -555,7 +559,7 @@ function CommunitySection() {
       </Button>
       <Button
         variant="outline"
-        className="mt-2 h-10 w-full rounded-[10px] md:w-auto"
+        className="h-10 w-full rounded-[10px] md:w-auto"
         nativeButton={false}
         render={<a href={REPO_URL} target="_blank" rel="noopener noreferrer" />}
       >
@@ -566,6 +570,7 @@ function CommunitySection() {
           </span>
         )}
       </Button>
+      </div>
     </section>
   )
 }

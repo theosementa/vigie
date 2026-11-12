@@ -500,11 +500,16 @@ a.bub-link:active{opacity:.7}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 
 /* Settings: tab list on the left on desktop, scrollable pill row on a phone */
-.set-layout{display:grid;gap:14px;min-width:0}
+.set-layout{display:grid;gap:14px;min-width:0;width:100%;max-width:54rem;margin-inline:auto}
 .set-nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
 .set-nav::-webkit-scrollbar{display:none}
 .set-nav button{flex:none;display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap}
 .set-nav button[aria-current="page"]{background:var(--surface-2);color:var(--text)}
+.set-ctl .seg.full{grid-auto-columns:minmax(0,1fr)}
+.set-ctl .seg button{padding:6px 8px;min-width:0;white-space:nowrap}
+.set-select{position:relative}
+.set-select select{appearance:none;-webkit-appearance:none;padding-right:36px}
+.set-select .i{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)}
 .set-content{max-width:40rem;width:100%}
 .set-row{display:grid;gap:8px;margin-top:14px}
 .set-row:has(>.switch),.set-row:has(>button[role="switch"]){grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
@@ -513,7 +518,7 @@ a.bub-link:active{opacity:.7}
   .set-nav{flex-direction:column;overflow:visible;margin:0;padding:0;position:sticky;top:24px;gap:2px}
   .set-nav button{height:38px;border:0;background:none;border-radius:9px;padding:0 10px;gap:12px}
   .set-nav button[aria-current="page"]{background:var(--surface-2)}
-  .set-row{grid-template-columns:minmax(0,1fr) 17rem;align-items:center;gap:24px}
+  .set-row{grid-template-columns:minmax(0,1fr) 21rem;align-items:center;gap:24px}
   .set-row:has(>button[role="switch"]){grid-template-columns:minmax(0,1fr) auto}
   .set-row+.set-row{border-top:1px solid var(--line);padding-top:14px}
 }
