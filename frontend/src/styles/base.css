@@ -221,7 +221,8 @@
 
 /* Items: card (desktop grid) */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
-@media (max-width:767px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+/* Phone: each card is as tall as its own content (no stretching to the tallest of the row, which left a gap under short titles) */
+@media (max-width:767px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.cards .card{height:auto}}
 .card{display:flex;flex-direction:column;height:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0;position:relative;transition:border-color 150ms var(--ease)}
 .card:hover,.card[data-selected="true"]{border-color:var(--muted)}
 .card .mono{font-size:28px}
