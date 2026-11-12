@@ -372,7 +372,6 @@
 .main-h-narrow{margin-inline:auto;width:100%}
 .main-h-xl{max-width:36rem}
 .main-h-2xl{max-width:42rem}
-.main-h-3xl{max-width:54rem}
 .main-h h1,.main-h h4{margin:0;font-size:34px;line-height:1;font-weight:500;letter-spacing:-.02em}
 .main-h p{margin:8px 0 0;color:var(--muted);font-size:14px}
 .capture{display:flex;gap:8px;align-items:center}

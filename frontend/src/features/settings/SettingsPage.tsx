@@ -280,7 +280,7 @@ function TimezoneSection({ timezone }: { timezone: string }) {
         value={timezone}
         disabled={update.isPending}
         onChange={(e) => change(e.target.value)}
-        className="mt-1.5 h-10 w-full rounded-[10px] border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
+        className="h-10 w-full rounded-[10px] border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
       >
         {options.map((tz) => (
           <option key={tz} value={tz}>
