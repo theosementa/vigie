@@ -191,10 +191,12 @@
 .list.wide .it{grid-template-columns:96px minmax(0,1fr) auto;gap:16px;padding:8px 12px;border-radius:12px;border-top-color:transparent;background:transparent;--tt-lines:1}
 .list.wide>li+li .it::before{content:"";position:absolute;top:-1px;left:0;right:0;height:1px;background:var(--line)}
 .list.wide .it .th{width:96px;height:54px}
-.list.wide .it:hover,.list.wide .it[data-selected="true"]{background:var(--surface)}
-.list.wide .it:hover::before,.list.wide .it[data-selected="true"]::before{background:transparent}
+/* Hovered, selected, or holding an open menu (right-click or "⋯"): highlighted, with the dividers above and below hidden */
+.list.wide .it:hover,.list.wide .it[data-selected="true"],.list.wide .it[data-popup-open],.list.wide .it:has([data-popup-open]){background:var(--surface)}
+.list.wide .it:hover::before,.list.wide .it[data-selected="true"]::before,.list.wide .it[data-popup-open]::before,.list.wide .it:has([data-popup-open])::before,
+.list.wide>li:has(:is(.it:hover,.it[data-selected="true"],.it[data-popup-open],.it:has([data-popup-open])))+li .it::before{background:transparent}
 .row-actions{display:flex;gap:4px;opacity:0;transition:opacity 150ms var(--ease)}
-.it:hover .row-actions,.it:focus-within .row-actions,.row-actions:has([data-popup-open]){opacity:1}
+.it:hover .row-actions,.it:focus-within .row-actions,.it[data-popup-open] .row-actions,.row-actions:has([data-popup-open]){opacity:1}
 @media (pointer:coarse){.row-actions{opacity:1}}
 .meta{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;margin-top:3px;white-space:nowrap;overflow:hidden}
 .meta .i{width:14px;height:14px}
