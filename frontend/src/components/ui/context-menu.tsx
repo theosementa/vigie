@@ -4,9 +4,27 @@ import * as React from "react"
 import { Icon } from "@/components/Icon"
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 import { cn } from "@/lib/utils"
+import { otherMenuOpen, setMenuOpen } from "@/lib/menuLock"
 
-function ContextMenu({ ...props }: ContextMenuPrimitive.Root.Props) {
-  return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
+function ContextMenu({ open, defaultOpen, onOpenChange, ...props }: ContextMenuPrimitive.Root.Props) {
+  const id = React.useId()
+  const [inner, setInner] = React.useState(defaultOpen ?? false)
+  const controlled = open !== undefined
+  // A menu already open (e.g. the "⋯" one) blocks a second from opening, such as a long press on another row.
+  React.useEffect(() => () => setMenuOpen(id, false), [id])
+  return (
+    <ContextMenuPrimitive.Root
+      data-slot="context-menu"
+      {...props}
+      open={controlled ? open : inner}
+      onOpenChange={(next, details) => {
+        if (next && otherMenuOpen(id)) return
+        if (!controlled) setInner(next)
+        setMenuOpen(id, next)
+        onOpenChange?.(next, details)
+      }}
+    />
+  )
 }
 
 function ContextMenuPortal({ ...props }: ContextMenuPrimitive.Portal.Props) {

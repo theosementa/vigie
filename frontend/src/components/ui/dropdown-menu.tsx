@@ -2,9 +2,27 @@ import * as React from "react"
 import { Icon } from "@/components/Icon"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { cn } from "@/lib/utils"
+import { otherMenuOpen, setMenuOpen } from "@/lib/menuLock"
 
-function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
-  return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+function DropdownMenu({ open, defaultOpen, onOpenChange, ...props }: MenuPrimitive.Root.Props) {
+  const id = React.useId()
+  const [inner, setInner] = React.useState(defaultOpen ?? false)
+  const controlled = open !== undefined
+  // A menu already open (e.g. the "⋯" one) blocks a second from opening, such as a long press on another row.
+  React.useEffect(() => () => setMenuOpen(id, false), [id])
+  return (
+    <MenuPrimitive.Root
+      data-slot="dropdown-menu"
+      {...props}
+      open={controlled ? open : inner}
+      onOpenChange={(next, details) => {
+        if (next && otherMenuOpen(id)) return
+        if (!controlled) setInner(next)
+        setMenuOpen(id, next)
+        onOpenChange?.(next, details)
+      }}
+    />
+  )
 }
 
 function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
