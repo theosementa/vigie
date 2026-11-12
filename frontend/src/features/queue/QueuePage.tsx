@@ -22,7 +22,9 @@ import type { Item } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { formatWatchTime } from '@/features/stats/format'
 import { useT, type TFunction } from '@/lib/i18n'
-import { useSetItemStatus } from '@/features/items/queries'
+import { ItemDetailHost } from '@/features/items/ItemDetailHost'
+import { useItem, useSetItemStatus } from '@/features/items/queries'
+import { useLibraryFilters } from '@/features/items/useLibraryFilters'
 import { QueueEntry } from './QueueEntry'
 import { queueDurations, reorder, useMoveInQueue, useQueue, useRemoveFromQueue } from './queries'
 
@@ -86,6 +88,10 @@ export function QueuePage() {
   const move = useMoveInQueue()
   const remove = useRemoveFromQueue()
   const setStatus = useSetItemStatus()
+  // The inspector is driven by ?item=<id>, like in the library.
+  const { itemId, update } = useLibraryFilters()
+  const detail = useItem(itemId)
+  const selected = detail.isError ? null : (detail.data ?? null)
   // Order applied immediately on drop, so the list never snaps back while the optimistic update lands.
   const [override, setOverride] = useState<string[] | null>(null)
 
@@ -120,6 +126,7 @@ export function QueuePage() {
     (item: Item) => setStatus.mutate({ id: item.id, status: 'seen' }),
     [setStatus],
   )
+  const onOpenDetail = useCallback((item: Item) => update({ item: item.id }), [update])
   const onRemove = useCallback(
     (item: Item) =>
       remove.mutate(item.id, { onSuccess: () => toast(t('queue.removed')) }),
@@ -168,7 +175,7 @@ export function QueuePage() {
         accessibility={{ announcements: makeAnnouncements(items, t), screenReaderInstructions: makeInstructions(t) }}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          <ol className="space-y-3" aria-label={t('title.queue')}>
+          <ol className="list wide" aria-label={t('title.queue')}>
             {items.map((item, index) => (
               <QueueEntry
                 key={item.id}
@@ -178,11 +185,13 @@ export function QueuePage() {
                 onMove={onMove}
                 onSeen={onSeen}
                 onRemove={onRemove}
+                onOpenDetail={onOpenDetail}
               />
             ))}
           </ol>
         </SortableContext>
       </DndContext>
+      <ItemDetailHost item={selected} onClose={() => update({ item: null })} />
     </div>
   )
 }

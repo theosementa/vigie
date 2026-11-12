@@ -195,6 +195,11 @@
 .list.wide .it:hover,.list.wide .it[data-selected="true"],.list.wide .it[data-popup-open],.list.wide .it:has([data-popup-open]){background:var(--surface)}
 .list.wide .it:hover::before,.list.wide .it[data-selected="true"]::before,.list.wide .it[data-popup-open]::before,.list.wide .it:has([data-popup-open])::before,
 .list.wide>li:has(:is(.it:hover,.it[data-selected="true"],.it[data-popup-open],.it:has([data-popup-open])))+li .it::before{background:transparent}
+.list.wide .it.q-row{grid-template-columns:28px 96px minmax(0,1fr) auto;gap:12px;padding-left:4px}
+.q-grip{width:28px;height:36px;border:0;background:none;border-radius:8px;display:grid;place-items:center;color:var(--muted);cursor:grab;touch-action:none}
+.q-grip:hover{background:var(--surface-2);color:var(--text)}
+.q-grip:active{cursor:grabbing}
+.q-next{flex:none;height:22px;padding:0 9px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:12px;font-weight:500;display:inline-flex;align-items:center}
 .row-actions{display:flex;gap:4px;opacity:0;transition:opacity 150ms var(--ease)}
 .it:hover .row-actions,.it:focus-within .row-actions,.it[data-popup-open] .row-actions,.row-actions:has([data-popup-open]){opacity:1}
 @media (pointer:coarse){.row-actions{opacity:1}}

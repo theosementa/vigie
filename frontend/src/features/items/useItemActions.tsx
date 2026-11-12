@@ -12,6 +12,9 @@ export interface Action {
   label: string
   icon: ReactNode
   destructive?: boolean
+  disabled?: boolean
+  /** Draws a separator above the entry. */
+  separatorBefore?: boolean
   run: () => void
 }
 

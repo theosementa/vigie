@@ -17,9 +17,10 @@ export function ActionsDropdownContent({ actions }: { actions: Action[] }) {
     <DropdownMenuContent align="end" className="w-56">
       {actions.map((a) => (
         <Fragment key={a.key}>
-          {a.destructive && <DropdownMenuSeparator />}
+          {(a.destructive || a.separatorBefore) && <DropdownMenuSeparator />}
           <DropdownMenuItem
             variant={a.destructive ? 'destructive' : undefined}
+            disabled={a.disabled}
             onClick={a.run}
           >
             {a.icon}
@@ -36,8 +37,8 @@ export function ActionsContextContent({ actions }: { actions: Action[] }) {
     <ContextMenuContent className="w-56">
       {actions.map((a) => (
         <Fragment key={a.key}>
-          {a.destructive && <ContextMenuSeparator />}
-          <ContextMenuItem variant={a.destructive ? 'destructive' : undefined} onClick={a.run}>
+          {(a.destructive || a.separatorBefore) && <ContextMenuSeparator />}
+          <ContextMenuItem variant={a.destructive ? 'destructive' : undefined} disabled={a.disabled} onClick={a.run}>
             {a.icon}
             {a.label}
           </ContextMenuItem>
