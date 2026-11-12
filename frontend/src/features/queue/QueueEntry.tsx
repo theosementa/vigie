@@ -98,13 +98,14 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove, onOpenDe
           </button>
           <ItemThumb resource={resource} />
           <div>
+            {first && <span className="q-next q-next-m">{t('queue.next')}</span>}
             <button type="button" className="open tt" onClick={() => onOpenDetail(item)}>
               <span>{resource.title || siteOf(resource)}</span>
             </button>
             <ItemMeta item={item} />
           </div>
           <div className="flex items-center gap-2">
-            {first && <span className="above q-next">{t('queue.next')}</span>}
+            {first && <span className="above q-next q-next-d">{t('queue.next')}</span>}
             <div className="row-actions above">
               <DropdownMenu>
                 <DropdownMenuTrigger
