@@ -3,14 +3,13 @@ import { Icon } from '@/components/Icon'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Item } from '@/lib/api'
+import { formatDuration, hostname } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ActionsContextContent, ActionsDropdownContent } from '@/features/items/itemActions'
 import type { Action } from '@/features/items/useItemActions'
-import { ItemMeta } from '@/features/items/ItemMeta'
 import { ItemThumb } from '@/features/items/ItemThumb'
-import { isMetadataUnavailable, siteOf } from '@/features/items/metadata'
 import { useT } from '@/lib/i18n'
 
 export interface QueueEntryHandlers {
@@ -30,6 +29,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove, onOpenDe
   const t = useT()
   const { resource } = item
   const title = resource.title ?? resource.url
+  const site = resource.site_name ?? hostname(resource.url)
   const first = index === 0
   const last = index === count - 1
 
@@ -80,9 +80,11 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove, onOpenDe
       <ContextMenu>
         <ContextMenuTrigger
           render={
-            <div
-              data-selected={isDragging || undefined}
-              className={cn('it q-row', isMetadataUnavailable(resource) && 'is-unknown', isDragging && 'shadow-xl')}
+            <article
+              className={cn(
+                'q-row flex items-stretch gap-2 rounded-2xl bg-card p-2 text-card-foreground shadow-sm ring-1 ring-border transition-shadow data-popup-open:ring-2 data-popup-open:ring-accent-ink/60',
+                isDragging && 'shadow-xl ring-2 ring-accent-ink/60',
+              )}
             />
           }
         >
@@ -92,37 +94,58 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove, onOpenDe
             {...attributes}
             {...listeners}
             aria-label={t('queue.entry.drag', { title, position: index + 1, count })}
-            className="above q-grip"
+            className="flex w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
           >
-            <Icon name="reorder" small aria-hidden />
+            <Icon name="reorder" className="size-5" aria-hidden />
           </button>
-          <ItemThumb resource={resource} />
-          <div>
-            {first && <span className="q-next q-next-m">{t('queue.next')}</span>}
-            <button type="button" className="open tt" onClick={() => onOpenDetail(item)}>
-              <span>{resource.title || siteOf(resource)}</span>
-            </button>
-            <ItemMeta item={item} />
+
+          <div className="q-th w-28 shrink-0 self-center overflow-hidden rounded-xl sm:w-40">
+            <ItemThumb resource={resource} />
           </div>
-          <div className="flex items-center gap-2">
-            {first && <span className="above q-next q-next-d">{t('queue.next')}</span>}
-            <div className="row-actions above">
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <button
-                      type="button"
-                      className="icon-btn"
-                      aria-label={t('queue.entry.actions', { title })}
-                      title={t('item.actions')}
-                    />
-                  }
-                >
-                  <Icon name="menu-dots" small />
-                </DropdownMenuTrigger>
-                <ActionsDropdownContent actions={actions} />
-              </DropdownMenu>
+
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 py-0.5">
+            <div className="flex items-center gap-1.5 text-xs">
+              {first ? (
+                <span className="inline-flex shrink-0 items-center rounded-full bg-primary px-2 py-0.5 font-medium text-primary-foreground">
+                  {t('queue.next')}
+                </span>
+              ) : (
+                <span className="shrink-0 font-medium text-muted-foreground tabular-nums">#{index + 1}</span>
+              )}
+              <span className="truncate text-muted-foreground">
+                {site}
+                {resource.duration_seconds != null && ` · ${formatDuration(resource.duration_seconds)}`}
+              </span>
             </div>
+            <h3 className="line-clamp-2 text-[15px] leading-snug font-medium">
+              <a
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {title}
+                <span className="sr-only"> {t('common.new_tab')}</span>
+              </a>
+            </h3>
+          </div>
+
+          <div className="q-actions flex shrink-0 items-start">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label={t('queue.entry.actions', { title })}
+                    title={t('item.actions')}
+                  />
+                }
+              >
+                <Icon name="menu-dots" small />
+              </DropdownMenuTrigger>
+              <ActionsDropdownContent actions={actions} />
+            </DropdownMenu>
           </div>
         </ContextMenuTrigger>
         <ActionsContextContent actions={actions} />

@@ -175,7 +175,7 @@ export function QueuePage() {
         accessibility={{ announcements: makeAnnouncements(items, t), screenReaderInstructions: makeInstructions(t) }}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          <ol className="list wide" aria-label={t('title.queue')}>
+          <ol className="space-y-3" aria-label={t('title.queue')}>
             {items.map((item, index) => (
               <QueueEntry
                 key={item.id}
