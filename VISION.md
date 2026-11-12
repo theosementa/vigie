@@ -112,7 +112,9 @@ The **Core** is always on. The others are enabled **per account** in *Settings �
 - **Mark as seen** applies at once (request sent immediately) and shows "“title” marked as seen · Undo" for 5 s; Undo sends the item back to To watch, and to its former queue position when it was queued (the toast then says it was removed from the queue). The journal records `seen` then `unseen`, so the statistics stay right (§5.4: a `seen` followed by an `unseen` in the same period does not count).
 - Deleting a saved view uses the same Undo toast. A confirmation stays only where an Undo cannot work: deleting the account, revoking an API token, deleting a contact (its history is involved).
 
-**Display**: card grid (image, title, site + favicon, duration or reading time, tags, state). Missing image → the art-direction thumbnail (no random gradient). Detail: metadata, note, tags, item history (added, seen, shared by…).
+**Display**: a grid / list toggle in the Library header (also in Settings; saved on the account, one value for phones and one for tablet and desktop). Grid: cards (image, title, site + favicon, duration or reading time, tags, state), the site line pinned to the bottom so cards in a row line up; on a phone, two columns of equal height. List: a wide row on tablet and desktop, the swipe row on a phone. Missing image → the art-direction thumbnail (no random gradient).
+
+**Item actions**: there is no hover check on cards and rows. Every action (open the link, mark as seen / back to watch, add to or remove from the queue, share, rename, details, delete) lives in one menu, opened by right-click, long press, or the "⋯" button (shown on hover, always visible on touch screens). The row stays highlighted while its menu is open, and only one menu can be open at a time. Detail: metadata, note, tags, item history (added, seen, shared by…).
 
 ### 5.2 Queue
 
@@ -120,7 +122,7 @@ The **Core** is always on. The others are enabled **per account** in *Settings �
 
 **Automatic exit**: marking Seen or deleting removes it from the queue.
 
-**Display**: reorderable list (drag by finger and by keyboard), total queue duration = Σ known durations, confidence `partial` if at least one duration is unknown ("≈ 2 h 40, 2 videos without duration").
+**Display**: reorderable cards (a drag handle, by finger and by keyboard; image cropped to a fixed size), with the same item menu as the Library (open the link, details, mark as seen, move to the top / up / down, remove from the queue); the title opens the link and "Details" opens the inspector. The first item is marked "Up next". Total queue duration = Σ known durations, confidence `partial` if at least one duration is unknown ("≈ 2 h 40, 2 videos without duration").
 
 ### 5.3 Sharing
 
@@ -262,7 +264,7 @@ Visual reference: `vigie-da.html` (tokens copied as they are into `tokens.css`, 
 ### Navigation by platform
 
 - **Mobile**: bottom tab bar: Library, Queue, **central "Add" action**, Shared, Stats. The central action opens full-screen capture (URL field, "Paste", preview, sticky "Add to Vigie" at the bottom). Settings from the Library header.
-- **Tablet portrait**: side icon rail, capture in a modal.
+- **Tablet portrait**: side icon rail (navigation only, no logo and no Add button: the Library header has the capture bar), capture in a modal.
 - **Tablet landscape and desktop**: full sidebar (active modules, then Settings, then the account). Capture bar in the Library header, inspector on the right from 1,280 px.
 
 ## 12. Roadmap
