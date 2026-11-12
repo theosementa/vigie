@@ -92,7 +92,7 @@ function ProfileSection({ me }: { me: User }) {
         <p className="text-xs text-muted-foreground">{t('auth.name_note')}</p>
         <Button
           type="submit"
-          className="h-10 w-full rounded-[10px]"
+          className="h-10 w-full rounded-[10px] md:w-auto"
           disabled={!isDirty || update.isPending}
         >
           {t('common.save')}
@@ -119,134 +119,140 @@ const LAYOUTS: { value: MobileLayout; label: MessageKey }[] = [
   { value: 'grid', label: 'layout.grid' },
 ]
 
+function Row({ id, label, help, children }: { id: string; label: string; help?: string; children: React.ReactNode }) {
+  return (
+    <div className="set-row">
+      <div className="min-w-0">
+        <p id={id} className="text-sm font-medium">
+          {label}
+        </p>
+        {help && <p className="text-xs text-muted-foreground">{help}</p>}
+      </div>
+      <div className="set-ctl">{children}</div>
+    </div>
+  )
+}
+
+function Switch({ labelId, on, disabled, onChange }: { labelId: string; on: boolean; disabled?: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-labelledby={labelId}
+      disabled={disabled}
+      className="disabled:opacity-50"
+      onClick={() => onChange(!on)}
+    >
+      <span className={on ? 'switch on' : 'switch'} />
+    </button>
+  )
+}
+
+function Seg<T extends string>({
+  labelId,
+  value,
+  options,
+  onChange,
+}: {
+  labelId: string
+  value: T
+  options: { value: T; label: string; icon?: IconBase }[]
+  onChange: (v: T) => void
+}) {
+  return (
+    <div role="group" aria-labelledby={labelId} className="seg full">
+      {options.map((o) => (
+        <button key={o.value} type="button" aria-pressed={value === o.value} onClick={() => onChange(o.value)}>
+          {o.icon && <Icon name={o.icon} small />}
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Theme (Sombre / Clair / Système), language and layouts: applied at once, saved on the account. */
 function AppearanceSection() {
   const t = useT()
   const { theme, setTheme } = useTheme()
   const { preference, setPreference } = useLocalePreference()
   const [layout, setLayout] = useMobileLayout()
   const [desktopLayout, setDesktopLayout] = useDesktopLayout()
-  const [hidden, setHidden] = useHiddenTypes()
-  const [zoomLock, setZoomLock] = useZoomLock()
+  const layoutOptions = LAYOUTS.map((o) => ({ ...o, label: t(o.label) }))
   return (
     <section className={sectionClass}>
       <h2 className={headingClass}>{t('settings.appearance')}</h2>
-      <p id="theme-label" className="mt-3 text-sm font-medium">
-        {t('theme.label')}
-      </p>
-      <div role="group" aria-labelledby="theme-label" className="seg full mt-2">
-        {THEMES.map((o) => (
-          <button key={o.value} type="button" aria-pressed={theme === o.value} onClick={() => setTheme(o.value)}>
-            <Icon name={o.icon} small />
-            {t(o.label)}
-          </button>
-        ))}
-      </div>
-      <p id="locale-label" className="mt-3 text-sm font-medium">
-        {t('locale.label')}
-      </p>
-      <div role="group" aria-labelledby="locale-label" className="seg full mt-2">
-        {LOCALES.map((o) => (
-          <button key={o.value} type="button" aria-pressed={preference === o.value} onClick={() => setPreference(o.value)}>
-            {t(o.label)}
-          </button>
-        ))}
-      </div>
-      <h3 className="h-label mt-5">{t('settings.preferences')}</h3>
-      <p id="layout-label" className="mt-2 text-sm font-medium">
-        {t('layout.label')}
-      </p>
-      <div role="group" aria-labelledby="layout-label" className="seg full mt-2">
-        {LAYOUTS.map((o) => (
-          <button key={o.value} type="button" aria-pressed={layout === o.value} onClick={() => setLayout(o.value)}>
-            {t(o.label)}
-          </button>
-        ))}
-      </div>
-      <p id="desktop-layout-label" className="mt-3 text-sm font-medium">
-        {t('layout.desktop_label')}
-      </p>
-      <div role="group" aria-labelledby="desktop-layout-label" className="seg full mt-2">
-        {LAYOUTS.map((o) => (
-          <button key={o.value} type="button" aria-pressed={desktopLayout === o.value} onClick={() => setDesktopLayout(o.value)}>
-            {t(o.label)}
-          </button>
-        ))}
-      </div>
-      <p id="types-label" className="mt-4 text-sm font-medium">
-        {t('types.label')}
-      </p>
-      <p className="text-xs text-muted-foreground">{t('types.help')}</p>
-      <ul aria-labelledby="types-label" className="mt-1 divide-y divide-border">
-        {RESOURCE_TYPES.map((type) => {
-          const on = !hidden.includes(type)
-          // At least one type has to stay on, or there would be nothing left to add.
-          const last = on && hidden.length >= RESOURCE_TYPES.length - 1
-          return (
-            <li key={type} className="flex items-center justify-between gap-3 py-2.5">
-              <span id={`type-${type}`} className="flex items-center gap-2 text-sm">
-                <Icon name={TYPE_ICON[type]} small />
-                {t(`type.${type}`)}
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={on}
-                aria-labelledby={`type-${type}`}
-                disabled={last}
-                className="disabled:opacity-50"
-                onClick={() => setHidden(on ? [...hidden, type] : hidden.filter((h) => h !== type))}
-              >
-                <span className={on ? 'switch on' : 'switch'} />
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p id="zoom-label" className="text-sm font-medium">
-            {t('zoom.label')}
-          </p>
-          <p className="text-xs text-muted-foreground">{t('zoom.help')}</p>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={zoomLock}
-          aria-labelledby="zoom-label"
-          onClick={() => setZoomLock(!zoomLock)}
-        >
-          <span className={zoomLock ? 'switch on' : 'switch'} />
-        </button>
-      </div>
+      <Row id="theme-label" label={t('theme.label')}>
+        <Seg labelId="theme-label" value={theme} onChange={setTheme} options={THEMES.map((o) => ({ ...o, label: t(o.label) }))} />
+      </Row>
+      <Row id="locale-label" label={t('locale.label')}>
+        <Seg labelId="locale-label" value={preference} onChange={setPreference} options={LOCALES.map((o) => ({ ...o, label: t(o.label) }))} />
+      </Row>
+      <Row id="layout-label" label={t('layout.label')}>
+        <Seg labelId="layout-label" value={layout} onChange={setLayout} options={layoutOptions} />
+      </Row>
+      <Row id="desktop-layout-label" label={t('layout.desktop_label')}>
+        <Seg labelId="desktop-layout-label" value={desktopLayout} onChange={setDesktopLayout} options={layoutOptions} />
+      </Row>
     </section>
   )
 }
 
-function ContactsSection() {
+function PreferencesSection() {
   const t = useT()
+  const [hidden, setHidden] = useHiddenTypes()
+  const [zoomLock, setZoomLock] = useZoomLock()
   const [auto, setAuto] = useAutoCreateContacts()
   return (
-    <section className={sectionClass}>
-      <h2 className={headingClass}>{t('settings.contacts')}</h2>
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p id="auto-contacts-label" className="text-sm font-medium">
-            {t('settings.autoContacts')}
-          </p>
-          <p className="text-xs text-muted-foreground">{t('settings.autoContacts.help')}</p>
+    <>
+      <section className={sectionClass}>
+        <h2 className={headingClass}>{t('types.label')}</h2>
+        <p className="mt-2 text-xs text-muted-foreground">{t('types.help')}</p>
+        <ul aria-label={t('types.label')} className="mt-1 divide-y divide-border">
+          {RESOURCE_TYPES.map((type) => {
+            const on = !hidden.includes(type)
+            // At least one type has to stay on, or there would be nothing left to add.
+            const last = on && hidden.length >= RESOURCE_TYPES.length - 1
+            return (
+              <li key={type} className="flex items-center justify-between gap-3 py-2.5">
+                <span id={`type-${type}`} className="flex items-center gap-2 text-sm">
+                  <Icon name={TYPE_ICON[type]} small />
+                  {t(`type.${type}`)}
+                </span>
+                <Switch
+                  labelId={`type-${type}`}
+                  on={on}
+                  disabled={last}
+                  onChange={() => setHidden(on ? [...hidden, type] : hidden.filter((h) => h !== type))}
+                />
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+      <section className={sectionClass}>
+        <h2 className={headingClass}>{t('settings.preferences')}</h2>
+        <div className="set-row">
+          <div className="min-w-0">
+            <p id="zoom-label" className="text-sm font-medium">
+              {t('zoom.label')}
+            </p>
+            <p className="text-xs text-muted-foreground">{t('zoom.help')}</p>
+          </div>
+          <Switch labelId="zoom-label" on={zoomLock} onChange={setZoomLock} />
         </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={auto}
-          aria-labelledby="auto-contacts-label"
-          onClick={() => setAuto(!auto)}
-        >
-          <span className={auto ? 'switch on' : 'switch'} />
-        </button>
-      </div>
-    </section>
+        <div className="set-row">
+          <div className="min-w-0">
+            <p id="auto-contacts-label" className="text-sm font-medium">
+              {t('settings.autoContacts')}
+            </p>
+            <p className="text-xs text-muted-foreground">{t('settings.autoContacts.help')}</p>
+          </div>
+          <Switch labelId="auto-contacts-label" on={auto} onChange={setAuto} />
+        </div>
+      </section>
+    </>
   )
 }
 
@@ -273,7 +279,7 @@ function TimezoneSection({ timezone }: { timezone: string }) {
         value={timezone}
         disabled={update.isPending}
         onChange={(e) => change(e.target.value)}
-        className="mt-1.5 h-10 w-full rounded-[10px] border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
+        className="mt-1.5 h-10 w-full rounded-[10px] md:w-auto border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
       >
         {options.map((tz) => (
           <option key={tz} value={tz}>
@@ -284,7 +290,7 @@ function TimezoneSection({ timezone }: { timezone: string }) {
       {browserTz !== timezone && (
         <Button
           variant="outline"
-          className="mt-3 h-10 w-full rounded-[10px]"
+          className="mt-3 h-10 w-full rounded-[10px] md:w-auto"
           disabled={update.isPending}
           onClick={() => change(browserTz)}
         >
@@ -347,7 +353,7 @@ function PasswordSection() {
             {errorMessage(change.error, t('settings.password.failed'))}
           </p>
         )}
-        <Button type="submit" className="h-10 w-full rounded-[10px]" disabled={change.isPending}>
+        <Button type="submit" className="h-10 w-full rounded-[10px] md:w-auto" disabled={change.isPending}>
           {t('settings.password.submit')}
         </Button>
       </form>
@@ -449,15 +455,15 @@ function SessionSection() {
       <h2 className={headingClass}>{t('settings.sessions')}</h2>
       <p className="mt-2 text-sm font-medium">{t('settings.devices')}</p>
       <DeviceList />
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 flex flex-col gap-2 md:flex-row">
         <Button
           variant="outline"
-          className="h-10 w-full rounded-[10px]"
+          className="h-10 w-full rounded-[10px] md:w-auto"
           onClick={() => logout.mutate(undefined, { onSettled: () => navigate('/login') })}
         >
           {t('settings.logout')}
         </Button>
-        <Button variant="outline" className="h-10 w-full rounded-[10px]" onClick={() => setConfirmAll(true)}>
+        <Button variant="outline" className="h-10 w-full rounded-[10px] md:w-auto" onClick={() => setConfirmAll(true)}>
           {t('settings.logout_all')}
         </Button>
       </div>
@@ -499,7 +505,7 @@ function AboutSection() {
       <p className="mt-1 text-sm text-muted-foreground">{t('settings.about.reset.hint')}</p>
       <Button
         variant="outline"
-        className="mt-3 h-10 w-full rounded-[10px]"
+        className="mt-3 h-10 w-full rounded-[10px] md:w-auto"
         disabled={pending}
         onClick={() => {
           setPending(true)
@@ -541,7 +547,7 @@ function CommunitySection() {
       <h2 className={headingClass}>{t('settings.community')}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{t('settings.community.body')}</p>
       <Button
-        className="mt-3 h-10 w-full rounded-[10px]"
+        className="mt-3 h-10 w-full rounded-[10px] md:w-auto"
         nativeButton={false}
         render={<a href={`${REPO_URL}/issues/new/choose`} target="_blank" rel="noopener noreferrer" />}
       >
@@ -549,7 +555,7 @@ function CommunitySection() {
       </Button>
       <Button
         variant="outline"
-        className="mt-2 h-10 w-full rounded-[10px]"
+        className="mt-2 h-10 w-full rounded-[10px] md:w-auto"
         nativeButton={false}
         render={<a href={REPO_URL} target="_blank" rel="noopener noreferrer" />}
       >
@@ -571,7 +577,7 @@ function DangerZone() {
     <section className="panel">
       <h2 className="h-label" style={{ color: 'var(--over)' }}>{t('settings.danger')}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{t('settings.danger.body')}</p>
-      <Button variant="destructive" className="mt-3 h-10 w-full rounded-[10px]" onClick={() => setOpen(true)}>
+      <Button variant="destructive" className="mt-3 h-10 w-full rounded-[10px] md:w-auto" onClick={() => setOpen(true)}>
         {t('settings.delete.title')}
       </Button>
       <DeleteAccountDialog open={open} onOpenChange={setOpen} />
@@ -579,54 +585,67 @@ function DangerZone() {
   )
 }
 
-type SettingsTab = 'general' | 'account'
-const TABS: { value: SettingsTab; label: MessageKey }[] = [
-  { value: 'general', label: 'settings.tab.general' },
-  { value: 'account', label: 'settings.tab.account' },
+type SettingsTab = 'appearance' | 'preferences' | 'account' | 'security' | 'extension' | 'about'
+const TABS: { value: SettingsTab; label: MessageKey; icon: IconBase }[] = [
+  { value: 'appearance', label: 'settings.tab.appearance', icon: 'sun-2' },
+  { value: 'preferences', label: 'settings.tab.preferences', icon: 'settings' },
+  { value: 'account', label: 'settings.tab.account', icon: 'user-circle' },
+  { value: 'security', label: 'settings.tab.security', icon: 'shield-check' },
+  { value: 'extension', label: 'settings.tab.extension', icon: 'link-minimalistic-2' },
+  { value: 'about', label: 'settings.tab.about', icon: 'info-circle' },
 ]
 
 export function SettingsPage() {
   const t = useT()
   const { data: me } = useMe()
   const [params, setParams] = useSearchParams()
-  const tab: SettingsTab = params.get('tab') === 'account' ? 'account' : 'general'
+  const requested = params.get('tab')
+  const tab: SettingsTab = TABS.find((o) => o.value === requested)?.value ?? 'appearance'
   return (
-    <div className="lib form-page mx-auto max-w-xl">
-      <div role="group" aria-label={t('nav.settings')} className="seg full">
+    <div className="set-layout">
+      <nav aria-label={t('nav.settings')} className="set-nav">
         {TABS.map((o) => (
           <button
             key={o.value}
             type="button"
-            aria-pressed={tab === o.value}
-            onClick={() => setParams(o.value === 'general' ? {} : { tab: o.value }, { replace: true })}
+            aria-current={tab === o.value ? 'page' : undefined}
+            onClick={() => setParams(o.value === 'appearance' ? {} : { tab: o.value }, { replace: true })}
           >
+            <Icon name={o.icon} small />
             {t(o.label)}
           </button>
         ))}
+      </nav>
+      <div className="lib form-page set-content">
+        {tab === 'appearance' && <AppearanceSection />}
+        {tab === 'preferences' && <PreferencesSection />}
+        {tab === 'account' && (
+          <>
+            {me && <ProfileSection key={`${me.first_name}|${me.last_name}`} me={me} />}
+            {me && <TimezoneSection timezone={me.timezone} />}
+            <DangerZone />
+          </>
+        )}
+        {tab === 'security' && (
+          <>
+            <PasswordSection />
+            <SessionSection />
+          </>
+        )}
+        {tab === 'extension' && <ExtensionSection />}
+        {tab === 'about' && (
+          <>
+            <AboutSection />
+            <CommunitySection />
+            {me?.role === 'admin' && (
+              <Link to="/admin" className="panel flex items-center gap-3 text-sm font-medium md:hidden">
+                <Icon name="shield-check" className="size-5" />
+                {t('nav.admin')}
+              </Link>
+            )}
+          </>
+        )}
       </div>
-      {tab === 'general' ? (
-        <>
-          <AppearanceSection />
-          <ContactsSection />
-          <CommunitySection />
-          <AboutSection />
-          {me?.role === 'admin' && (
-            <Link to="/admin" className="panel flex items-center gap-3 text-sm font-medium md:hidden">
-              <Icon name="shield-check" className="size-5" />
-              {t('nav.admin')}
-            </Link>
-          )}
-        </>
-      ) : (
-        <>
-          {me && <ProfileSection key={`${me.first_name}|${me.last_name}`} me={me} />}
-          {me && <TimezoneSection timezone={me.timezone} />}
-          <PasswordSection />
-          <SessionSection />
-          <ExtensionSection />
-          <DangerZone />
-        </>
-      )}
     </div>
   )
 }

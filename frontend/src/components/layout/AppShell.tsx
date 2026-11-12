@@ -88,7 +88,7 @@ function PageHeader() {
   )
   const back = backTarget(pathname)
   const library = isLibraryPath(pathname)
-  const narrow = isContacts || pathname === '/settings' ? 'xl' : pathname === '/admin' ? '2xl' : null
+  const narrow = pathname === '/settings' ? '3xl' : isContacts ? 'xl' : pathname === '/admin' ? '2xl' : null
   return (
     <>
       <header className="scr-h only-mobile">

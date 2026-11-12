@@ -66,3 +66,4 @@ bookmark-linear
 bookmark-bold
 list-linear
 widget-2-linear
+user-circle-linear

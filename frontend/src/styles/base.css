@@ -372,6 +372,7 @@
 .main-h-narrow{margin-inline:auto;width:100%}
 .main-h-xl{max-width:36rem}
 .main-h-2xl{max-width:42rem}
+.main-h-3xl{max-width:54rem}
 .main-h h1,.main-h h4{margin:0;font-size:34px;line-height:1;font-weight:500;letter-spacing:-.02em}
 .main-h p{margin:8px 0 0;color:var(--muted);font-size:14px}
 .capture{display:flex;gap:8px;align-items:center}
@@ -497,3 +498,22 @@ a.bub-link:active{opacity:.7}
 [data-sonner-toaster] [data-sonner-toast][data-styled=true] [data-button]:focus-visible{box-shadow:0 0 0 2px currentColor}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* Settings: tab list on the left on desktop, scrollable pill row on a phone */
+.set-layout{display:grid;gap:14px;min-width:0}
+.set-nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
+.set-nav::-webkit-scrollbar{display:none}
+.set-nav button{flex:none;display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap}
+.set-nav button[aria-current="page"]{background:var(--surface-2);color:var(--text)}
+.set-content{max-width:40rem;width:100%}
+.set-row{display:grid;gap:8px;margin-top:14px}
+.set-row:has(>.switch),.set-row:has(>button[role="switch"]){grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+@media (min-width:768px){
+  .set-layout{grid-template-columns:13rem minmax(0,1fr);gap:32px;align-items:start}
+  .set-nav{flex-direction:column;overflow:visible;margin:0;padding:0;position:sticky;top:24px;gap:2px}
+  .set-nav button{height:38px;border:0;background:none;border-radius:9px;padding:0 10px;gap:12px}
+  .set-nav button[aria-current="page"]{background:var(--surface-2)}
+  .set-row{grid-template-columns:minmax(0,1fr) 17rem;align-items:center;gap:24px}
+  .set-row:has(>button[role="switch"]){grid-template-columns:minmax(0,1fr) auto}
+  .set-row+.set-row{border-top:1px solid var(--line);padding-top:14px}
+}
