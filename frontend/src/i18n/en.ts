@@ -42,6 +42,7 @@ export const en = {
   'settings.preferences': 'Preferences',
   'layout.label': 'Mobile display',
   'layout.desktop_label': 'Desktop and tablet display',
+  'layout.toggle': 'Display',
   'layout.list': 'List',
   'layout.grid': 'Grid',
   'zoom.label': 'Lock zoom',

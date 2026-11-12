@@ -1,6 +1,7 @@
 import { Icon } from '@/components/Icon'
 import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { ViewChips } from '@/features/views/ViewChips'
+import { LayoutToggle } from '../LayoutToggle'
 import { LibraryChips } from '../LibraryChips'
 import { LibraryContent } from '../LibraryContent'
 import { useTags } from '../queries'
@@ -14,7 +15,7 @@ export function MobileLibrary({ lib }: { lib: Library }) {
   const { data: tags = [] } = useTags()
   const { filters, update, selected, refetch, sharedOnly } = lib
   const searchOpen = useSearchOpen()
-  const [layout] = useMobileLayout()
+  const [layout, setLayout] = useMobileLayout()
   const { pull, refreshing } = usePullToRefresh(refetch, selected === null)
   return (
     <div className="lib">
@@ -38,6 +39,9 @@ export function MobileLibrary({ lib }: { lib: Library }) {
       {!sharedOnly && <ViewChips />}
       <LibraryChips filters={filters} tags={tags} onChange={update} withCount={!sharedOnly} />
       {!sharedOnly && <ScopePanel />}
+      <div className="flex justify-end">
+        <LayoutToggle value={layout} onChange={setLayout} />
+      </div>
       <LibraryContent lib={lib} variant={layout === 'grid' ? 'cards' : 'list'} />
     </div>
   )
