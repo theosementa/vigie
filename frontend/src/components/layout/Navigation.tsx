@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Icon } from '@/components/Icon'
-import { LogoMark } from '@/components/Logo'
 import { useAddItem } from '@/features/items/addItemContext'
 import { SidebarViews } from '@/features/views/SidebarViews'
 import { useActiveView } from '@/features/views/queries'
@@ -96,9 +95,6 @@ export function Rail() {
   )
   return (
     <aside className="rail only-desktop" aria-label={t('nav.main')}>
-      <Link to="/" className="logo" aria-label={t('shell.logo')} title={t('shell.logo')}>
-        <LogoMark />
-      </Link>
       <button type="button" className="start" aria-label={t('nav.add.label')} title={t('nav.add.label')} onClick={() => open()}>
         <Icon name="add" />
       </button>
