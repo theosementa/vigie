@@ -195,6 +195,15 @@
 .list.wide .it:hover,.list.wide .it[data-selected="true"],.list.wide .it[data-popup-open],.list.wide .it:has([data-popup-open]){background:var(--surface)}
 .list.wide .it:hover::before,.list.wide .it[data-selected="true"]::before,.list.wide .it[data-popup-open]::before,.list.wide .it:has([data-popup-open])::before,
 .list.wide>li:has(:is(.it:hover,.it[data-selected="true"],.it[data-popup-open],.it:has([data-popup-open])))+li .it::before{background:transparent}
+.q-th{flex:none;align-self:center;width:160px;height:90px;border-radius:12px;overflow:hidden}
+.q-th .th{width:100%;height:100%}
+.q-th .th img.og,.q-th .th svg.og{object-fit:cover;object-position:center}
+@media (max-width:639px){
+  /* Phone: a narrower, cropped thumbnail (centred, scaled to fill) with a floor on its height so none collapses */
+  .q-th{width:72px;height:64px;border-radius:10px}
+  .q-actions .icon-btn{width:28px;height:28px}
+  .q-actions .icon-btn .i{width:16px;height:16px}
+}
 .q-actions{opacity:0;transition:opacity 150ms var(--ease)}
 .q-row:hover .q-actions,.q-row:focus-within .q-actions,.q-actions:has([data-popup-open]),.q-row[data-popup-open] .q-actions{opacity:1}
 @media (pointer:coarse){.q-actions{opacity:1}}

@@ -102,7 +102,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove, onOpenDe
             <Icon name="reorder" className="size-5" aria-hidden />
           </button>
 
-          <div className="q-th w-28 shrink-0 self-center overflow-hidden rounded-xl sm:w-40">
+          <div className="q-th">
             <ItemThumb resource={resource} />
           </div>
 
