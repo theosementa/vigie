@@ -9,12 +9,10 @@ import { ActionsContextContent, ActionsDropdownContent } from './itemActions'
 import { ItemMeta } from './ItemMeta'
 import { ItemThumb } from './ItemThumb'
 import { isMetadataUnavailable, siteOf } from './metadata'
-import { useSetItemStatus } from './queries'
 import { useItemActions } from './useItemActions'
 
 /**
- * Desktop and tablet list row: 96×54 thumbnail, one-line title, meta, and the card's actions (status toggle,
- * menu) at the right edge. The height is set by the thumbnail, so it never changes when the page resizes.
+ * Desktop and tablet list row: 96×54 thumbnail, one-line title, meta, and the menu button at the right edge. The height is set by the thumbnail, so it never changes when the page resizes.
  */
 function ItemRowWideBase({
   item,
@@ -27,7 +25,6 @@ function ItemRowWideBase({
 }) {
   const t = useT()
   const { resource } = item
-  const setStatus = useSetItemStatus()
   const actions = useItemActions(item, () => onOpen(item))
   const seen = item.status === 'seen'
 
@@ -49,16 +46,6 @@ function ItemRowWideBase({
           <ItemMeta item={item} />
         </div>
         <div className="row-actions above">
-          <button
-            type="button"
-            className="icon-btn"
-            aria-pressed={seen}
-            aria-label={t(seen ? 'item.mark_unseen' : 'item.mark_seen')}
-            title={t(seen ? 'item.mark_unseen' : 'item.mark_seen')}
-            onClick={() => setStatus.mutate({ id: item.id, status: seen ? 'to_watch' : 'seen' })}
-          >
-            <Icon name="check-circle" small bold={seen} />
-          </button>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={<button type="button" className="icon-btn" aria-label={t('item.actions')} title={t('item.actions')} />}
