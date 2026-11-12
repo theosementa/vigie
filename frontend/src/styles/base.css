@@ -46,7 +46,7 @@
 .scr-h h1,.scr-h h3{font-size:30px;font-weight:500;letter-spacing:-.02em;margin:0;line-height:1.05}
 .scr-h .sub{margin-top:4px}
 .scr-h{padding-bottom:12px}
-.lib{display:grid;gap:14px;min-width:0}
+.lib{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
 .lib-bar{display:flex;align-items:center;gap:12px;min-width:0}
 /* Desktop: the filters wrap onto a second line instead of scrolling or being cut */
 /* Line spacing as item margins (not row-gap), so a chip alone on the last line can close it fully */

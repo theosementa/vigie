@@ -1,4 +1,5 @@
 import { memo, type CSSProperties } from 'react'
+import { BrandIcon } from '@/components/BrandIcon'
 import { Icon } from '@/components/Icon'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -11,6 +12,7 @@ import { ActionsContextContent, ActionsDropdownContent } from '@/features/items/
 import type { Action } from '@/features/items/useItemActions'
 import { ItemThumb } from '@/features/items/ItemThumb'
 import { useT } from '@/lib/i18n'
+import { providerOf } from '@/lib/providers'
 
 export interface QueueEntryHandlers {
   onMove: (item: Item, position: number) => void
@@ -30,6 +32,7 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove, onOpenDe
   const { resource } = item
   const title = resource.title ?? resource.url
   const site = resource.site_name ?? hostname(resource.url)
+  const brand = providerOf(resource.url)
   const first = index === 0
   const last = index === count - 1
 
@@ -112,7 +115,8 @@ function QueueEntryBase({ item, index, count, onMove, onSeen, onRemove, onOpenDe
               ) : (
                 <span className="shrink-0 font-medium text-muted-foreground tabular-nums">#{index + 1}</span>
               )}
-              <span className="truncate text-muted-foreground">
+              {brand ? <BrandIcon name={brand} className="size-3.5 shrink-0 text-muted-foreground" /> : <Icon name="global" className="size-3.5 shrink-0 text-muted-foreground" />}
+              <span className="min-w-0 truncate text-muted-foreground">
                 {site}
                 {resource.duration_seconds != null && ` · ${formatDuration(resource.duration_seconds)}`}
               </span>
