@@ -500,7 +500,7 @@ a.bub-link:active{opacity:.7}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 
 /* Settings: tab list on the left on desktop, scrollable pill row on a phone */
-.set-layout{display:grid;gap:14px;min-width:0;width:100%;max-width:54rem;margin-inline:auto}
+.set-layout{display:grid;gap:14px;min-width:0;width:100%}
 .set-nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
 .set-nav::-webkit-scrollbar{display:none}
 .set-nav button{flex:none;display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap}
