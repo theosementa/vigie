@@ -3,6 +3,7 @@ import { Icon } from '@/components/Icon'
 import type { Item } from '@/lib/api'
 import { useT } from '@/lib/i18n'
 import { useQueueToggle } from '@/features/queue/useQueueToggle'
+import { useSetItemStatus } from './queries'
 import { useItemDialogs } from './itemDialogsContext'
 import { useDeleteItem } from './useDeleteItem'
 
@@ -19,12 +20,20 @@ export function useItemActions(item: Item, onOpenDetail: () => void): Action[] {
   const dialogs = useItemDialogs()
   const queue = useQueueToggle(item)
   const deleteItem = useDeleteItem()
+  const setStatus = useSetItemStatus()
+  const seen = item.status === 'seen'
   return [
     {
       key: 'open',
       label: t('item.open_link'),
       icon: <Icon name="arrow-right-up" />,
       run: () => window.open(item.resource.url, '_blank', 'noopener,noreferrer'),
+    },
+    {
+      key: 'status',
+      label: t(seen ? 'item.mark_unseen' : 'item.mark_seen'),
+      icon: <Icon name={seen ? 'restart' : 'check-circle'} />,
+      run: () => setStatus.mutate({ id: item.id, status: seen ? 'to_watch' : 'seen' }),
     },
     ...(queue.available
       ? [

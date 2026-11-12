@@ -9,10 +9,9 @@ import { ActionsContextContent, ActionsDropdownContent } from './itemActions'
 import { ItemMeta } from './ItemMeta'
 import { ItemThumb } from './ItemThumb'
 import { isMetadataUnavailable, siteOf } from './metadata'
-import { useSetItemStatus } from './queries'
 import { useItemActions } from './useItemActions'
 
-/** Desktop grid card: 1.91:1 image, 2-line title, meta; status toggle and menu appear on hover. */
+/** Desktop grid card: 1.91:1 image, 2-line title, meta; menu button appears on hover. */
 function ItemCardBase({
   item,
   selected,
@@ -24,7 +23,6 @@ function ItemCardBase({
 }) {
   const t = useT()
   const { resource } = item
-  const setStatus = useSetItemStatus()
   const actions = useItemActions(item, () => onOpen(item))
   const seen = item.status === 'seen'
 
@@ -40,16 +38,6 @@ function ItemCardBase({
       >
         <ItemThumb resource={resource} />
         <div className="card-actions above">
-          <button
-            type="button"
-            className="icon-btn"
-            aria-pressed={seen}
-            aria-label={t(seen ? 'item.mark_unseen' : 'item.mark_seen')}
-            title={t(seen ? 'item.mark_unseen' : 'item.mark_seen')}
-            onClick={() => setStatus.mutate({ id: item.id, status: seen ? 'to_watch' : 'seen' })}
-          >
-            <Icon name="check-circle" small bold={seen} />
-          </button>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={<button type="button" className="icon-btn" aria-label={t('item.actions')} title={t('item.actions')} />}
