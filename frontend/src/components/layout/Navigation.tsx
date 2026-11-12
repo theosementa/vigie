@@ -73,7 +73,6 @@ export function TabBar() {
 /** Tablet portrait (768-1023 px): 72 px icon rail, labels in aria-label + title. */
 export function Rail() {
   const t = useT()
-  const { open } = useAddItem()
   const { data: me } = useMe()
   const counts = useNavCounts()
   const badge: Record<string, string | null> = { '/queue': counts.queue }
@@ -95,9 +94,6 @@ export function Rail() {
   )
   return (
     <aside className="rail only-desktop" aria-label={t('nav.main')}>
-      <button type="button" className="start" aria-label={t('nav.add.label')} title={t('nav.add.label')} onClick={() => open()}>
-        <Icon name="add" />
-      </button>
       <nav className="rail-nav" aria-label={t('nav.main')}>
         {NAV.map(link)}
       </nav>
