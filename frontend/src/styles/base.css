@@ -189,9 +189,10 @@
 @media (max-width:1023px){.it,.card{--tt-lines:4}}
 /* Wide list (desktop and tablet): thumbnail, one-line title and meta, actions at the right edge. The thumbnail sets the row height. */
 .list.wide .it{grid-template-columns:96px minmax(0,1fr) auto;gap:16px;padding:8px 12px;border-radius:12px;border-top-color:transparent;background:transparent;--tt-lines:1}
-.list.wide>li+li .it{border-top-color:var(--line)}
+.list.wide>li+li .it::before{content:"";position:absolute;top:-1px;left:0;right:0;height:1px;background:var(--line)}
 .list.wide .it .th{width:96px;height:54px}
-.list.wide .it:hover,.list.wide .it[data-selected="true"]{background:var(--surface);border-top-color:transparent}
+.list.wide .it:hover,.list.wide .it[data-selected="true"]{background:var(--surface)}
+.list.wide .it:hover::before,.list.wide .it[data-selected="true"]::before{background:transparent}
 .row-actions{display:flex;gap:4px;opacity:0;transition:opacity 150ms var(--ease)}
 .it:hover .row-actions,.it:focus-within .row-actions,.row-actions:has([data-popup-open]){opacity:1}
 @media (pointer:coarse){.row-actions{opacity:1}}
