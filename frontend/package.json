@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@iconify-json/simple-icons": "^1.2.101",
+    "@iconify-json/simple-icons": "^1.2.102",
     "@iconify-json/solar": "^1.2.13",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
