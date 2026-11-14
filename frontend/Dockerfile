@@ -12,7 +12,7 @@ ARG APP_ENV=production
 ENV VITE_APP_ENV=$APP_ENV
 RUN npm run build
 
-FROM caddy:2.10.2-alpine
+FROM caddy:2.11.8-alpine
 # Run as a non-root user. The caddy binary keeps cap_net_bind_service, so it can
 # still bind 80/443. /data and /config are the volumes (certificates, state).
 RUN addgroup -S caddy && adduser -S -G caddy -H caddy \
